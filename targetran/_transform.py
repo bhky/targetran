@@ -10,6 +10,20 @@ import tensorflow as tf
 T = TypeVar("T", np.ndarray, tf.Tensor)
 
 
+def _make_output_bboxes_list(
+        bboxes_nums: List[int],
+        all_bboxes: np.ndarray,
+        split_func: Callable[[T, T, int], List[T]],
+        reshape_func: Callable[[T, Tuple[int, int]], T]
+) -> List[T]:
+    """
+    Helper function for making the output list of bboxes.
+    """
+    indices = np.cumsum(bboxes_nums)[:-1]
+    bboxes_list = split_func(all_bboxes, indices, 0)  # Along axis 0.
+    return [reshape_func(bboxes, (-1, 4)) for bboxes in bboxes_list]
+
+
 def _flip_left_right(
         images: T,
         bboxes_list: List[T],
@@ -33,10 +47,11 @@ def _flip_left_right(
     all_bboxes[:, :1] = image_width - all_bboxes[:, :1] - all_bboxes[:, 2:3]
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    indices = np.cumsum(bboxes_nums)[:-1]
-    bboxes_list = split_func(all_bboxes, indices, 0)  # Along axis 0.
+    bboxes_list = _make_output_bboxes_list(
+        bboxes_nums, all_bboxes, split_func, reshape_func
+    )
 
-    return images, [reshape_func(bboxes, (-1, 4)) for bboxes in bboxes_list]
+    return images, bboxes_list
 
 
 def _flip_up_down(
@@ -62,10 +77,11 @@ def _flip_up_down(
     all_bboxes[:, 1:2] = image_height - all_bboxes[:, 1:2] - all_bboxes[:, 3:]
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    indices = np.cumsum(bboxes_nums)[:-1]
-    bboxes_list = split_func(all_bboxes, indices, 0)  # Along axis 0.
+    bboxes_list = _make_output_bboxes_list(
+        bboxes_nums, all_bboxes, split_func, reshape_func
+    )
 
-    return images, [reshape_func(bboxes, (-1, 4)) for bboxes in bboxes_list]
+    return images, bboxes_list
 
 
 def _rotate_90_clockwise(
@@ -97,7 +113,8 @@ def _rotate_90_clockwise(
     ], 1)  # Along axis 1.
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    indices = np.cumsum(bboxes_nums)[:-1]
-    bboxes_list = split_func(all_bboxes, indices, 0)  # Along axis 0.
+    bboxes_list = _make_output_bboxes_list(
+        bboxes_nums, all_bboxes, split_func, reshape_func
+    )
 
-    return images, [reshape_func(bboxes, (-1, 4)) for bboxes in bboxes_list]
+    return images, bboxes_list
