@@ -10,13 +10,14 @@ import tensorflow as tf
 T = TypeVar("T", np.ndarray, tf.Tensor)
 
 
-def _flip_left_right(images: T,
-                     bboxes_list: List[T],
-                     shape_func: Callable[[T], Tuple[int, ...]],
-                     concat_func: Callable[[List[T], int], T],
-                     split_func: Callable[[T, T, int], List[T]],
-                     reshape_func: Callable[[T, Tuple[int, int]], T]) \
-        -> Tuple[T, List[T]]:
+def _flip_left_right(
+        images: T,
+        bboxes_list: List[T],
+        shape_func: Callable[[T], Tuple[int, ...]],
+        concat_func: Callable[[List[T], int], T],
+        split_func: Callable[[T, T, int], List[T]],
+        reshape_func: Callable[[T, Tuple[int, int]], T]
+) -> Tuple[T, List[T]]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
@@ -38,13 +39,14 @@ def _flip_left_right(images: T,
     return images, [reshape_func(bboxes, (-1, 4)) for bboxes in bboxes_list]
 
 
-def _flip_up_down(images: T,
-                  bboxes_list: List[T],
-                  shape_func: Callable[[T], Tuple[int, ...]],
-                  concat_func: Callable[[List[T], int], T],
-                  split_func: Callable[[T, T, int], List[T]],
-                  reshape_func: Callable[[T, Tuple[int, int]], T]) \
-        -> Tuple[T, List[T]]:
+def _flip_up_down(
+        images: T,
+        bboxes_list: List[T],
+        shape_func: Callable[[T], Tuple[int, ...]],
+        concat_func: Callable[[List[T], int], T],
+        split_func: Callable[[T, T, int], List[T]],
+        reshape_func: Callable[[T, Tuple[int, int]], T]
+) -> Tuple[T, List[T]]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
