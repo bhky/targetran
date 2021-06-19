@@ -36,7 +36,6 @@ def _flip_left_right(
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
-    assert shape_func(images)[-1] == 3
     image_width = shape_func(images)[2]
 
     images = images[..., ::-1, :]
@@ -66,7 +65,6 @@ def _flip_up_down(
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
-    assert shape_func(images)[-1] == 3
     image_height = shape_func(images)[1]
 
     images = images[:, ::-1, ...]
@@ -97,7 +95,6 @@ def _rotate_90_clockwise(
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
-    assert shape_func(images)[-1] == 3
     image_height = shape_func(images)[1]
 
     images = transpose_func(images, (0, 2, 1, 3))[:, :, ::-1, :]
