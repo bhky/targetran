@@ -88,7 +88,7 @@ def _flip_up_down(
     return images, bboxes_list
 
 
-def _rotate_90_clockwise(
+def _rotate_90(
         images: np.ndarray,
         bboxes_list: List[np.ndarray],
         shape_func: Callable[[T], Tuple[int, ...]],
@@ -98,22 +98,23 @@ def _rotate_90_clockwise(
         reshape_func: Callable[[T, Tuple[int, int]], T]
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
     """
+    Rotate 90 degrees anti-clockwise.
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
     image_shape = shape_func(images)
     assert len(image_shape) == 4
 
-    image_height = image_shape[1]
+    image_width = image_shape[2]
 
-    images = transpose_func(images, (0, 2, 1, 3))[:, :, ::-1, :]
+    images = transpose_func(images, (0, 2, 1, 3))[:, ::-1, :, :]
 
     all_bboxes = concat_func(bboxes_list, 0)  # Along axis 0.
     assert shape_func(all_bboxes)[-1] == 4
 
     all_bboxes = concat_func([
-        image_height - all_bboxes[:, 1:2] - all_bboxes[:, 3:],
-        all_bboxes[:, :1],
+        all_bboxes[:, 1:2],
+        image_width - all_bboxes[:, :1] - all_bboxes[:, 2:3],
         all_bboxes[:, 3:],
         all_bboxes[:, 2:3],
     ], 1)  # Along axis 1.

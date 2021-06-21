@@ -5,7 +5,7 @@ Unit tests.
 import numpy as np
 import unittest
 
-from ._transform import _flip_left_right, _flip_up_down, _rotate_90_clockwise
+from ._transform import _flip_left_right, _flip_up_down, _rotate_90
 
 
 IMAGES = np.array([
@@ -96,28 +96,28 @@ class TestTransform(unittest.TestCase):
                 np.array_equal(expected_bboxes, bboxes)
             )
 
-    def test_rotate_90_clockwise(self) -> None:
+    def test_rotate_90(self) -> None:
 
-        images, bboxes_list = _rotate_90_clockwise(
+        images, bboxes_list = _rotate_90(
             IMAGES, BBOXES_LIST,
             np.shape, np.transpose, np.concatenate, np.split, np.reshape
         )
 
         expected_images = np.array([
-            [[[7], [4], [1]],
-             [[8], [5], [2]],
-             [[9], [6], [3]]],
-            [[[17], [14], [11]],
-             [[18], [15], [12]],
-             [[19], [16], [13]]],
+            [[[3], [6], [9]],
+             [[2], [5], [8]],
+             [[1], [4], [7]]],
+            [[[13], [16], [19]],
+             [[12], [15], [18]],
+             [[11], [14], [17]]],
         ])
         expected_bboxes_list = [
             np.array([
-                [1, 1, 2, 2],
-                [0, 0, 2, 3],
+                [0, 0, 2, 2],
+                [1, 0, 2, 3],
             ]),
             np.array([
-                [0, 0, 3, 2],
+                [0, 1, 3, 2],
             ])
         ]
 
