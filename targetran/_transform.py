@@ -155,7 +155,8 @@ def _crop_and_resize(
         resize_fn: Callable[[T, Tuple[int, int]], T],
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
-        mask_fn: Callable[[T, T], T],
+        squeeze_fn: Callable[[T], T],
+        boolean_mask_fn: Callable[[T, T], T],
         split_fn: Callable[[T, T, int], List[T]],
         reshape_fn: Callable[[T, Tuple[int, int]], T]
 ) -> Tuple[T, List[T]]:
@@ -189,7 +190,12 @@ def _crop_and_resize(
         """
         p: (image_idx, top, left, bottom, right)
         """
-        return images[p[0], p[1]:p[3], p[2]:p[4], :]
+        return images[
+           int(p[0]),
+           int(p[1]):int(p[3]),
+           int(p[2]):int(p[4]),
+           :
+        ]
 
     image_param = convert_fn(list(zip(
         image_idxes, tops, lefts, bottoms, rights
@@ -206,7 +212,7 @@ def _crop_and_resize(
         p: (image_idx, top, left, cropped_image_width, cropped_image_height)
         """
         idx, top, left, cropped_image_width, cropped_image_height = p
-        bboxes = bboxes_list[idx]
+        bboxes = bboxes_list[int(idx)]
 
         # Translation.
         xs = bboxes[:, :1] - left
@@ -225,17 +231,18 @@ def _crop_and_resize(
         # Excluding bboxes out of image.
         xmaxs = xs + widths
         ymaxs = ys + heights
-        included = logical_and_fn(
+        included = squeeze_fn(logical_and_fn(
             logical_and_fn(xs >= 0, xmaxs <= image_width),
             logical_and_fn(ys >= 0, ymaxs <= image_height)
-        )
-        return mask_fn(bboxes, included)
+        ))
+        return boolean_mask_fn(bboxes, included)
 
     bboxes_param = convert_fn(list(zip(
         image_idxes, tops, lefts, cropped_image_widths, cropped_image_heights
     )))
     all_bboxes = map_fn(make_bboxes, bboxes_param)
 
+    # todo: fix
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
     bboxes_list = _make_output_bboxes_list(
         bboxes_nums, all_bboxes, split_fn, reshape_fn

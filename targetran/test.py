@@ -6,9 +6,12 @@ import numpy as np
 import unittest
 
 from ._transform import _flip_left_right, _flip_up_down, _rotate_90
+from ._transform import _crop_and_resize
+from ._helper import _np_resize, _np_boolean_mask
+from ._helper import _np_multiply, _np_logical_and, _np_map
 
 
-IMAGES = np.array([
+ORIGINAL_IMAGES = np.array([
     [[[1], [2], [3]],
      [[4], [5], [6]],
      [[7], [8], [9]]],
@@ -20,7 +23,7 @@ IMAGES = np.array([
      [[27], [28], [29]]],
 ])
 
-BBOXES_LIST = [
+ORIGINAL_BBOXES_LIST = [
     np.array([
         [1, 0, 2, 2],
         [0, 1, 3, 2],
@@ -37,7 +40,7 @@ class TestTransform(unittest.TestCase):
     def test_flip_left_right(self) -> None:
 
         images, bboxes_list = _flip_left_right(
-            IMAGES, BBOXES_LIST,
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST,
             np.shape, np.concatenate, np.split, np.reshape
         )
 
@@ -74,7 +77,7 @@ class TestTransform(unittest.TestCase):
     def test_flip_up_down(self) -> None:
 
         images, bboxes_list = _flip_up_down(
-            IMAGES, BBOXES_LIST,
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST,
             np.shape, np.concatenate, np.split, np.reshape
         )
 
@@ -111,7 +114,7 @@ class TestTransform(unittest.TestCase):
     def test_rotate_90(self) -> None:
 
         images, bboxes_list = _rotate_90(
-            IMAGES, BBOXES_LIST,
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST,
             np.shape, np.transpose, np.concatenate, np.split, np.reshape
         )
 
@@ -140,6 +143,51 @@ class TestTransform(unittest.TestCase):
         self.assertTrue(
             np.array_equal(expected_images, images)
         )
+        for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
+            self.assertTrue(
+                np.array_equal(expected_bboxes, bboxes)
+            )
+
+    def test_crop_and_resize(self) -> None:
+
+        original_images = np.random.rand(4, 128, 128, 3)
+        original_bboxes_list = [
+            np.array([
+                [64, 52, 20, 24],
+                [44, 48, 12, 8],
+            ]),
+            np.array([
+                [64, 52, 20, 24],
+                [108, 120, 12, 8],
+            ]),
+            np.array([
+                [108, 120, 12, 8],
+            ]),
+            np.array([]).reshape(-1, 4),
+        ]
+
+        x_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25])
+        y_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25])
+        expected_bboxes_list = [
+            np.array([
+                [32 * 4/3, 20 * 4/3, 20 * 4/3, 24 * 4/3],
+                [12 * 4/3, 16 * 4/3, 12 * 4/3, 8 * 4/3],
+            ]),
+            np.array([
+                [96 * 4 / 3, 84 * 4 / 3, 20 * 4 / 3, 24 * 4 / 3],
+            ]),
+            np.array([]).reshape(-1, 4),
+            np.array([]).reshape(-1, 4),
+        ]
+
+        _, bboxes_list = _crop_and_resize(
+            original_images, original_bboxes_list,
+            x_offset_fractions, y_offset_fractions,
+            np.shape, _np_multiply, np.rint, np.abs, np.where, np.asarray,
+            _np_map, _np_resize, np.concatenate, _np_logical_and,
+            np.squeeze, _np_boolean_mask, np.split, np.reshape
+        )
+
         for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
             self.assertTrue(
                 np.array_equal(expected_bboxes, bboxes)
