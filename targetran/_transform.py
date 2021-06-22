@@ -20,14 +20,14 @@ def _reshape_bboxes(
     return [reshape_fn(bboxes, (-1, 4)) for bboxes in bboxes_list]
 
 
-def _make_output_bboxes_list(
+def _make_bboxes_list(
         bboxes_nums: List[int],
         all_bboxes: T,
         split_fn: Callable[[T, T, int], List[T]],
         reshape_fn: Callable[[T, Tuple[int, int]], T]
 ) -> List[T]:
     """
-    Helper function for making the output list of bboxes.
+    Helper function for splitting all_bboxes array to list of bboxes.
     """
     indices = np.cumsum(bboxes_nums)[:-1]
     bboxes_list = split_fn(all_bboxes, indices, 0)  # Along axis 0.
@@ -60,7 +60,7 @@ def _flip_left_right(
     all_bboxes[:, :1] = image_width - all_bboxes[:, :1] - all_bboxes[:, 2:3]
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_output_bboxes_list(
+    bboxes_list = _make_bboxes_list(
         bboxes_nums, all_bboxes, split_fn, reshape_fn
     )
 
@@ -93,7 +93,7 @@ def _flip_up_down(
     all_bboxes[:, 1:2] = image_height - all_bboxes[:, 1:2] - all_bboxes[:, 3:]
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_output_bboxes_list(
+    bboxes_list = _make_bboxes_list(
         bboxes_nums, all_bboxes, split_fn, reshape_fn
     )
 
@@ -133,7 +133,7 @@ def _rotate_90(
     ], 1)  # Along axis 1.
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_output_bboxes_list(
+    bboxes_list = _make_bboxes_list(
         bboxes_nums, all_bboxes, split_fn, reshape_fn
     )
 
@@ -255,7 +255,7 @@ def _crop_and_resize(
 
     # todo: fix
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_output_bboxes_list(
+    bboxes_list = _make_bboxes_list(
         bboxes_nums, all_bboxes, split_fn, reshape_fn
     )
 
