@@ -157,7 +157,7 @@ class TestTransform(unittest.TestCase):
                 [44, 48, 12, 8],
             ]),
             np.array([
-                [64, 52, 20, 24],
+                [24, 12, 20, 24],
                 [108, 120, 12, 8],
             ]),
             np.array([
@@ -168,13 +168,14 @@ class TestTransform(unittest.TestCase):
 
         x_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25])
         y_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25])
+        f = 4 / 3
         expected_bboxes_list = [
             np.array([
-                [32 * 4/3, 20 * 4/3, 20 * 4/3, 24 * 4/3],
-                [12 * 4/3, 16 * 4/3, 12 * 4/3, 8 * 4/3],
+                [32 * f, 20 * f, 20 * f, 24 * f],
+                [12 * f, 16 * f, 12 * f, 8 * f],
             ]),
             np.array([
-                [96 * 4 / 3, 84 * 4 / 3, 20 * 4 / 3, 24 * 4 / 3],
+                [56 * f, 44 * f, 20 * f, 24 * f],
             ]),
             np.array([]).reshape(-1, 4),
             np.array([]).reshape(-1, 4),

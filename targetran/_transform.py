@@ -209,14 +209,15 @@ def _crop_and_resize(
 
     def make_bboxes(p: T) -> T:
         """
-        p: (image_idx, top, left, cropped_image_width, cropped_image_height)
+        p: (image_idx, offset_height, offset_width,
+            cropped_image_width, cropped_image_height)
         """
-        idx, top, left, cropped_image_width, cropped_image_height = p
+        idx, h_offset, w_offset, cropped_image_width, cropped_image_height = p
         bboxes = bboxes_list[int(idx)]
 
         # Translation.
-        xs = bboxes[:, :1] - left
-        ys = bboxes[:, 1:2] - top
+        xs = bboxes[:, :1] - w_offset
+        ys = bboxes[:, 1:2] - h_offset
 
         # Resizing.
         w = image_width / cropped_image_width
@@ -226,7 +227,7 @@ def _crop_and_resize(
         ys = ys * h
         heights = bboxes[:, 3:] * h
 
-        bboxes = concat_fn([xs, ys, widths, heights], 1)
+        new_bboxes = concat_fn([xs, ys, widths, heights], 1)
 
         # Excluding bboxes out of image.
         xmaxs = xs + widths
@@ -235,10 +236,11 @@ def _crop_and_resize(
             logical_and_fn(xs >= 0, xmaxs <= image_width),
             logical_and_fn(ys >= 0, ymaxs <= image_height)
         ))
-        return boolean_mask_fn(bboxes, included)
+        return boolean_mask_fn(new_bboxes, included)
 
     bboxes_param = convert_fn(list(zip(
-        image_idxes, tops, lefts, cropped_image_widths, cropped_image_heights
+        image_idxes, offset_heights, offset_widths,
+        cropped_image_widths, cropped_image_heights
     )))
     all_bboxes = map_fn(make_bboxes, bboxes_param)
 

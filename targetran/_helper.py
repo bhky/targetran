@@ -12,7 +12,7 @@ def _np_map(
         fn: Callable[[np.ndarray], np.ndarray],
         iterable: np.ndarray
 ) -> np.ndarray:
-    return np.array([fn(x) for x in iterable], dtype=object)
+    return np.array([fn(x) for x in iterable])
 
 
 def _np_multiply(x: np.ndarray, y: np.ndarray) -> np.ndarray:
