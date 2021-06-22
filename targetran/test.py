@@ -8,7 +8,8 @@ import unittest
 from ._transform import _flip_left_right, _flip_up_down, _rotate_90
 from ._transform import _crop_and_resize
 from ._helper import _np_resize, _np_boolean_mask
-from ._helper import _np_multiply, _np_logical_and, _np_map
+from ._helper import _np_multiply, _np_logical_and
+from ._helper import _np_array_map, _np_concat_map
 
 
 ORIGINAL_IMAGES = np.array([
@@ -185,13 +186,14 @@ class TestTransform(unittest.TestCase):
             original_images, original_bboxes_list,
             x_offset_fractions, y_offset_fractions,
             np.shape, _np_multiply, np.rint, np.abs, np.where, np.asarray,
-            _np_map, _np_resize, np.concatenate, _np_logical_and,
-            np.squeeze, _np_boolean_mask, np.split, np.reshape
+            _np_array_map, _np_resize, _np_concat_map,
+            np.concatenate, _np_logical_and, np.squeeze, _np_boolean_mask,
+            np.split, np.reshape
         )
 
         for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
             self.assertTrue(
-                np.array_equal(expected_bboxes, bboxes)
+                np.allclose(expected_bboxes, bboxes)
             )
 
 

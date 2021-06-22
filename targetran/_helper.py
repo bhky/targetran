@@ -8,11 +8,18 @@ import numpy as np
 import scipy.ndimage
 
 
-def _np_map(
+def _np_array_map(
         fn: Callable[[np.ndarray], np.ndarray],
         iterable: np.ndarray
 ) -> np.ndarray:
     return np.array([fn(x) for x in iterable])
+
+
+def _np_concat_map(
+        fn: Callable[[np.ndarray], np.ndarray],
+        iterable: np.ndarray
+) -> np.ndarray:
+    return np.concatenate([fn(x) for x in iterable])
 
 
 def _np_multiply(x: np.ndarray, y: np.ndarray) -> np.ndarray:

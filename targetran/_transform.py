@@ -151,8 +151,9 @@ def _crop_and_resize(
         abs_fn: Callable[[T], T],
         where_fn: Callable[[T, T, T], T],
         convert_fn: Callable[..., T],
-        map_fn: Callable[[Callable[[T], T], T], T],
+        map_image_fn: Callable[[Callable[[T], T], T], T],
         resize_fn: Callable[[T, Tuple[int, int]], T],
+        map_bboxes_fn: Callable[[Callable[[T], T], T], T],
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
         squeeze_fn: Callable[[T], T],
@@ -200,7 +201,7 @@ def _crop_and_resize(
     image_param = convert_fn(list(zip(
         image_idxes, tops, lefts, bottoms, rights
     )))
-    cropped_images = map_fn(crop, image_param)
+    cropped_images = map_image_fn(crop, image_param)
 
     images = resize_fn(cropped_images, (image_height, image_width))
     assert shape_fn(images)[1:3] == (image_height, image_width)
@@ -229,6 +230,17 @@ def _crop_and_resize(
 
         return concat_fn([xs, ys, widths, heights], 1)
 
+    bboxes_param = convert_fn(list(zip(
+        image_idxes, offset_heights, offset_widths,
+        cropped_image_widths, cropped_image_heights
+    )))
+    all_bboxes = map_bboxes_fn(make_bboxes, bboxes_param)
+
+    bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
+    bboxes_list = _make_bboxes_list(
+        bboxes_nums, all_bboxes, split_fn, reshape_fn
+    )
+
     def filter_bboxes(bboxes: T) -> T:
         """
         Excluding bboxes out of image.
@@ -245,18 +257,8 @@ def _crop_and_resize(
         ))
         return boolean_mask_fn(bboxes, included)
 
-    bboxes_param = convert_fn(list(zip(
-        image_idxes, offset_heights, offset_widths,
-        cropped_image_widths, cropped_image_heights
-    )))
-    all_bboxes = map_fn(make_bboxes, bboxes_param)
+    new_bboxes_list: List[T] = []
+    for bboxes in bboxes_list:
+        new_bboxes_list.append(filter_bboxes(bboxes))
 
-
-
-    # todo: fix
-    bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_bboxes_list(
-        bboxes_nums, all_bboxes, split_fn, reshape_fn
-    )
-
-    return images, bboxes_list
+    return images, new_bboxes_list
