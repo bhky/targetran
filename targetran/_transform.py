@@ -130,7 +130,8 @@ def _rotate_90(
 def _crop_and_resize(
         images: T,
         bboxes_list: List[T],
-        offset_fractions: T,
+        x_offset_fractions: T,
+        y_offset_fractions: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         multiply_fn: Callable[[T, T], T],
         rint_fn: Callable[[T], T],
@@ -152,14 +153,14 @@ def _crop_and_resize(
     """
     images_shape = shape_fn(images)
     assert len(images_shape) == 4
-    assert images_shape[0] == len(offset_fractions)
+    assert images_shape[0] == len(x_offset_fractions) == len(y_offset_fractions)
 
     image_height, image_width = images_shape[1:3]
 
     # Positive means the image move downward w.r.t. the original.
-    offset_heights = rint_fn(multiply_fn(offset_fractions, image_height))
+    offset_heights = rint_fn(multiply_fn(y_offset_fractions, image_height))
     # Positive means the image move to the right w.r.t. the original.
-    offset_widths = rint_fn(multiply_fn(offset_fractions, image_width))
+    offset_widths = rint_fn(multiply_fn(x_offset_fractions, image_width))
 
     cropped_image_heights = image_height - abs_fn(offset_heights)
     cropped_image_widths = image_width - abs_fn(offset_widths)
