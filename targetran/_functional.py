@@ -1,5 +1,5 @@
 """
-Helper utilities.
+Functional helper utilities.
 """
 
 from typing import Callable, Tuple

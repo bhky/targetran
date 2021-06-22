@@ -7,9 +7,9 @@ import unittest
 
 from ._transform import _flip_left_right, _flip_up_down, _rotate_90
 from ._transform import _crop_and_resize
-from ._helper import _np_resize, _np_boolean_mask
-from ._helper import _np_multiply, _np_logical_and
-from ._helper import _np_array_map, _np_concat_map
+from ._functional import _np_resize, _np_boolean_mask
+from ._functional import _np_multiply, _np_logical_and
+from ._functional import _np_array_map, _np_concat_map
 
 
 ORIGINAL_IMAGES = np.array([
