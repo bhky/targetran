@@ -10,9 +10,19 @@ import tensorflow as tf
 T = TypeVar("T", np.ndarray, tf.Tensor, float)
 
 
+def _reshape_bboxes(
+        bboxes_list: List[T],
+        reshape_fn: Callable[[T, Tuple[int, int]], T]
+) -> List[T]:
+    """
+    This seemingly extra process is mainly for tackling empty bboxes array.
+    """
+    return [reshape_fn(bboxes, (-1, 4)) for bboxes in bboxes_list]
+
+
 def _make_output_bboxes_list(
         bboxes_nums: List[int],
-        all_bboxes: np.ndarray,
+        all_bboxes: T,
         split_fn: Callable[[T, T, int], List[T]],
         reshape_fn: Callable[[T, Tuple[int, int]], T]
 ) -> List[T]:
@@ -21,7 +31,7 @@ def _make_output_bboxes_list(
     """
     indices = np.cumsum(bboxes_nums)[:-1]
     bboxes_list = split_fn(all_bboxes, indices, 0)  # Along axis 0.
-    return [reshape_fn(bboxes, (-1, 4)) for bboxes in bboxes_list]
+    return _reshape_bboxes(bboxes_list, reshape_fn)
 
 
 def _flip_left_right(
@@ -43,6 +53,7 @@ def _flip_left_right(
 
     images = images[..., ::-1, :]
 
+    bboxes_list = _reshape_bboxes(bboxes_list, reshape_fn)
     all_bboxes = concat_fn(bboxes_list, 0)  # Along axis 0.
     assert shape_fn(all_bboxes)[-1] == 4
 
@@ -75,6 +86,7 @@ def _flip_up_down(
 
     images = images[:, ::-1, ...]
 
+    bboxes_list = _reshape_bboxes(bboxes_list, reshape_fn)
     all_bboxes = concat_fn(bboxes_list, 0)  # Along axis 0.
     assert shape_fn(all_bboxes)[-1] == 4
 
@@ -109,6 +121,7 @@ def _rotate_90(
 
     images = transpose_fn(images, (0, 2, 1, 3))[:, ::-1, :, :]
 
+    bboxes_list = _reshape_bboxes(bboxes_list, reshape_fn)
     all_bboxes = concat_fn(bboxes_list, 0)  # Along axis 0.
     assert shape_fn(all_bboxes)[-1] == 4
 
@@ -185,6 +198,8 @@ def _crop_and_resize(
 
     images = resize_fn(cropped_images, (image_height, image_width))
     assert shape_fn(images)[1:3] == (image_height, image_width)
+
+    bboxes_list = _reshape_bboxes(bboxes_list, reshape_fn)
 
     def make_bboxes(p: T) -> T:
         """

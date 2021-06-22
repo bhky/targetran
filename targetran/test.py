@@ -15,6 +15,9 @@ IMAGES = np.array([
     [[[11], [12], [13]],
      [[14], [15], [16]],
      [[17], [18], [19]]],
+    [[[21], [22], [23]],
+     [[24], [25], [26]],
+     [[27], [28], [29]]],
 ])
 
 BBOXES_LIST = [
@@ -24,7 +27,8 @@ BBOXES_LIST = [
     ]),
     np.array([
         [0, 0, 2, 3],
-    ])
+    ]),
+    np.array([]).reshape(-1, 4),
 ]
 
 
@@ -44,6 +48,9 @@ class TestTransform(unittest.TestCase):
             [[[13], [12], [11]],
              [[16], [15], [14]],
              [[19], [18], [17]]],
+            [[[23], [22], [21]],
+             [[26], [25], [24]],
+             [[29], [28], [27]]],
         ])
         expected_bboxes_list = [
             np.array([
@@ -52,7 +59,8 @@ class TestTransform(unittest.TestCase):
             ]),
             np.array([
                 [1, 0, 2, 3],
-            ])
+            ]),
+            np.array([]).reshape(-1, 4),
         ]
 
         self.assertTrue(
@@ -77,6 +85,9 @@ class TestTransform(unittest.TestCase):
             [[[17], [18], [19]],
              [[14], [15], [16]],
              [[11], [12], [13]]],
+            [[[27], [28], [29]],
+             [[24], [25], [26]],
+             [[21], [22], [23]]],
         ])
         expected_bboxes_list = [
             np.array([
@@ -85,7 +96,8 @@ class TestTransform(unittest.TestCase):
             ]),
             np.array([
                 [0, 0, 2, 3],
-            ])
+            ]),
+            np.array([]).reshape(-1, 4),
         ]
 
         self.assertTrue(
@@ -110,6 +122,9 @@ class TestTransform(unittest.TestCase):
             [[[13], [16], [19]],
              [[12], [15], [18]],
              [[11], [14], [17]]],
+            [[[23], [26], [29]],
+             [[22], [25], [28]],
+             [[21], [24], [27]]],
         ])
         expected_bboxes_list = [
             np.array([
@@ -118,7 +133,8 @@ class TestTransform(unittest.TestCase):
             ]),
             np.array([
                 [0, 1, 3, 2],
-            ])
+            ]),
+            np.array([]).reshape(-1, 4),
         ]
 
         self.assertTrue(
