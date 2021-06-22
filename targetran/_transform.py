@@ -227,22 +227,31 @@ def _crop_and_resize(
         ys = ys * h
         heights = bboxes[:, 3:] * h
 
-        new_bboxes = concat_fn([xs, ys, widths, heights], 1)
+        return concat_fn([xs, ys, widths, heights], 1)
 
-        # Excluding bboxes out of image.
+    def filter_bboxes(bboxes: T) -> T:
+        """
+        Excluding bboxes out of image.
+        """
+        xs = bboxes[:, :1]
+        ys = bboxes[:, 1:2]
+        widths = bboxes[:, 2:3]
+        heights = bboxes[:, 3:]
         xmaxs = xs + widths
         ymaxs = ys + heights
         included = squeeze_fn(logical_and_fn(
             logical_and_fn(xs >= 0, xmaxs <= image_width),
             logical_and_fn(ys >= 0, ymaxs <= image_height)
         ))
-        return boolean_mask_fn(new_bboxes, included)
+        return boolean_mask_fn(bboxes, included)
 
     bboxes_param = convert_fn(list(zip(
         image_idxes, offset_heights, offset_widths,
         cropped_image_widths, cropped_image_heights
     )))
     all_bboxes = map_fn(make_bboxes, bboxes_param)
+
+
 
     # todo: fix
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
