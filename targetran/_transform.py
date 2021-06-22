@@ -257,8 +257,7 @@ def _crop_and_resize(
         ))
         return boolean_mask_fn(bboxes, included)
 
-    new_bboxes_list: List[T] = []
-    for bboxes in bboxes_list:
-        new_bboxes_list.append(filter_bboxes(bboxes))
-
+    new_bboxes_list = [
+        filter_bboxes(bboxes) for bboxes in bboxes_list
+    ]
     return images, new_bboxes_list
