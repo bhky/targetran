@@ -101,14 +101,14 @@ def _flip_up_down(
 
 
 def _rotate_90(
-        images: np.ndarray,
-        bboxes_list: List[np.ndarray],
+        images: T,
+        bboxes_list: List[T],
         shape_fn: Callable[[T], Tuple[int, ...]],
         transpose_fn: Callable[[T, Tuple[int, ...]], T],
         concat_fn: Callable[[List[T], int], T],
         split_fn: Callable[[T, T, int], List[T]],
         reshape_fn: Callable[[T, Tuple[int, int]], T]
-) -> Tuple[np.ndarray, List[np.ndarray]]:
+) -> Tuple[T, List[T]]:
     """
     Rotate 90 degrees anti-clockwise.
     images: [bs, h, w, c]
@@ -285,6 +285,16 @@ def _tf_flip_up_down(
     )
 
 
+def _tf_rotate_90(
+        images: tf.Tensor,
+        bboxes_list: List[tf.Tensor]
+) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    return _rotate_90(
+        images, bboxes_list,
+        tf.shape, tf.transpose, tf.concat, tf.split, tf.reshape
+    )
+
+
 class _TFRandomBase:
 
     def __init__(
@@ -323,3 +333,9 @@ class TFRandomFlipUpDown(_TFRandomBase):
 
     def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_tf_flip_up_down, flip_probability, seed)
+
+
+class TFRandomRotate90(_TFRandomBase):
+
+    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_rotate_90, flip_probability, seed)
