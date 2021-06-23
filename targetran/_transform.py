@@ -265,9 +265,36 @@ def _crop_and_resize(
     return images, new_bboxes_list
 
 
-class TFRandomFlipLeftRight:
+def _tf_flip_left_right(
+        images: tf.Tensor,
+        bboxes_list: List[tf.Tensor]
+) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    return _flip_left_right(
+        images, bboxes_list,
+        tf.shape, tf.concat, tf.split, tf.reshape
+    )
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
+
+def _tf_flip_up_down(
+        images: tf.Tensor,
+        bboxes_list: List[tf.Tensor]
+) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    return _flip_up_down(
+        images, bboxes_list,
+        tf.shape, tf.concat, tf.split, tf.reshape
+    )
+
+
+class _TFRandomBase:
+
+    def __init__(
+            self,
+            tf_fn: Callable[[tf.Tensor, List[tf.Tensor]],
+                            Tuple[tf.Tensor, List[tf.Tensor]]],
+            flip_probability: float,
+            seed: int,
+    ) -> None:
+        self._tf_fn = tf_fn
         self.flip_probability = flip_probability
         self.seed = seed
 
@@ -280,10 +307,19 @@ class TFRandomFlipLeftRight:
         rand = tf.random.uniform(shape=tf.shape(images)[:1], seed=self.seed)
         output: Tuple[tf.Tensor, List[tf.Tensor]] = tf.where(
             tf.less(rand, self.flip_probability),
-            _flip_left_right(
-                images, bboxes_list,
-                tf.shape, tf.concat, tf.split, tf.reshape
-            ),
+            self._tf_fn(images, bboxes_list),
             (images, bboxes_list)
         )
         return output
+
+
+class TFRandomFlipLeftRight(_TFRandomBase):
+
+    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_flip_left_right, flip_probability, seed)
+
+
+class TFRandomFlipUpDown(_TFRandomBase):
+
+    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_flip_up_down, flip_probability, seed)
