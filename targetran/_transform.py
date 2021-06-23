@@ -261,3 +261,26 @@ def _crop_and_resize(
         filter_bboxes(bboxes) for bboxes in bboxes_list
     ]
     return images, new_bboxes_list
+
+
+class TFRandomFlipLeftRight:
+
+    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
+        self.flip_probability = flip_probability
+        self.seed = seed
+
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_list: List[tf.Tensor]
+    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+
+        rand = tf.random.uniform(shape=tf.shape(images)[:1], seed=self.seed)
+        return tf.where(
+            tf.less(rand, self.flip_probability),
+            _flip_left_right(
+                images, bboxes_list,
+                tf.shape, tf.concat, tf.split, tf.reshape
+            ),
+            (images, bboxes_list)
+        )
