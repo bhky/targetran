@@ -5,7 +5,7 @@ Unit tests.
 import numpy as np  # type: ignore
 import unittest
 
-from ._transform import _flip_left_right, _flip_up_down, _rotate_90
+from ._transform import _np_flip_left_right, _np_flip_up_down, _np_rotate_90
 from ._transform import _crop_and_resize
 from ._functional import _np_resize, _np_boolean_mask
 from ._functional import _np_multiply, _np_logical_and
@@ -40,9 +40,8 @@ class TestTransform(unittest.TestCase):
 
     def test_flip_left_right(self) -> None:
 
-        images, bboxes_list = _flip_left_right(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST,
-            np.shape, np.concatenate, np.split, np.reshape
+        images, bboxes_list = _np_flip_left_right(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
         )
 
         expected_images = np.array([
@@ -77,9 +76,8 @@ class TestTransform(unittest.TestCase):
 
     def test_flip_up_down(self) -> None:
 
-        images, bboxes_list = _flip_up_down(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST,
-            np.shape, np.concatenate, np.split, np.reshape
+        images, bboxes_list = _np_flip_up_down(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
         )
 
         expected_images = np.array([
@@ -114,9 +112,8 @@ class TestTransform(unittest.TestCase):
 
     def test_rotate_90(self) -> None:
 
-        images, bboxes_list = _rotate_90(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST,
-            np.shape, np.transpose, np.concatenate, np.split, np.reshape
+        images, bboxes_list = _np_rotate_90(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
         )
 
         expected_images = np.array([

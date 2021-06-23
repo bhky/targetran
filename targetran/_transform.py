@@ -265,6 +265,36 @@ def _crop_and_resize(
     return images, new_bboxes_list
 
 
+def _np_flip_left_right(
+        images: np.ndarray,
+        bboxes_list: List[np.ndarray]
+) -> Tuple[np.ndarray, List[np.ndarray]]:
+    return _flip_left_right(
+        images, bboxes_list,
+        np.shape, np.concatenate, np.split, np.reshape
+    )
+
+
+def _np_flip_up_down(
+        images: np.ndarray,
+        bboxes_list: List[np.ndarray]
+) -> Tuple[np.ndarray, List[np.ndarray]]:
+    return _flip_up_down(
+        images, bboxes_list,
+        np.shape, np.concatenate, np.split, np.reshape
+    )
+
+
+def _np_rotate_90(
+        images: np.ndarray,
+        bboxes_list: List[np.ndarray]
+) -> Tuple[np.ndarray, List[np.ndarray]]:
+    return _rotate_90(
+        images, bboxes_list,
+        np.shape, np.transpose, np.concatenate, np.split, np.reshape
+    )
+
+
 def _tf_flip_left_right(
         images: tf.Tensor,
         bboxes_list: List[tf.Tensor]
