@@ -4,8 +4,8 @@ Functional helper utilities.
 
 from typing import Callable, Tuple
 
-import numpy as np
-import scipy.ndimage
+import numpy as np  # type: ignore
+import scipy.ndimage  # type: ignore
 
 
 def _np_array_map(

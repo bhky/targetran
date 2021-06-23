@@ -4,10 +4,10 @@ Image and target transform utilities.
 
 from typing import Callable, List, Tuple, TypeVar
 
-import numpy as np
-import tensorflow as tf
+import numpy as np  # type: ignore
+import tensorflow as tf  # type: ignore
 
-T = TypeVar("T", np.ndarray, tf.Tensor, float)
+T = TypeVar("T", np.ndarray, tf.Tensor)
 
 
 def _reshape_bboxes(
@@ -146,11 +146,11 @@ def _crop_and_resize(
         x_offset_fractions: T,
         y_offset_fractions: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
+        convert_fn: Callable[..., T],
         multiply_fn: Callable[[T, T], T],
         rint_fn: Callable[[T], T],
         abs_fn: Callable[[T], T],
         where_fn: Callable[[T, T, T], T],
-        convert_fn: Callable[..., T],
         map_image_fn: Callable[[Callable[[T], T], T], T],
         resize_fn: Callable[[T, Tuple[int, int]], T],
         map_bboxes_fn: Callable[[Callable[[T], T], T], T],
@@ -171,6 +171,8 @@ def _crop_and_resize(
     assert images_shape[0] == len(x_offset_fractions) == len(y_offset_fractions)
 
     image_height, image_width = images_shape[1:3]
+    image_height = convert_fn(image_height)
+    image_width = convert_fn(image_width)
 
     # Positive means the image move downward w.r.t. the original.
     offset_heights = rint_fn(multiply_fn(y_offset_fractions, image_height))
@@ -180,8 +182,8 @@ def _crop_and_resize(
     cropped_image_heights = image_height - abs_fn(offset_heights)
     cropped_image_widths = image_width - abs_fn(offset_widths)
 
-    tops = where_fn(offset_heights > 0, 0, -offset_heights)
-    lefts = where_fn(offset_widths > 0, 0, -offset_widths)
+    tops = where_fn(offset_heights > 0, convert_fn(0), -offset_heights)
+    lefts = where_fn(offset_widths > 0, convert_fn(0), -offset_widths)
     bottoms = tops + cropped_image_heights
     rights = lefts + cropped_image_widths
 

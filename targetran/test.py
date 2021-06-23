@@ -185,7 +185,7 @@ class TestTransform(unittest.TestCase):
         _, bboxes_list = _crop_and_resize(
             original_images, original_bboxes_list,
             x_offset_fractions, y_offset_fractions,
-            np.shape, _np_multiply, np.rint, np.abs, np.where, np.asarray,
+            np.shape, np.asarray, _np_multiply, np.rint, np.abs, np.where,
             _np_array_map, _np_resize, _np_concat_map,
             np.concatenate, _np_logical_and, np.squeeze, _np_boolean_mask,
             np.split, np.reshape
