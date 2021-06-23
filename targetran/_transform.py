@@ -278,7 +278,7 @@ class TFRandomFlipLeftRight:
     ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
 
         rand = tf.random.uniform(shape=tf.shape(images)[:1], seed=self.seed)
-        return tf.where(
+        output: Tuple[tf.Tensor, List[tf.Tensor]] = tf.where(
             tf.less(rand, self.flip_probability),
             _flip_left_right(
                 images, bboxes_list,
@@ -286,3 +286,4 @@ class TFRandomFlipLeftRight:
             ),
             (images, bboxes_list)
         )
+        return output

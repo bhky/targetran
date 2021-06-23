@@ -2,7 +2,7 @@
 Unit tests.
 """
 
-import numpy as np
+import numpy as np  # type: ignore
 import unittest
 
 from ._transform import _flip_left_right, _flip_up_down, _rotate_90
