@@ -2,10 +2,15 @@
 Functional helper utilities.
 """
 
-from typing import Callable, Tuple
+from typing import Any, Callable, List, Tuple
 
 import numpy as np  # type: ignore
+import tensorflow as tf  # type: ignore
 import scipy.ndimage  # type: ignore
+
+
+def _np_convert(x: Any) -> np.ndarray:
+    return np.asarray(x, dtype=np.float32)
 
 
 def _np_array_map(
@@ -44,3 +49,24 @@ def _np_boolean_mask(x: np.ndarray, mask: np.ndarray) -> np.ndarray:
     mask: boolean array
     """
     return x[mask]
+
+
+def _np_make_bboxes_list(
+        all_bboxes: np.ndarray,
+        bboxes_nums: List[int]
+) -> List[np.ndarray]:
+    indices = np.cumsum(bboxes_nums)[:-1]
+    bboxes_list = np.split(all_bboxes, indices, 0)
+    return [np.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list]
+
+
+def _tf_convert(x: Any) -> tf.Tensor:
+    return tf.convert_to_tensor(np.array(x), dtype=tf.float32)
+
+
+def _tf_make_bboxes_list(
+        all_bboxes: tf.Tensor,
+        bboxes_nums: List[int]
+) -> List[tf.Tensor]:
+    bboxes_list = tf.split(all_bboxes, bboxes_nums, 0)
+    return [tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list]

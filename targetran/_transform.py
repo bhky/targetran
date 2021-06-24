@@ -7,9 +7,10 @@ from typing import Any, Callable, List, Tuple, TypeVar
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
-from ._functional import _np_resize, _np_boolean_mask
+from ._functional import _np_convert, _np_resize, _np_boolean_mask
 from ._functional import _np_multiply, _np_logical_and
-from ._functional import _np_array_map, _np_concat_map
+from ._functional import _np_array_map, _np_concat_map, _np_make_bboxes_list
+from ._functional import _tf_convert, _tf_make_bboxes_list
 
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
@@ -25,27 +26,14 @@ def _reshape_bboxes(
     return [reshape_fn(bboxes, (-1, 4)) for bboxes in bboxes_list]
 
 
-def _make_bboxes_list(
-        bboxes_nums: List[int],
-        all_bboxes: T,
-        split_fn: Callable[[T, T, int], List[T]],
-        reshape_fn: Callable[[T, Tuple[int, int]], T]
-) -> List[T]:
-    """
-    Helper function for splitting all_bboxes array to list of bboxes.
-    """
-    indices = np.cumsum(bboxes_nums)[:-1]
-    bboxes_list = split_fn(all_bboxes, indices, 0)  # Along axis 0.
-    return _reshape_bboxes(bboxes_list, reshape_fn)
-
-
 def _flip_left_right(
         images: T,
         bboxes_list: List[T],
         shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, int]], T],
+        convert_fn: Callable[..., T],
         concat_fn: Callable[[List[T], int], T],
-        split_fn: Callable[[T, T, int], List[T]],
-        reshape_fn: Callable[[T, Tuple[int, int]], T]
+        make_bboxes_list_fn: Callable[[T, List[int]], List[T]]
 ) -> Tuple[T, List[T]]:
     """
     images: [bs, h, w, c]
@@ -54,7 +42,7 @@ def _flip_left_right(
     images_shape = shape_fn(images)
     assert len(images_shape) == 4
 
-    image_width = images_shape[2]
+    image_width = convert_fn(images_shape[2])
 
     images = images[..., ::-1, :]
 
@@ -62,12 +50,11 @@ def _flip_left_right(
     all_bboxes = concat_fn(bboxes_list, 0)  # Along axis 0.
     assert shape_fn(all_bboxes)[-1] == 4
 
-    all_bboxes[:, :1] = image_width - all_bboxes[:, :1] - all_bboxes[:, 2:3]
+    xs = image_width - all_bboxes[:, :1] - all_bboxes[:, 2:3]
+    all_bboxes = concat_fn([xs, all_bboxes[:, 1:]], 1)  # Along axis 1.
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_bboxes_list(
-        bboxes_nums, all_bboxes, split_fn, reshape_fn
-    )
+    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_nums)
 
     return images, bboxes_list
 
@@ -76,9 +63,10 @@ def _flip_up_down(
         images: T,
         bboxes_list: List[T],
         shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, int]], T],
+        convert_fn: Callable[..., T],
         concat_fn: Callable[[List[T], int], T],
-        split_fn: Callable[[T, T, int], List[T]],
-        reshape_fn: Callable[[T, Tuple[int, int]], T]
+        make_bboxes_list_fn: Callable[[T, List[int]], List[T]]
 ) -> Tuple[T, List[T]]:
     """
     images: [bs, h, w, c]
@@ -87,7 +75,7 @@ def _flip_up_down(
     images_shape = shape_fn(images)
     assert len(images_shape) == 4
 
-    image_height = images_shape[1]
+    image_height = convert_fn(images_shape[1])
 
     images = images[:, ::-1, ...]
 
@@ -95,12 +83,13 @@ def _flip_up_down(
     all_bboxes = concat_fn(bboxes_list, 0)  # Along axis 0.
     assert shape_fn(all_bboxes)[-1] == 4
 
-    all_bboxes[:, 1:2] = image_height - all_bboxes[:, 1:2] - all_bboxes[:, 3:]
+    ys = image_height - all_bboxes[:, 1:2] - all_bboxes[:, 3:]
+    all_bboxes = concat_fn(
+        [all_bboxes[:, :1], ys, all_bboxes[:, 2:]], 1  # Along axis 1.
+    )
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_bboxes_list(
-        bboxes_nums, all_bboxes, split_fn, reshape_fn
-    )
+    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_nums)
 
     return images, bboxes_list
 
@@ -109,10 +98,11 @@ def _rotate_90(
         images: T,
         bboxes_list: List[T],
         shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, int]], T],
+        convert_fn: Callable[..., T],
         transpose_fn: Callable[[T, Tuple[int, ...]], T],
         concat_fn: Callable[[List[T], int], T],
-        split_fn: Callable[[T, T, int], List[T]],
-        reshape_fn: Callable[[T, Tuple[int, int]], T]
+        make_bboxes_list_fn: Callable[[T, List[int]], List[T]]
 ) -> Tuple[T, List[T]]:
     """
     Rotate 90 degrees anti-clockwise.
@@ -122,7 +112,7 @@ def _rotate_90(
     images_shape = shape_fn(images)
     assert len(images_shape) == 4
 
-    image_width = images_shape[2]
+    image_width = convert_fn(images_shape[2])
 
     images = transpose_fn(images, (0, 2, 1, 3))[:, ::-1, :, :]
 
@@ -138,9 +128,7 @@ def _rotate_90(
     ], 1)  # Along axis 1.
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_bboxes_list(
-        bboxes_nums, all_bboxes, split_fn, reshape_fn
-    )
+    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_nums)
 
     return images, bboxes_list
 
@@ -151,6 +139,7 @@ def _crop_and_resize(
         x_offset_fractions: T,
         y_offset_fractions: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, int]], T],
         convert_fn: Callable[..., T],
         multiply_fn: Callable[[T, T], T],
         rint_fn: Callable[[T], T],
@@ -163,8 +152,7 @@ def _crop_and_resize(
         logical_and_fn: Callable[[T, T], T],
         squeeze_fn: Callable[[T], T],
         boolean_mask_fn: Callable[[T, T], T],
-        split_fn: Callable[[T, T, int], List[T]],
-        reshape_fn: Callable[[T, Tuple[int, int]], T]
+        make_bboxes_list_fn: Callable[[T, List[int]], List[T]]
 ) -> Tuple[T, List[T]]:
     """
     images: [bs, h, w, c]
@@ -244,9 +232,7 @@ def _crop_and_resize(
     all_bboxes = map_bboxes_fn(make_bboxes, bboxes_param)
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = _make_bboxes_list(
-        bboxes_nums, all_bboxes, split_fn, reshape_fn
-    )
+    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_nums)
 
     def filter_bboxes(bboxes: T) -> T:
         """
@@ -276,7 +262,7 @@ def _np_flip_left_right(
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
     return _flip_left_right(
         images, bboxes_list,
-        np.shape, np.concatenate, np.split, np.reshape
+        np.shape, np.reshape, _np_convert, np.concatenate, _np_make_bboxes_list
     )
 
 
@@ -286,7 +272,7 @@ def _np_flip_up_down(
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
     return _flip_up_down(
         images, bboxes_list,
-        np.shape, np.concatenate, np.split, np.reshape
+        np.shape, np.reshape, _np_convert, np.concatenate, _np_make_bboxes_list
     )
 
 
@@ -296,7 +282,8 @@ def _np_rotate_90(
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
     return _rotate_90(
         images, bboxes_list,
-        np.shape, np.transpose, np.concatenate, np.split, np.reshape
+        np.shape, np.reshape, _np_convert, np.transpose,
+        np.concatenate, _np_make_bboxes_list
     )
 
 
@@ -309,11 +296,11 @@ def _np_crop_and_resize(
     return _crop_and_resize(
         images, bboxes_list,
         x_offset_fractions, y_offset_fractions,
-        np.shape, np.asarray,
+        np.shape, np.reshape, _np_convert,
         _np_multiply, np.rint, np.abs, np.where,
         _np_array_map, _np_resize, _np_concat_map,
         np.concatenate, _np_logical_and, np.squeeze, _np_boolean_mask,
-        np.split, np.reshape
+        _np_make_bboxes_list
     )
 
 
@@ -323,7 +310,7 @@ def _tf_flip_left_right(
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
     return _flip_left_right(
         images, bboxes_list,
-        tf.shape, tf.concat, tf.split, tf.reshape
+        tf.shape, tf.reshape, _tf_convert, tf.concat, _tf_make_bboxes_list
     )
 
 
@@ -333,7 +320,7 @@ def _tf_flip_up_down(
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
     return _flip_up_down(
         images, bboxes_list,
-        tf.shape, tf.concat, tf.split, tf.reshape
+        tf.shape, tf.reshape, _tf_convert, tf.concat, _tf_make_bboxes_list
     )
 
 
@@ -343,7 +330,8 @@ def _tf_rotate_90(
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
     return _rotate_90(
         images, bboxes_list,
-        tf.shape, tf.transpose, tf.concat, tf.split, tf.reshape
+        tf.shape, tf.reshape, _tf_convert, tf.transpose, tf.concat,
+        _tf_make_bboxes_list
     )
 
 
@@ -356,11 +344,11 @@ def _tf_crop_and_resize(
     return _crop_and_resize(
         images, bboxes_list,
         x_offset_fractions, y_offset_fractions,
-        tf.shape, tf.convert_to_tensor,
+        tf.shape, tf.reshape, _tf_convert,
         tf.multiply, tf.math.rint, tf.abs, tf.where,
         tf.vectorized_map, tf.image.resize, tf.vectorized_map,
         tf.concat, tf.logical_and, tf.squeeze, tf.boolean_mask,
-        tf.split, tf.reshape
+        _tf_make_bboxes_list
     )
 
 

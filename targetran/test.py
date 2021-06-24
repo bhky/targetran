@@ -2,11 +2,16 @@
 Unit tests.
 """
 
+from typing import List, Tuple
+
 import numpy as np  # type: ignore
+import tensorflow as tf  # type: ignore
 import unittest
 
 from ._transform import _np_flip_left_right, _np_flip_up_down, _np_rotate_90
 from ._transform import _np_crop_and_resize
+from ._transform import _tf_flip_left_right, _tf_flip_up_down, _tf_rotate_90
+from ._transform import _tf_crop_and_resize
 
 
 ORIGINAL_IMAGES = np.array([
@@ -33,13 +38,28 @@ ORIGINAL_BBOXES_LIST = [
 ]
 
 
+def _np_to_tf(
+        images: np.ndarray,
+        bboxes_list: List[np.ndarray]
+) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    """
+    Convert Numpy arrays to TF tensors.
+    """
+    return (
+        tf.convert_to_tensor(images, dtype=tf.float32),
+        [tf.convert_to_tensor(bboxes, dtype=tf.float32)
+         for bboxes in bboxes_list]
+    )
+
+
+TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST = _np_to_tf(
+    ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
+)
+
+
 class TestTransform(unittest.TestCase):
 
     def test_flip_left_right(self) -> None:
-
-        images, bboxes_list = _np_flip_left_right(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
-        )
 
         expected_images = np.array([
             [[[3], [2], [1]],
@@ -63,6 +83,10 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
+        # Numpy.
+        images, bboxes_list = _np_flip_left_right(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
+        )
         self.assertTrue(
             np.array_equal(expected_images, images)
         )
@@ -71,11 +95,20 @@ class TestTransform(unittest.TestCase):
                 np.array_equal(expected_bboxes, bboxes)
             )
 
-    def test_flip_up_down(self) -> None:
-
-        images, bboxes_list = _np_flip_up_down(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
+        # TF.
+        tf_expected_images, tf_expected_bboxes_list = _np_to_tf(
+            expected_images, expected_bboxes_list
         )
+        tf_images, tf_bboxes_list = _tf_flip_left_right(
+            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST
+        )
+
+        self.assertTrue(tf.equal(tf_expected_images, tf_images))
+        for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
+                                           tf_bboxes_list):
+            self.assertTrue(tf.equal(expected_bboxes, bboxes))
+
+    def test_flip_up_down(self) -> None:
 
         expected_images = np.array([
             [[[7], [8], [9]],
@@ -99,19 +132,31 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
-        self.assertTrue(
-            np.array_equal(expected_images, images)
+        # Numpy.
+        images, bboxes_list = _np_flip_up_down(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
         )
+
+        self.assertTrue(np.array_equal(expected_images, images))
         for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
             self.assertTrue(
                 np.array_equal(expected_bboxes, bboxes)
             )
 
-    def test_rotate_90(self) -> None:
-
-        images, bboxes_list = _np_rotate_90(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
+        # TF.
+        tf_expected_images, tf_expected_bboxes_list = _np_to_tf(
+            expected_images, expected_bboxes_list
         )
+        tf_images, tf_bboxes_list = _tf_flip_up_down(
+            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST
+        )
+
+        self.assertTrue(tf.equal(tf_expected_images, tf_images))
+        for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
+                                           tf_bboxes_list):
+            self.assertTrue(tf.equal(expected_bboxes, bboxes))
+
+    def test_rotate_90(self) -> None:
 
         expected_images = np.array([
             [[[3], [6], [9]],
@@ -135,17 +180,32 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
+        # Numpy.
+        images, bboxes_list = _np_rotate_90(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
+        )
         self.assertTrue(
             np.array_equal(expected_images, images)
         )
         for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
-            self.assertTrue(
-                np.array_equal(expected_bboxes, bboxes)
-            )
+            self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+
+        # TF.
+        tf_expected_images, tf_expected_bboxes_list = _np_to_tf(
+            expected_images, expected_bboxes_list
+        )
+        tf_images, tf_bboxes_list = _tf_rotate_90(
+            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST
+        )
+
+        self.assertTrue(tf.equal(tf_expected_images, tf_images))
+        for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
+                                           tf_bboxes_list):
+            self.assertTrue(tf.equal(expected_bboxes, bboxes))
 
     def test_crop_and_resize(self) -> None:
 
-        original_images = np.random.rand(4, 128, 128, 3)
+        dummy_images = np.random.rand(4, 128, 128, 3)
         original_bboxes_list = [
             np.array([
                 [64, 52, 20, 24],
@@ -178,15 +238,29 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
+        # Numpy.
         _, bboxes_list = _np_crop_and_resize(
-            original_images, original_bboxes_list,
+            dummy_images, original_bboxes_list,
             x_offset_fractions, y_offset_fractions
         )
-
         for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
-            self.assertTrue(
-                np.allclose(expected_bboxes, bboxes)
-            )
+            self.assertTrue(np.allclose(expected_bboxes, bboxes))
+
+        # TF.
+        tf_dummy_images, tf_original_bboxes_list = _np_to_tf(
+            dummy_images, original_bboxes_list
+        )
+        _, tf_expected_bboxes_list = _np_to_tf(
+            dummy_images, expected_bboxes_list
+        )
+        _, tf_bboxes_list = _tf_crop_and_resize(
+            tf_dummy_images, tf_original_bboxes_list,
+            tf.convert_to_tensor(x_offset_fractions),
+            tf.convert_to_tensor(y_offset_fractions)
+        )
+        for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
+                                           tf_bboxes_list):
+            self.assertTrue(tf.equal(expected_bboxes, bboxes))
 
 
 if __name__ == "__main__":
