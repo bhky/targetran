@@ -2,10 +2,15 @@
 Image and target transform utilities.
 """
 
-from typing import Callable, List, Tuple, TypeVar
+from typing import Any, Callable, List, Tuple, TypeVar
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
+
+from ._functional import _np_resize, _np_boolean_mask
+from ._functional import _np_multiply, _np_logical_and
+from ._functional import _np_array_map, _np_concat_map
+
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
 
@@ -295,6 +300,23 @@ def _np_rotate_90(
     )
 
 
+def _np_crop_and_resize(
+        images: np.ndarray,
+        bboxes_list: List[np.ndarray],
+        x_offset_fractions: np.ndarray,
+        y_offset_fractions: np.ndarray
+) -> Tuple[np.ndarray, List[np.ndarray]]:
+    return _crop_and_resize(
+        images, bboxes_list,
+        x_offset_fractions, y_offset_fractions,
+        np.shape, np.asarray,
+        _np_multiply, np.rint, np.abs, np.where,
+        _np_array_map, _np_resize, _np_concat_map,
+        np.concatenate, _np_logical_and, np.squeeze, _np_boolean_mask,
+        np.split, np.reshape
+    )
+
+
 def _tf_flip_left_right(
         images: tf.Tensor,
         bboxes_list: List[tf.Tensor]
@@ -325,12 +347,28 @@ def _tf_rotate_90(
     )
 
 
+def _tf_crop_and_resize(
+        images: tf.Tensor,
+        bboxes_list: List[tf.Tensor],
+        x_offset_fractions: tf.Tensor,
+        y_offset_fractions: tf.Tensor
+) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    return _crop_and_resize(
+        images, bboxes_list,
+        x_offset_fractions, y_offset_fractions,
+        tf.shape, tf.convert_to_tensor,
+        tf.multiply, tf.math.rint, tf.abs, tf.where,
+        tf.vectorized_map, tf.image.resize, tf.vectorized_map,
+        tf.concat, tf.logical_and, tf.squeeze, tf.boolean_mask,
+        tf.split, tf.reshape
+    )
+
+
 class _TFRandomBase:
 
     def __init__(
             self,
-            tf_fn: Callable[[tf.Tensor, List[tf.Tensor]],
-                            Tuple[tf.Tensor, List[tf.Tensor]]],
+            tf_fn: Callable[..., Tuple[tf.Tensor, List[tf.Tensor]]],
             flip_probability: float,
             seed: int,
     ) -> None:
@@ -338,16 +376,18 @@ class _TFRandomBase:
         self.flip_probability = flip_probability
         self.seed = seed
 
-    def __call__(
+    def call(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor]
+            bboxes_list: List[tf.Tensor],
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
 
         rand = tf.random.uniform(shape=tf.shape(images)[:1], seed=self.seed)
         output: Tuple[tf.Tensor, List[tf.Tensor]] = tf.where(
             tf.less(rand, self.flip_probability),
-            self._tf_fn(images, bboxes_list),
+            self._tf_fn(images, bboxes_list, *args, **kwargs),
             (images, bboxes_list)
         )
         return output
@@ -358,14 +398,55 @@ class TFRandomFlipLeftRight(_TFRandomBase):
     def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_tf_flip_left_right, flip_probability, seed)
 
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_list: List[tf.Tensor]
+    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        return super().call(images, bboxes_list)
+
 
 class TFRandomFlipUpDown(_TFRandomBase):
 
     def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_tf_flip_up_down, flip_probability, seed)
 
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_list: List[tf.Tensor]
+    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        return super().call(images, bboxes_list)
+
 
 class TFRandomRotate90(_TFRandomBase):
 
     def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_tf_rotate_90, flip_probability, seed)
+
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_list: List[tf.Tensor]
+    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        return super().call(images, bboxes_list)
+
+
+class TFRandomCropAndResize(_TFRandomBase):
+
+    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_crop_and_resize, flip_probability, seed)
+
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_list: List[tf.Tensor],
+            x_offset_fractions: tf.Tensor,
+            y_offset_fractions: tf.Tensor
+    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        return super().call(
+            images,
+            bboxes_list,
+            x_offset_fractions,
+            y_offset_fractions
+        )

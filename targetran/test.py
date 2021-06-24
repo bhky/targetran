@@ -6,10 +6,7 @@ import numpy as np  # type: ignore
 import unittest
 
 from ._transform import _np_flip_left_right, _np_flip_up_down, _np_rotate_90
-from ._transform import _crop_and_resize
-from ._functional import _np_resize, _np_boolean_mask
-from ._functional import _np_multiply, _np_logical_and
-from ._functional import _np_array_map, _np_concat_map
+from ._transform import _np_crop_and_resize
 
 
 ORIGINAL_IMAGES = np.array([
@@ -181,13 +178,9 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
-        _, bboxes_list = _crop_and_resize(
+        _, bboxes_list = _np_crop_and_resize(
             original_images, original_bboxes_list,
-            x_offset_fractions, y_offset_fractions,
-            np.shape, np.asarray, _np_multiply, np.rint, np.abs, np.where,
-            _np_array_map, _np_resize, _np_concat_map,
-            np.concatenate, _np_logical_and, np.squeeze, _np_boolean_mask,
-            np.split, np.reshape
+            x_offset_fractions, y_offset_fractions
         )
 
         for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
