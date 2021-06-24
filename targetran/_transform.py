@@ -9,7 +9,7 @@ import tensorflow as tf  # type: ignore
 
 from ._functional import _np_convert, _np_resize, _np_boolean_mask
 from ._functional import _np_multiply, _np_logical_and
-from ._functional import _np_array_map, _np_concat_map, _np_make_bboxes_list
+from ._functional import _np_map, _np_make_bboxes_list
 from ._functional import _tf_convert, _tf_make_bboxes_list
 
 
@@ -145,14 +145,12 @@ def _crop_and_resize(
         rint_fn: Callable[[T], T],
         abs_fn: Callable[[T], T],
         where_fn: Callable[[T, T, T], T],
-        map_image_fn: Callable[[Callable[[T], T], T], T],
+        map_fn: Callable[[Callable[[T], T], T], T],
         resize_fn: Callable[[T, Tuple[int, int]], T],
-        map_bboxes_fn: Callable[[Callable[[T], T], T], T],
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
-        squeeze_fn: Callable[[T], T],
+        squeeze_fn: Callable[[T, int], T],
         boolean_mask_fn: Callable[[T, T], T],
-        make_bboxes_list_fn: Callable[[T, List[int]], List[T]]
 ) -> Tuple[T, List[T]]:
     """
     images: [bs, h, w, c]
@@ -196,10 +194,12 @@ def _crop_and_resize(
     image_param = convert_fn(list(zip(
         image_idxes, tops, lefts, bottoms, rights
     )))
-    cropped_images = map_image_fn(crop, image_param)
+    cropped_images = map_fn(crop, image_param)
 
-    images = resize_fn(cropped_images, (image_height, image_width))
-    assert shape_fn(images)[1:3] == (image_height, image_width)
+    new_images = resize_fn(cropped_images, (image_height, image_width))
+    new_images_shape = shape_fn(new_images)
+    assert int(new_images_shape[1]) == image_height
+    assert int(new_images_shape[2]) == image_width
 
     bboxes_list = _reshape_bboxes(bboxes_list, reshape_fn)
 
@@ -229,10 +229,7 @@ def _crop_and_resize(
         image_idxes, offset_heights, offset_widths,
         cropped_image_widths, cropped_image_heights
     )))
-    all_bboxes = map_bboxes_fn(make_bboxes, bboxes_param)
-
-    bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_nums)
+    bboxes_list = [make_bboxes(p) for p in bboxes_param]
 
     def filter_bboxes(bboxes: T) -> T:
         """
@@ -247,7 +244,7 @@ def _crop_and_resize(
         included = squeeze_fn(logical_and_fn(
             logical_and_fn(xs >= 0, xmaxs <= image_width),
             logical_and_fn(ys >= 0, ymaxs <= image_height)
-        ))
+        ), -1)  # Squeeze along the last axis.
         return boolean_mask_fn(bboxes, included)
 
     new_bboxes_list = [
@@ -298,9 +295,8 @@ def _np_crop_and_resize(
         x_offset_fractions, y_offset_fractions,
         np.shape, np.reshape, _np_convert,
         _np_multiply, np.rint, np.abs, np.where,
-        _np_array_map, _np_resize, _np_concat_map,
-        np.concatenate, _np_logical_and, np.squeeze, _np_boolean_mask,
-        _np_make_bboxes_list
+        _np_map, _np_resize, np.concatenate,
+        _np_logical_and, np.squeeze, _np_boolean_mask
     )
 
 
@@ -346,9 +342,8 @@ def _tf_crop_and_resize(
         x_offset_fractions, y_offset_fractions,
         tf.shape, tf.reshape, _tf_convert,
         tf.multiply, tf.math.rint, tf.abs, tf.where,
-        tf.vectorized_map, tf.image.resize, tf.vectorized_map,
-        tf.concat, tf.logical_and, tf.squeeze, tf.boolean_mask,
-        _tf_make_bboxes_list
+        tf.map_fn, tf.image.resize, tf.concat,
+        tf.logical_and, tf.squeeze, tf.boolean_mask
     )
 
 

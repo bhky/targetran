@@ -91,9 +91,7 @@ class TestTransform(unittest.TestCase):
             np.array_equal(expected_images, images)
         )
         for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
-            self.assertTrue(
-                np.array_equal(expected_bboxes, bboxes)
-            )
+            self.assertTrue(np.array_equal(expected_bboxes, bboxes))
 
         # TF.
         tf_expected_images, tf_expected_bboxes_list = _np_to_tf(
@@ -103,10 +101,14 @@ class TestTransform(unittest.TestCase):
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST
         )
 
-        self.assertTrue(tf.equal(tf_expected_images, tf_images))
+        self.assertTrue(
+            np.array_equal(tf_expected_images.numpy(), tf_images.numpy())
+        )
         for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
                                            tf_bboxes_list):
-            self.assertTrue(tf.equal(expected_bboxes, bboxes))
+            self.assertTrue(
+                np.array_equal(expected_bboxes.numpy(), bboxes.numpy())
+            )
 
     def test_flip_up_down(self) -> None:
 
@@ -139,9 +141,7 @@ class TestTransform(unittest.TestCase):
 
         self.assertTrue(np.array_equal(expected_images, images))
         for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
-            self.assertTrue(
-                np.array_equal(expected_bboxes, bboxes)
-            )
+            self.assertTrue(np.array_equal(expected_bboxes, bboxes))
 
         # TF.
         tf_expected_images, tf_expected_bboxes_list = _np_to_tf(
@@ -151,10 +151,14 @@ class TestTransform(unittest.TestCase):
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST
         )
 
-        self.assertTrue(tf.equal(tf_expected_images, tf_images))
+        self.assertTrue(
+            np.array_equal(tf_expected_images.numpy(), tf_images.numpy())
+        )
         for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
                                            tf_bboxes_list):
-            self.assertTrue(tf.equal(expected_bboxes, bboxes))
+            self.assertTrue(
+                np.array_equal(expected_bboxes.numpy(), bboxes.numpy())
+            )
 
     def test_rotate_90(self) -> None:
 
@@ -198,10 +202,14 @@ class TestTransform(unittest.TestCase):
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST
         )
 
-        self.assertTrue(tf.equal(tf_expected_images, tf_images))
+        self.assertTrue(
+            np.array_equal(tf_expected_images.numpy(), tf_images.numpy())
+        )
         for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
                                            tf_bboxes_list):
-            self.assertTrue(tf.equal(expected_bboxes, bboxes))
+            self.assertTrue(
+                np.array_equal(expected_bboxes.numpy(), bboxes.numpy())
+            )
 
     def test_crop_and_resize(self) -> None:
 
@@ -260,7 +268,9 @@ class TestTransform(unittest.TestCase):
         )
         for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
                                            tf_bboxes_list):
-            self.assertTrue(tf.equal(expected_bboxes, bboxes))
+            self.assertTrue(
+                np.allclose(expected_bboxes.numpy(), bboxes.numpy())
+            )
 
 
 if __name__ == "__main__":
