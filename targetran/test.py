@@ -22,17 +22,17 @@ ORIGINAL_IMAGES = np.array([
     [[[21], [22], [23]],
      [[24], [25], [26]],
      [[27], [28], [29]]],
-])
+], dtype=np.float32)
 
 ORIGINAL_BBOXES_LIST = [
     np.array([
         [1, 0, 2, 2],
         [0, 1, 3, 2],
-    ]),
+    ], dtype=np.float32),
     np.array([
         [0, 0, 2, 3],
-    ]),
-    np.array([]).reshape(-1, 4),
+    ], dtype=np.float32),
+    np.array([], dtype=np.float32).reshape(-1, 4),
 ]
 
 
@@ -54,16 +54,16 @@ class TestTransform(unittest.TestCase):
             [[[23], [22], [21]],
              [[26], [25], [24]],
              [[29], [28], [27]]],
-        ])
+        ], dtype=np.float32)
         expected_bboxes_list = [
             np.array([
                 [0, 0, 2, 2],
                 [0, 1, 3, 2],
-            ]),
+            ], dtype=np.float32),
             np.array([
                 [1, 0, 2, 3],
-            ]),
-            np.array([]).reshape(-1, 4),
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
         self.assertTrue(
@@ -90,16 +90,16 @@ class TestTransform(unittest.TestCase):
             [[[27], [28], [29]],
              [[24], [25], [26]],
              [[21], [22], [23]]],
-        ])
+        ], dtype=np.float32)
         expected_bboxes_list = [
             np.array([
                 [1, 1, 2, 2],
                 [0, 0, 3, 2],
-            ]),
+            ], dtype=np.float32),
             np.array([
                 [0, 0, 2, 3],
-            ]),
-            np.array([]).reshape(-1, 4),
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
         self.assertTrue(
@@ -126,16 +126,16 @@ class TestTransform(unittest.TestCase):
             [[[23], [26], [29]],
              [[22], [25], [28]],
              [[21], [24], [27]]],
-        ])
+        ], dtype=np.float32)
         expected_bboxes_list = [
             np.array([
                 [0, 0, 2, 2],
                 [1, 0, 2, 3],
-            ]),
+            ], dtype=np.float32),
             np.array([
                 [0, 1, 3, 2],
-            ]),
-            np.array([]).reshape(-1, 4),
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
         self.assertTrue(
@@ -153,30 +153,32 @@ class TestTransform(unittest.TestCase):
             np.array([
                 [64, 52, 20, 24],
                 [44, 48, 12, 8],
-            ]),
+            ], dtype=np.float32),
             np.array([
                 [24, 12, 20, 24],
                 [108, 120, 12, 8],
-            ]),
+            ], dtype=np.float32),
             np.array([
                 [108, 120, 12, 8],
-            ]),
-            np.array([]).reshape(-1, 4),
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
-        x_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25])
-        y_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25])
+        x_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25],
+                                      dtype=np.float32)
+        y_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25],
+                                      dtype=np.float32)
         f = 4 / 3
         expected_bboxes_list = [
             np.array([
                 [32 * f, 20 * f, 20 * f, 24 * f],
                 [12 * f, 16 * f, 12 * f, 8 * f],
-            ]),
+            ], dtype=np.float32),
             np.array([
                 [56 * f, 44 * f, 20 * f, 24 * f],
-            ]),
-            np.array([]).reshape(-1, 4),
-            np.array([]).reshape(-1, 4),
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
+            np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
         _, bboxes_list = _crop_and_resize(
