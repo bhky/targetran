@@ -229,9 +229,9 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
 
-        x_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25],
+        x_offset_fractions = np.array([0.25, -0.25, -0.25, 0.2],
                                       dtype=np.float32)
-        y_offset_fractions = np.array([0.25, -0.25, -0.25, 0.25],
+        y_offset_fractions = np.array([0.25, -0.25, -0.25, -0.1],
                                       dtype=np.float32)
         f = 4 / 3
         expected_bboxes_list = [
