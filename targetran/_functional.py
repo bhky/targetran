@@ -21,16 +21,16 @@ def _np_logical_and(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.logical_and(x, y)
 
 
-def _np_resize_images(
-        images: np.ndarray,
+def _np_resize_image(
+        image: np.ndarray,
         dest_size: Tuple[int, int]
 ) -> np.ndarray:
     """
     dest_size: (height, width)
     """
-    h_factor = dest_size[0] / images.shape[1]
-    w_factor = dest_size[1] / images.shape[2]
-    return scipy.ndimage.zoom(images, (1.0, h_factor, w_factor, 1.0))
+    h_factor = dest_size[0] / image.shape[0]
+    w_factor = dest_size[1] / image.shape[1]
+    return scipy.ndimage.zoom(image, (h_factor, w_factor, 1.0))
 
 
 def _np_boolean_mask(x: np.ndarray, mask: np.ndarray) -> np.ndarray:
@@ -53,14 +53,14 @@ def _tf_convert(x: Any) -> tf.Tensor:
     return tf.convert_to_tensor(np.array(x), dtype=tf.float32)
 
 
-def _tf_resize_images(
-        images: tf.Tensor,
+def _tf_resize_image(
+        image: tf.Tensor,
         dest_size: Tuple[int, int]
 ) -> tf.Tensor:
     """
     dest_size: (height, width)
     """
-    return tf.image.resize(images, size=dest_size)
+    return tf.image.resize(image, size=dest_size)
 
 
 def _tf_make_bboxes_list(

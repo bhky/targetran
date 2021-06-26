@@ -7,9 +7,9 @@ from typing import Any, Callable, List, Tuple, TypeVar
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
-from ._functional import _np_convert, _np_resize_images, _np_boolean_mask
+from ._functional import _np_convert, _np_resize_image, _np_boolean_mask
 from ._functional import _np_multiply, _np_logical_and, _np_make_bboxes_list
-from ._functional import _tf_convert, _tf_resize_images, _tf_make_bboxes_list
+from ._functional import _tf_convert, _tf_resize_image, _tf_make_bboxes_list
 
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
@@ -133,37 +133,34 @@ def _rotate_90(
 
 
 def _resize(
-        images: T,
-        bboxes_list: List[T],
+        image: T,
+        bboxes: T,
         dest_size: Tuple[int, int],
         shape_fn: Callable[[T], Tuple[int, ...]],
-        resize_images_fn: Callable[[T, Tuple[int, int]], T],
+        resize_image_fn: Callable[[T, Tuple[int, int]], T],
         convert_fn: Callable[..., T],
         concat_fn: Callable[[List[T], int], T],
-) -> Tuple[T, List[T]]:
+) -> Tuple[T, T]:
     """
-    images: [bs, h, w, c]
+    image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     dest_size: (height, width)
     """
-    images_shape = shape_fn(images)
-    assert len(images_shape) == 4
+    image_shape = shape_fn(image)
+    assert len(image_shape) == 3
 
-    images = resize_images_fn(images, dest_size)
+    image = resize_image_fn(image, dest_size)
 
-    w = convert_fn(dest_size[1] / images_shape[2])
-    h = convert_fn(dest_size[0] / images_shape[1])
+    w = convert_fn(dest_size[1] / image_shape[1])
+    h = convert_fn(dest_size[0] / image_shape[0])
 
-    def resize_bboxes(bboxes: T) -> T:
-        xs = bboxes[:, :1] * w
-        ys = bboxes[:, 1:2] * h
-        widths = bboxes[:, 2:3] * w
-        heights = bboxes[:, 3:] * h
-        return concat_fn([xs, ys, widths, heights], 1)
+    xs = bboxes[:, :1] * w
+    ys = bboxes[:, 1:2] * h
+    widths = bboxes[:, 2:3] * w
+    heights = bboxes[:, 3:] * h
+    bboxes = concat_fn([xs, ys, widths, heights], 1)
 
-    bboxes_list = [resize_bboxes(bboxes) for bboxes in bboxes_list]
-
-    return images, bboxes_list
+    return image, bboxes
 
 
 def _crop_single(
@@ -285,13 +282,16 @@ def _np_crop_and_resize(
             images, bboxes_list, x_offset_fractions, y_offset_fractions
         )
     ]
+    tuples = [
+        _resize(
+            image, bboxes,
+            images_shape[1:3], np.shape, _np_resize_image,
+            _np_convert, np.concatenate
+        ) for image, bboxes in tuples
+    ]
     image_list, bboxes_list = zip(*tuples)
     images = np.array(image_list)
-    return _resize(
-        images, bboxes_list,
-        images_shape[1:3], np.shape, _np_resize_images,
-        _np_convert, np.concatenate
-    )
+    return images, bboxes_list
 
 
 def _tf_flip_left_right(
@@ -346,13 +346,16 @@ def _tf_crop_and_resize(
             images, bboxes_list, x_offset_fractions, y_offset_fractions
         )
     ]
+    tuples = [
+        _resize(
+            image, bboxes,
+            images_shape[1:3], tf.shape, _tf_resize_image,
+            _tf_convert, tf.concat
+        ) for image, bboxes in tuples
+    ]
     image_list, bboxes_list = zip(*tuples)
     images = tf.convert_to_tensor(image_list)
-    return _resize(
-        images, bboxes_list,
-        images_shape[1:3], tf.shape, _tf_resize_images,
-        _tf_convert, tf.concat
-    )
+    return images, bboxes_list
 
 
 class _TFRandomBase:
