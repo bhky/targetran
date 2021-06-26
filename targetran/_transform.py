@@ -7,10 +7,9 @@ from typing import Any, Callable, List, Tuple, TypeVar
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
-from ._functional import _np_convert, _np_resize, _np_boolean_mask
-from ._functional import _np_multiply, _np_logical_and
-from ._functional import _np_map, _np_make_bboxes_list
-from ._functional import _tf_convert, _tf_make_bboxes_list
+from ._functional import _np_convert, _np_resize_images, _np_boolean_mask
+from ._functional import _np_multiply, _np_logical_and, _np_make_bboxes_list
+from ._functional import _tf_convert, _tf_resize_images, _tf_make_bboxes_list
 
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
@@ -133,11 +132,45 @@ def _rotate_90(
     return images, bboxes_list
 
 
-def _crop_and_resize(
+def _resize(
         images: T,
         bboxes_list: List[T],
-        x_offset_fractions: T,
-        y_offset_fractions: T,
+        dest_size: Tuple[int, int],
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        resize_images_fn: Callable[[T, Tuple[int, int]], T],
+        convert_fn: Callable[..., T],
+        concat_fn: Callable[[List[T], int], T],
+) -> Tuple[T, List[T]]:
+    """
+    images: [bs, h, w, c]
+    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    dest_size: (height, width)
+    """
+    images_shape = shape_fn(images)
+    assert len(images_shape) == 4
+
+    images = resize_images_fn(images, dest_size)
+
+    w = convert_fn(dest_size[1] / images_shape[2])
+    h = convert_fn(dest_size[0] / images_shape[1])
+
+    def resize_bboxes(bboxes: T) -> T:
+        xs = bboxes[:, :1] * w
+        ys = bboxes[:, 1:2] * h
+        widths = bboxes[:, 2:3] * w
+        heights = bboxes[:, 3:] * h
+        return concat_fn([xs, ys, widths, heights], 1)
+
+    bboxes_list = [resize_bboxes(bboxes) for bboxes in bboxes_list]
+
+    return images, bboxes_list
+
+
+def _crop_single(
+        image: T,
+        bboxes: T,
+        x_offset_fraction: float,
+        y_offset_fraction: float,
         shape_fn: Callable[[T], Tuple[int, ...]],
         reshape_fn: Callable[[T, Tuple[int, int]], T],
         convert_fn: Callable[..., T],
@@ -145,112 +178,59 @@ def _crop_and_resize(
         rint_fn: Callable[[T], T],
         abs_fn: Callable[[T], T],
         where_fn: Callable[[T, T, T], T],
-        map_fn: Callable[[Callable[[T], T], T], T],
-        resize_fn: Callable[[T, Tuple[int, int]], T],
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
         squeeze_fn: Callable[[T, int], T],
         boolean_mask_fn: Callable[[T, T], T],
-) -> Tuple[T, List[T]]:
+) -> Tuple[T, T]:
     """
-    images: [bs, h, w, c]
+    image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
-    offset_fractions: array of floats in [0.0, 1.0).
+    offset_fraction: float in [0.0, 1.0)
     """
-    images_shape = shape_fn(images)
-    assert len(images_shape) == 4
-    assert images_shape[0] == len(x_offset_fractions) == len(y_offset_fractions)
+    image_shape = shape_fn(image)
+    assert len(image_shape) == 3
 
-    image_height, image_width = images_shape[1:3]
+    image_height, image_width = image_shape[0:2]
     image_height = convert_fn(image_height)
     image_width = convert_fn(image_width)
+    x_offset_fraction = convert_fn(x_offset_fraction)
+    y_offset_fraction = convert_fn(y_offset_fraction)
 
     # Positive means the image move downward w.r.t. the original.
-    offset_heights = rint_fn(multiply_fn(y_offset_fractions, image_height))
+    offset_height = rint_fn(multiply_fn(y_offset_fraction, image_height))
     # Positive means the image move to the right w.r.t. the original.
-    offset_widths = rint_fn(multiply_fn(x_offset_fractions, image_width))
+    offset_width = rint_fn(multiply_fn(x_offset_fraction, image_width))
 
-    cropped_image_heights = image_height - abs_fn(offset_heights)
-    cropped_image_widths = image_width - abs_fn(offset_widths)
+    cropped_image_height = image_height - abs_fn(offset_height)
+    cropped_image_width = image_width - abs_fn(offset_width)
 
-    tops = where_fn(offset_heights > 0, convert_fn(0), -offset_heights)
-    lefts = where_fn(offset_widths > 0, convert_fn(0), -offset_widths)
-    bottoms = tops + cropped_image_heights
-    rights = lefts + cropped_image_widths
+    top = where_fn(offset_height > 0, convert_fn(0), -offset_height)
+    left = where_fn(offset_width > 0, convert_fn(0), -offset_width)
+    bottom = top + cropped_image_height
+    right = left + cropped_image_width
 
-    image_idxes = list(range(images_shape[0]))
+    # Crop image.
+    image = image[int(top):int(bottom), int(left):int(right), :]
 
-    def crop(p: T) -> T:
-        """
-        p: (image_idx, top, left, bottom, right)
-        """
-        return images[
-           int(p[0]),
-           int(p[1]):int(p[3]),
-           int(p[2]):int(p[4]),
-           :
-        ]
+    # Translate bboxes.
+    bboxes = reshape_fn(bboxes, (-1, 4))
+    xs = bboxes[:, :1] - offset_width
+    ys = bboxes[:, 1:2] - offset_height
+    widths = bboxes[:, 2:3]
+    heights = bboxes[:, 3:]
+    bboxes = concat_fn([xs, ys, widths, heights], 1)
 
-    image_param = convert_fn(list(zip(
-        image_idxes, tops, lefts, bottoms, rights
-    )))
-    cropped_images = map_fn(crop, image_param)
+    # Filter bboxes.
+    xmaxs = xs + widths
+    ymaxs = ys + heights
+    included = squeeze_fn(logical_and_fn(
+        logical_and_fn(xs >= 0, xmaxs <= image_width),
+        logical_and_fn(ys >= 0, ymaxs <= image_height)
+    ), -1)  # Squeeze along the last axis.
+    bboxes = boolean_mask_fn(bboxes, included)
 
-    new_images = resize_fn(cropped_images, (image_height, image_width))
-    new_images_shape = shape_fn(new_images)
-    assert int(new_images_shape[1]) == image_height
-    assert int(new_images_shape[2]) == image_width
-
-    bboxes_list = _reshape_bboxes(bboxes_list, reshape_fn)
-
-    def make_bboxes(p: T) -> T:
-        """
-        p: (image_idx, offset_height, offset_width,
-            cropped_image_width, cropped_image_height)
-        """
-        idx, h_offset, w_offset, cropped_image_width, cropped_image_height = p
-        bboxes = bboxes_list[int(idx)]
-
-        # Translation.
-        xs = bboxes[:, :1] - w_offset
-        ys = bboxes[:, 1:2] - h_offset
-
-        # Resizing.
-        w = image_width / cropped_image_width
-        h = image_height / cropped_image_height
-        xs = xs * w
-        widths = bboxes[:, 2:3] * w
-        ys = ys * h
-        heights = bboxes[:, 3:] * h
-
-        return concat_fn([xs, ys, widths, heights], 1)
-
-    bboxes_param = convert_fn(list(zip(
-        image_idxes, offset_heights, offset_widths,
-        cropped_image_widths, cropped_image_heights
-    )))
-    bboxes_list = [make_bboxes(p) for p in bboxes_param]
-
-    def filter_bboxes(bboxes: T) -> T:
-        """
-        Excluding bboxes out of image.
-        """
-        xs = bboxes[:, :1]
-        ys = bboxes[:, 1:2]
-        widths = bboxes[:, 2:3]
-        heights = bboxes[:, 3:]
-        xmaxs = xs + widths
-        ymaxs = ys + heights
-        included = squeeze_fn(logical_and_fn(
-            logical_and_fn(xs >= 0, xmaxs <= image_width),
-            logical_and_fn(ys >= 0, ymaxs <= image_height)
-        ), -1)  # Squeeze along the last axis.
-        return boolean_mask_fn(bboxes, included)
-
-    new_bboxes_list = [
-        filter_bboxes(bboxes) for bboxes in bboxes_list
-    ]
-    return images, new_bboxes_list
+    return image, bboxes
 
 
 def _np_flip_left_right(
@@ -290,13 +270,27 @@ def _np_crop_and_resize(
         x_offset_fractions: np.ndarray,
         y_offset_fractions: np.ndarray
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
-    return _crop_and_resize(
+
+    images_shape = np.shape(images)
+    assert len(images_shape) == 4
+
+    tuples = [
+        _crop_single(
+            image, bboxes,
+            x_offset_fraction, y_offset_fraction,
+            np.shape, np.reshape, _np_convert,
+            _np_multiply, np.rint, np.abs, np.where, np.concatenate,
+            _np_logical_and, np.squeeze, _np_boolean_mask
+        ) for image, bboxes, x_offset_fraction, y_offset_fraction in zip(
+            images, bboxes_list, x_offset_fractions, y_offset_fractions
+        )
+    ]
+    image_list, bboxes_list = zip(*tuples)
+    images = np.array(image_list)
+    return _resize(
         images, bboxes_list,
-        x_offset_fractions, y_offset_fractions,
-        np.shape, np.reshape, _np_convert,
-        _np_multiply, np.rint, np.abs, np.where,
-        _np_map, _np_resize, np.concatenate,
-        _np_logical_and, np.squeeze, _np_boolean_mask
+        images_shape[1:3], np.shape, _np_resize_images,
+        _np_convert, np.concatenate
     )
 
 
@@ -337,13 +331,27 @@ def _tf_crop_and_resize(
         x_offset_fractions: tf.Tensor,
         y_offset_fractions: tf.Tensor
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-    return _crop_and_resize(
+
+    images_shape = np.shape(images)
+    assert len(images_shape) == 4
+
+    tuples = [
+        _crop_single(
+            image, bboxes,
+            x_offset_fraction, y_offset_fraction,
+            tf.shape, tf.reshape, _tf_convert,
+            tf.multiply, tf.math.rint, tf.abs, tf.where, tf.concat,
+            tf.logical_and, tf.squeeze, tf.boolean_mask
+        ) for image, bboxes, x_offset_fraction, y_offset_fraction in zip(
+            images, bboxes_list, x_offset_fractions, y_offset_fractions
+        )
+    ]
+    image_list, bboxes_list = zip(*tuples)
+    images = tf.convert_to_tensor(image_list)
+    return _resize(
         images, bboxes_list,
-        x_offset_fractions, y_offset_fractions,
-        tf.shape, tf.reshape, _tf_convert,
-        tf.multiply, tf.math.rint, tf.abs, tf.where,
-        tf.map_fn, tf.image.resize, tf.concat,
-        tf.logical_and, tf.squeeze, tf.boolean_mask
+        images_shape[1:3], tf.shape, _tf_resize_images,
+        _tf_convert, tf.concat
     )
 
 
