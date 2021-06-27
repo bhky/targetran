@@ -132,6 +132,45 @@ def _rotate_90(
     return images, bboxes_list
 
 
+def _pad(
+        images: T,
+        bboxes_list: List[T],
+        pad_offsets: Tuple[int, int, int, int],
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        convert_fn: Callable[..., T],
+        pad_images_fn: Callable[[T, Tuple[int, int, int, int]], T],
+        reshape_fn: Callable[[T, Tuple[int, int]], T],
+        concat_fn: Callable[[List[T], int], T],
+        make_bboxes_list_fn: Callable[[T, List[int]], List[T]]
+) -> Tuple[T, List[T]]:
+    """
+    images: [bs, h, w, c]
+    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    pad_offsets: (top, bottom, left, right)
+    """
+    images_shape = shape_fn(images)
+    assert len(images_shape) == 4
+    pad_offsets = convert_fn(pad_offsets)
+
+    images = pad_images_fn(images, pad_offsets)
+
+    bboxes_list = _reshape_bboxes(bboxes_list, reshape_fn)
+    all_bboxes = concat_fn(bboxes_list, 0)  # Along axis 0.
+    assert shape_fn(all_bboxes)[-1] == 4
+
+    all_bboxes = concat_fn([
+        all_bboxes[:, :1] + pad_offsets[2],
+        all_bboxes[:, 1:2] + pad_offsets[0],
+        all_bboxes[:, 2:3] + pad_offsets[2],
+        all_bboxes[:, 3:] + pad_offsets[0],
+    ], 1)  # Along axis 1.
+
+    bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
+    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_nums)
+
+    return images, bboxes_list
+
+
 def _resize(
         image: T,
         bboxes: T,
