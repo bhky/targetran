@@ -342,16 +342,29 @@ def _np_rotate_90(
     )
 
 
+def _np_resize(
+        images: np.ndarray,
+        bboxes_list: List[np.ndarray],
+        dest_size: Tuple[int, int]
+) -> Tuple[np.ndarray, List[np.ndarray]]:
+    tuples = [
+        _resize(
+            image, bboxes,
+            dest_size, np.shape, _np_resize_image,
+            _np_convert, np.concatenate
+        ) for image, bboxes in zip(images, bboxes_list)
+    ]
+    image_list, bboxes_list = zip(*tuples)
+    images = _np_convert(image_list)
+    return images, bboxes_list
+
+
 def _np_crop_and_resize(
         images: np.ndarray,
         bboxes_list: List[np.ndarray],
         x_offset_fractions: np.ndarray,
         y_offset_fractions: np.ndarray
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
-
-    images_shape = np.shape(images)
-    assert len(images_shape) == 4
-
     tuples = [
         _crop_single(
             image, bboxes,
@@ -366,12 +379,12 @@ def _np_crop_and_resize(
     tuples = [
         _resize(
             image, bboxes,
-            images_shape[1:3], np.shape, _np_resize_image,
+            np.shape(images)[1:3], np.shape, _np_resize_image,
             _np_convert, np.concatenate
         ) for image, bboxes in tuples
     ]
     image_list, bboxes_list = zip(*tuples)
-    images = np.array(image_list)
+    images = _np_convert(image_list)
     return images, bboxes_list
 
 
@@ -406,16 +419,29 @@ def _tf_rotate_90(
     )
 
 
+def _tf_resize(
+        images: tf.Tensor,
+        bboxes_list: List[tf.Tensor],
+        dest_size: Tuple[int, int]
+) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    tuples = [
+        _resize(
+            image, bboxes,
+            dest_size, tf.shape, _tf_resize_image,
+            _tf_convert, tf.concat
+        ) for image, bboxes in zip(images, bboxes_list)
+    ]
+    image_list, bboxes_list = zip(*tuples)
+    images = _tf_convert(image_list)
+    return images, bboxes_list
+
+
 def _tf_crop_and_resize(
         images: tf.Tensor,
         bboxes_list: List[tf.Tensor],
         x_offset_fractions: tf.Tensor,
         y_offset_fractions: tf.Tensor
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-
-    images_shape = np.shape(images)
-    assert len(images_shape) == 4
-
     tuples = [
         _crop_single(
             image, bboxes,
@@ -430,12 +456,12 @@ def _tf_crop_and_resize(
     tuples = [
         _resize(
             image, bboxes,
-            images_shape[1:3], tf.shape, _tf_resize_image,
+            tf.shape(images)[1:3], tf.shape, _tf_resize_image,
             _tf_convert, tf.concat
         ) for image, bboxes in tuples
     ]
     image_list, bboxes_list = zip(*tuples)
-    images = tf.convert_to_tensor(image_list)
+    images = _tf_convert(image_list)
     return images, bboxes_list
 
 
