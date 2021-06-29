@@ -8,8 +8,10 @@ import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
 from ._functional import _np_convert, _np_resize_image, _np_boolean_mask
-from ._functional import _np_multiply, _np_logical_and, _np_make_bboxes_list
-from ._functional import _tf_convert, _tf_resize_image, _tf_make_bboxes_list
+from ._functional import _np_multiply, _np_logical_and, _np_pad_images
+from ._functional import _np_make_bboxes_list
+from ._functional import _tf_convert, _tf_resize_image, _tf_pad_images
+from ._functional import _tf_make_bboxes_list
 
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
@@ -359,6 +361,19 @@ def _np_resize(
     return images, bboxes_list
 
 
+def _np_rotate_90_and_pad_and_resize(
+        images: np.ndarray,
+        bboxes_list: List[np.ndarray],
+) -> Tuple[np.ndarray, List[np.ndarray]]:
+    height, width = int(np.shape(images)[1]), int(np.shape(images)[2])
+    images, bboxes_list = _rotate_90_and_pad(
+        images, bboxes_list,
+        np.shape, np.reshape, _np_convert, np.transpose, np.concatenate,
+        np.where, np.ceil, np.floor, _np_pad_images, _np_make_bboxes_list
+    )
+    return _np_resize(images, bboxes_list, (height, width))
+
+
 def _np_crop_and_resize(
         images: np.ndarray,
         bboxes_list: List[np.ndarray],
@@ -434,6 +449,20 @@ def _tf_resize(
     image_list, bboxes_list = zip(*tuples)
     images = _tf_convert(image_list)
     return images, bboxes_list
+
+
+def _tf_rotate_90_and_pad_and_resize(
+        images: tf.Tensor,
+        bboxes_list: List[tf.Tensor],
+) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    height, width = int(tf.shape(images)[1]), int(tf.shape(images)[2])
+    images, bboxes_list = _rotate_90_and_pad(
+        images, bboxes_list,
+        tf.shape, tf.reshape, _tf_convert, tf.transpose, tf.concat,
+        tf.where, tf.math.ceil, tf.math.floor, _tf_pad_images,
+        _tf_make_bboxes_list
+    )
+    return _tf_resize(images, bboxes_list, (height, width))
 
 
 def _tf_crop_and_resize(
