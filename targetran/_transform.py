@@ -177,6 +177,7 @@ def _rotate_90_and_pad(
         make_bboxes_list_fn: Callable[[T, List[int]], List[T]]
 ) -> Tuple[T, List[T]]:
     """
+    Rotate 90 degrees anti-clockwise and try to pad to the same aspect ratio.
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
@@ -190,7 +191,7 @@ def _rotate_90_and_pad(
     longer = where_fn(new_height > new_width, new_height, new_width)
     shorter = where_fn(new_height < new_width, new_height, new_width)
 
-    pad_length = (longer / shorter) - (shorter / longer)
+    pad_length = longer ** 2 / shorter - shorter
     half_pad_length = pad_length / convert_fn(2.0)
     pad_major = int(ceil_fn(half_pad_length))
     pad_minor = int(floor_fn(half_pad_length))
