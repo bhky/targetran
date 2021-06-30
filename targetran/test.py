@@ -8,10 +8,18 @@ import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 import unittest
 
-from ._transform import _np_flip_left_right, _np_flip_up_down, _np_rotate_90
-from ._transform import _np_rotate_90_and_pad, _np_crop_and_resize
-from ._transform import _tf_flip_left_right, _tf_flip_up_down, _tf_rotate_90
-from ._transform import _tf_rotate_90_and_pad, _tf_crop_and_resize
+from ._transform import (
+    _np_flip_left_right,
+    _np_flip_up_down,
+    _np_rotate_90,
+    _np_rotate_90_and_pad,
+    _np_crop_and_resize,
+    _tf_flip_left_right,
+    _tf_flip_up_down,
+    _tf_rotate_90,
+    _tf_rotate_90_and_pad,
+    _tf_crop_and_resize
+)
 
 
 ORIGINAL_IMAGES = np.array([
