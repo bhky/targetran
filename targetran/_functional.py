@@ -2,11 +2,48 @@
 Functional helper utilities.
 """
 
-from typing import Any, List, Tuple
+from typing import (
+    Any, Callable, Iterable, List, Optional, Tuple, TypeVar, Union
+)
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 import scipy.ndimage  # type: ignore
+
+
+T = TypeVar("T", np.ndarray, tf.Tensor)
+
+
+def _reshape_bboxes(
+        bboxes_list: List[T],
+        reshape_fn: Callable[[T, Tuple[int, int]], T]
+) -> List[T]:
+    """
+    This seemingly extra process is mainly for tackling empty bboxes array.
+    """
+    return [reshape_fn(bboxes, (-1, 4)) for bboxes in bboxes_list]
+
+
+def _map_single(
+        fn: Callable[..., Tuple[T, T]],
+        images: Union[T, Iterable[T]],
+        bboxes_list: List[T],
+        iterable_args: Optional[List[Iterable[Any]]],
+        *args: Any,
+        **kwargs: Any
+) -> Tuple[List[T], List[T]]:
+    """
+    Map each image and bboxes array/tensor to the fn which takes as input
+    a single image and bboxes, together with other arguments.
+    Set iterable_args to None if not available.
+
+    Note: Return image_list and bboxes_list.
+    """
+    iters = [images, bboxes_list, *iterable_args] if iterable_args \
+        else [images, bboxes_list]
+    pairs = [fn(*iterables, *args, **kwargs) for iterables in zip(*iters)]
+    image_list, bboxes_list = zip(*pairs)
+    return image_list, bboxes_list
 
 
 # Numpy.

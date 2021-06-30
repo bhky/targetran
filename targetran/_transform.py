@@ -7,6 +7,7 @@ from typing import Any, Callable, List, Tuple, TypeVar
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
+from ._functional import _reshape_bboxes, _map_single
 from ._functional import _np_convert, _np_resize_image, _np_boolean_mask
 from ._functional import _np_multiply, _np_logical_and, _np_pad_images
 from ._functional import _np_make_bboxes_list
@@ -15,16 +16,6 @@ from ._functional import _tf_make_bboxes_list
 
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
-
-
-def _reshape_bboxes(
-        bboxes_list: List[T],
-        reshape_fn: Callable[[T, Tuple[int, int]], T]
-) -> List[T]:
-    """
-    This seemingly extra process is mainly for tackling empty bboxes array.
-    """
-    return [reshape_fn(bboxes, (-1, 4)) for bboxes in bboxes_list]
 
 
 def _flip_left_right(
@@ -349,14 +340,10 @@ def _np_resize(
         bboxes_list: List[np.ndarray],
         dest_size: Tuple[int, int]
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
-    pairs = [
-        _resize(
-            image, bboxes,
-            dest_size, np.shape, _np_resize_image,
-            _np_convert, np.concatenate
-        ) for image, bboxes in zip(images, bboxes_list)
-    ]
-    image_list, bboxes_list = zip(*pairs)
+    image_list, bboxes_list = _map_single(
+        _resize, images, bboxes_list, None,
+        dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
+    )
     images = _np_convert(image_list)
     return images, bboxes_list
 
@@ -380,25 +367,18 @@ def _np_crop_and_resize(
         x_offset_fractions: np.ndarray,
         y_offset_fractions: np.ndarray
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
-    pairs = [
-        _crop_single(
-            image, bboxes,
-            x_offset_fraction, y_offset_fraction,
-            np.shape, np.reshape, _np_convert,
-            _np_multiply, np.rint, np.abs, np.where, np.concatenate,
-            _np_logical_and, np.squeeze, _np_boolean_mask
-        ) for image, bboxes, x_offset_fraction, y_offset_fraction in zip(
-            images, bboxes_list, x_offset_fractions, y_offset_fractions
-        )
-    ]
-    pairs = [
-        _resize(
-            image, bboxes,
-            np.shape(images)[1:3], np.shape, _np_resize_image,
-            _np_convert, np.concatenate
-        ) for image, bboxes in pairs
-    ]
-    image_list, bboxes_list = zip(*pairs)
+    image_list, bboxes_list = _map_single(
+        _crop_single, images, bboxes_list,
+        [x_offset_fractions, y_offset_fractions],
+        np.shape, np.reshape, _np_convert,
+        _np_multiply, np.rint, np.abs, np.where, np.concatenate,
+        _np_logical_and, np.squeeze, _np_boolean_mask
+    )
+    image_list, bboxes_list = _map_single(
+        _resize, image_list, bboxes_list, None,
+        np.shape(images)[1:3], np.shape, _np_resize_image,
+        _np_convert, np.concatenate
+    )
     images = _np_convert(image_list)
     return images, bboxes_list
 
@@ -439,14 +419,10 @@ def _tf_resize(
         bboxes_list: List[tf.Tensor],
         dest_size: Tuple[int, int]
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-    pairs = [
-        _resize(
-            image, bboxes,
-            dest_size, tf.shape, _tf_resize_image,
-            _tf_convert, tf.concat
-        ) for image, bboxes in zip(images, bboxes_list)
-    ]
-    image_list, bboxes_list = zip(*pairs)
+    image_list, bboxes_list = _map_single(
+        _resize, images, bboxes_list, None,
+        dest_size, tf.shape, _tf_resize_image, _tf_convert, tf.concat
+    )
     images = _tf_convert(image_list)
     return images, bboxes_list
 
@@ -471,25 +447,18 @@ def _tf_crop_and_resize(
         x_offset_fractions: tf.Tensor,
         y_offset_fractions: tf.Tensor
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-    pairs = [
-        _crop_single(
-            image, bboxes,
-            x_offset_fraction, y_offset_fraction,
-            tf.shape, tf.reshape, _tf_convert,
-            tf.multiply, tf.math.rint, tf.abs, tf.where, tf.concat,
-            tf.logical_and, tf.squeeze, tf.boolean_mask
-        ) for image, bboxes, x_offset_fraction, y_offset_fraction in zip(
-            images, bboxes_list, x_offset_fractions, y_offset_fractions
-        )
-    ]
-    pairs = [
-        _resize(
-            image, bboxes,
-            tf.shape(images)[1:3], tf.shape, _tf_resize_image,
-            _tf_convert, tf.concat
-        ) for image, bboxes in pairs
-    ]
-    image_list, bboxes_list = zip(*pairs)
+    image_list, bboxes_list = _map_single(
+        _crop_single, images, bboxes_list,
+        [x_offset_fractions, y_offset_fractions],
+        tf.shape, tf.reshape, _tf_convert,
+        tf.multiply, tf.math.rint, tf.abs, tf.where, tf.concat,
+        tf.logical_and, tf.squeeze, tf.boolean_mask
+    )
+    image_list, bboxes_list = _map_single(
+        _resize, image_list, bboxes_list, None,
+        tf.shape(images)[1:3], tf.shape, _tf_resize_image,
+        _tf_convert, tf.concat
+    )
     images = _tf_convert(image_list)
     return images, bboxes_list
 
