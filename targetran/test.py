@@ -9,9 +9,9 @@ import tensorflow as tf  # type: ignore
 import unittest
 
 from ._transform import _np_flip_left_right, _np_flip_up_down, _np_rotate_90
-from ._transform import _np_crop_and_resize
+from ._transform import _np_rotate_90_and_pad, _np_crop_and_resize
 from ._transform import _tf_flip_left_right, _tf_flip_up_down, _tf_rotate_90
-from ._transform import _tf_crop_and_resize
+from ._transform import _tf_rotate_90_and_pad, _tf_crop_and_resize
 
 
 ORIGINAL_IMAGES = np.array([
@@ -208,6 +208,66 @@ class TestTransform(unittest.TestCase):
             expected_images, expected_bboxes_list
         )
         tf_images, tf_bboxes_list = _tf_rotate_90(
+            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST
+        )
+
+        self.assertTrue(
+            np.array_equal(tf_expected_images.numpy(), tf_images.numpy())
+        )
+        for expected_bboxes, bboxes in zip(tf_expected_bboxes_list,
+                                           tf_bboxes_list):
+            self.assertTrue(
+                np.array_equal(expected_bboxes.numpy(), bboxes.numpy())
+            )
+
+    def test_rotate_90_and_pad(self) -> None:
+
+        expected_images = np.array([
+            [[[0], [0], [0], [0]],
+             [[0], [0], [0], [0]],
+             [[3], [6], [9], [12]],
+             [[2], [5], [8], [11]],
+             [[1], [4], [7], [10]],
+             [[0], [0], [0], [0]]],
+            [[[0], [0], [0], [0]],
+             [[0], [0], [0], [0]],
+             [[13], [16], [19], [22]],
+             [[12], [15], [18], [21]],
+             [[11], [14], [17], [20]],
+             [[0], [0], [0], [0]]],
+            [[[0], [0], [0], [0]],
+             [[0], [0], [0], [0]],
+             [[23], [26], [29], [32]],
+             [[22], [25], [28], [31]],
+             [[21], [24], [27], [30]],
+             [[0], [0], [0], [0]]],
+        ], dtype=np.float32)
+        expected_bboxes_list = [
+            np.array([
+                [0, 2, 2, 2],
+                [1, 2, 2, 3],
+            ], dtype=np.float32),
+            np.array([
+                [0, 3, 3, 2],
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
+        ]
+
+        # Numpy.
+        images, bboxes_list = _np_rotate_90_and_pad(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_LIST
+        )
+        self.assertTrue(
+            np.array_equal(expected_images, images)
+        )
+        for expected_bboxes, bboxes in zip(expected_bboxes_list, bboxes_list):
+            self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+
+        # TF.
+        tf_expected_images, tf_expected_bboxes_list = _np_to_tf(
+            expected_images, expected_bboxes_list
+        )
+        tf_images, tf_bboxes_list = _tf_rotate_90_and_pad(
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_LIST
         )
 

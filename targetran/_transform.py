@@ -98,6 +98,7 @@ def _rotate_90(
 ) -> Tuple[T, List[T]]:
     """
     Rotate 90 degrees anti-clockwise.
+
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
@@ -152,8 +153,8 @@ def _pad(
     all_bboxes = concat_fn([
         all_bboxes[:, :1] + int(pad_offsets[2]),
         all_bboxes[:, 1:2] + int(pad_offsets[0]),
-        all_bboxes[:, 2:3] + int(pad_offsets[2]),
-        all_bboxes[:, 3:] + int(pad_offsets[0]),
+        all_bboxes[:, 2:3],
+        all_bboxes[:, 3:],
     ], 1)  # Along axis 1.
 
     bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
@@ -177,7 +178,8 @@ def _rotate_90_and_pad(
         make_bboxes_list_fn: Callable[[T, List[int]], List[T]]
 ) -> Tuple[T, List[T]]:
     """
-    Rotate 90 degrees anti-clockwise and try to pad to the same aspect ratio.
+    Rotate 90 degrees anti-clockwise and *try* to pad to the same aspect ratio.
+
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
@@ -349,16 +351,23 @@ def _np_resize(
     return images, bboxes_list
 
 
+def _np_rotate_90_and_pad(
+        images: np.ndarray,
+        bboxes_list: List[np.ndarray],
+) -> Tuple[np.ndarray, List[np.ndarray]]:
+    return _rotate_90_and_pad(
+        images, bboxes_list,
+        np.shape, np.reshape, _np_convert, np.transpose, np.concatenate,
+        np.where, np.ceil, np.floor, _np_pad_images, _np_make_bboxes_list
+    )
+
+
 def _np_rotate_90_and_pad_and_resize(
         images: np.ndarray,
         bboxes_list: List[np.ndarray],
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
     height, width = int(np.shape(images)[1]), int(np.shape(images)[2])
-    images, bboxes_list = _rotate_90_and_pad(
-        images, bboxes_list,
-        np.shape, np.reshape, _np_convert, np.transpose, np.concatenate,
-        np.where, np.ceil, np.floor, _np_pad_images, _np_make_bboxes_list
-    )
+    images, bboxes_list = _np_rotate_90_and_pad(images, bboxes_list)
     return _np_resize(images, bboxes_list, (height, width))
 
 
@@ -428,17 +437,24 @@ def _tf_resize(
     return images, bboxes_list
 
 
-def _tf_rotate_90_and_pad_and_resize(
+def _tf_rotate_90_and_pad(
         images: tf.Tensor,
         bboxes_list: List[tf.Tensor],
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-    height, width = int(tf.shape(images)[1]), int(tf.shape(images)[2])
-    images, bboxes_list = _rotate_90_and_pad(
+    return _rotate_90_and_pad(
         images, bboxes_list,
         tf.shape, tf.reshape, _tf_convert, tf.transpose, tf.concat,
         tf.where, tf.math.ceil, tf.math.floor, _tf_pad_images,
         _tf_make_bboxes_list
     )
+
+
+def _tf_rotate_90_and_pad_and_resize(
+        images: tf.Tensor,
+        bboxes_list: List[tf.Tensor],
+) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    height, width = int(tf.shape(images)[1]), int(tf.shape(images)[2])
+    images, bboxes_list = _tf_rotate_90_and_pad(images, bboxes_list)
     return _tf_resize(images, bboxes_list, (height, width))
 
 
