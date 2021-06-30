@@ -14,7 +14,7 @@ from ._transform import (
 )
 
 
-class TFRandomTransform:
+class RandomTransform:
 
     def __init__(
             self,
@@ -44,7 +44,7 @@ class TFRandomTransform:
         return output
 
 
-class TFRandomFlipLeftRight(TFRandomTransform):
+class RandomFlipLeftRight(RandomTransform):
 
     def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_np_flip_left_right, flip_probability, seed)
@@ -57,7 +57,7 @@ class TFRandomFlipLeftRight(TFRandomTransform):
         return super().call(images, bboxes_list)
 
 
-class TFRandomFlipUpDown(TFRandomTransform):
+class RandomFlipUpDown(RandomTransform):
 
     def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_np_flip_up_down, flip_probability, seed)
@@ -70,7 +70,7 @@ class TFRandomFlipUpDown(TFRandomTransform):
         return super().call(images, bboxes_list)
 
 
-class TFRandomRotate90(TFRandomTransform):
+class RandomRotate90(RandomTransform):
 
     def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_np_rotate_90, flip_probability, seed)
@@ -83,7 +83,7 @@ class TFRandomRotate90(TFRandomTransform):
         return super().call(images, bboxes_list)
 
 
-class TFRandomCropAndResize(TFRandomTransform):
+class RandomCropAndResize(RandomTransform):
 
     def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_np_crop_and_resize, flip_probability, seed)
