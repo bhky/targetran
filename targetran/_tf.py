@@ -19,11 +19,11 @@ class TFRandomTransform:
     def __init__(
             self,
             tf_fn: Callable[..., Tuple[tf.Tensor, List[tf.Tensor]]],
-            flip_probability: float,
+            probability: float,
             seed: int,
     ) -> None:
         self._tf_fn = tf_fn
-        self.flip_probability = flip_probability
+        self.probability = probability
         self.seed = seed
 
     def call(
@@ -34,19 +34,26 @@ class TFRandomTransform:
             **kwargs: Any
     ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
 
-        rand = tf.random.uniform(shape=tf.shape(images)[:1], seed=self.seed)
-        output: Tuple[tf.Tensor, List[tf.Tensor]] = tf.where(
-            tf.less(rand, self.flip_probability),
-            self._tf_fn(images, bboxes_list, *args, **kwargs),
-            (images, bboxes_list)
+        transformed_images, transformed_bboxes_list = self._tf_fn(
+            images, bboxes_list, *args, **kwargs
         )
-        return output
+
+        rand = tf.random.uniform(shape=tf.shape(images)[0], seed=self.seed)
+        is_used = rand < self.probability
+
+        final_images = tf.where(is_used, transformed_images, images)
+        final_bboxes_list = [
+            transformed_bboxes_list[i] if is_used[i] else bboxes_list[i]
+            for i in range(len(bboxes_list))
+        ]
+
+        return final_images, final_bboxes_list
 
 
 class TFRandomFlipLeftRight(TFRandomTransform):
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(_tf_flip_left_right, flip_probability, seed)
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_flip_left_right, probability, seed)
 
     def __call__(
             self,
@@ -58,8 +65,8 @@ class TFRandomFlipLeftRight(TFRandomTransform):
 
 class TFRandomFlipUpDown(TFRandomTransform):
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(_tf_flip_up_down, flip_probability, seed)
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_flip_up_down, probability, seed)
 
     def __call__(
             self,
@@ -71,8 +78,8 @@ class TFRandomFlipUpDown(TFRandomTransform):
 
 class TFRandomRotate90(TFRandomTransform):
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(_tf_rotate_90, flip_probability, seed)
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_rotate_90, probability, seed)
 
     def __call__(
             self,
@@ -84,8 +91,8 @@ class TFRandomRotate90(TFRandomTransform):
 
 class TFRandomCropAndResize(TFRandomTransform):
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(_tf_crop_and_resize, flip_probability, seed)
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_crop_and_resize, probability, seed)
 
     def __call__(
             self,

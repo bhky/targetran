@@ -24,8 +24,7 @@ class RandomTransform:
     ) -> None:
         self._np_fn = np_fn
         self.probability = probability
-        self.seed = seed
-        self.rng = np.random.default_rng(seed=self.seed)
+        self.rng = np.random.default_rng(seed=seed)
 
     def call(
             self,
