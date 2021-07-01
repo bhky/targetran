@@ -19,11 +19,11 @@ class RandomTransform:
     def __init__(
             self,
             np_fn: Callable[..., Tuple[np.ndarray, List[np.ndarray]]],
-            flip_probability: float,
+            probability: float,
             seed: int,
     ) -> None:
         self._np_fn = np_fn
-        self.flip_probability = flip_probability
+        self.probability = probability
         self.seed = seed
         self.rng = np.random.default_rng(seed=self.seed)
 
@@ -35,19 +35,26 @@ class RandomTransform:
             **kwargs: Any
     ) -> Tuple[np.ndarray, List[np.ndarray]]:
 
-        rand = self.rng.random(size=np.shape(images)[:1])
-        output: Tuple[np.ndarray, List[np.ndarray]] = np.where(
-            np.less(rand, self.flip_probability),
-            self._np_fn(images, bboxes_list, *args, **kwargs),
-            (images, bboxes_list)
+        transformed_images, transformed_bboxes_list = self._np_fn(
+            images, bboxes_list, *args, **kwargs
         )
-        return output
+
+        rand = self.rng.random(size=np.shape(images)[0])
+        is_used = rand < self.probability
+
+        final_images = np.where(is_used, transformed_images, images)
+        final_bboxes_list = [
+            transformed_bboxes_list[i] if is_used[i] else bboxes_list[i]
+            for i in range(len(bboxes_list))
+        ]
+
+        return final_images, final_bboxes_list
 
 
 class RandomFlipLeftRight(RandomTransform):
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(_np_flip_left_right, flip_probability, seed)
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_np_flip_left_right, probability, seed)
 
     def __call__(
             self,
@@ -59,8 +66,8 @@ class RandomFlipLeftRight(RandomTransform):
 
 class RandomFlipUpDown(RandomTransform):
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(_np_flip_up_down, flip_probability, seed)
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_np_flip_up_down, probability, seed)
 
     def __call__(
             self,
@@ -72,8 +79,8 @@ class RandomFlipUpDown(RandomTransform):
 
 class RandomRotate90(RandomTransform):
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(_np_rotate_90, flip_probability, seed)
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_np_rotate_90, probability, seed)
 
     def __call__(
             self,
@@ -85,8 +92,8 @@ class RandomRotate90(RandomTransform):
 
 class RandomCropAndResize(RandomTransform):
 
-    def __init__(self, flip_probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(_np_crop_and_resize, flip_probability, seed)
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_np_crop_and_resize, probability, seed)
 
     def __call__(
             self,
