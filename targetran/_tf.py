@@ -10,6 +10,7 @@ from ._transform import (
     _tf_flip_left_right,
     _tf_flip_up_down,
     _tf_rotate_90,
+    _tf_rotate_90_and_pad_and_resize,
     _tf_crop_and_resize
 )
 
@@ -80,6 +81,19 @@ class TFRandomRotate90(TFRandomTransform):
 
     def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_tf_rotate_90, probability, seed)
+
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_list: List[tf.Tensor]
+    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        return super().call(images, bboxes_list)
+
+
+class TFRandomRotate90AndResize(TFRandomTransform):
+
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_tf_rotate_90_and_pad_and_resize, probability, seed)
 
     def __call__(
             self,

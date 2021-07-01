@@ -10,6 +10,7 @@ from ._transform import (
     _np_flip_left_right,
     _np_flip_up_down,
     _np_rotate_90,
+    _np_rotate_90_and_pad_and_resize,
     _np_crop_and_resize
 )
 
@@ -80,6 +81,19 @@ class RandomRotate90(RandomTransform):
 
     def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
         super().__init__(_np_rotate_90, probability, seed)
+
+    def __call__(
+            self,
+            images: np.ndarray,
+            bboxes_list: List[np.ndarray]
+    ) -> Tuple[np.ndarray, List[np.ndarray]]:
+        return super().call(images, bboxes_list)
+
+
+class RandomRotate90AndResize(RandomTransform):
+
+    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+        super().__init__(_np_rotate_90_and_pad_and_resize, probability, seed)
 
     def __call__(
             self,
