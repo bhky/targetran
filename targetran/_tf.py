@@ -7,12 +7,26 @@ from typing import Any, Callable, List, Tuple
 import tensorflow as tf
 
 from ._transform import (
+    _tf_resize,
     _tf_flip_left_right,
     _tf_flip_up_down,
     _tf_rotate_90,
     _tf_rotate_90_and_pad_and_resize,
     _tf_crop_and_resize
 )
+
+
+class TFResize:
+
+    def __init__(self, dest_size: Tuple[int, int]) -> None:
+        self.dest_size = dest_size
+
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_list: List[tf.Tensor]
+    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        return _tf_resize(images, bboxes_list, self.dest_size)
 
 
 class TFRandomTransform:

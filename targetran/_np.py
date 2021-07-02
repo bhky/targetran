@@ -7,12 +7,26 @@ from typing import Any, Callable, List, Tuple
 import numpy as np
 
 from ._transform import (
+    _np_resize,
     _np_flip_left_right,
     _np_flip_up_down,
     _np_rotate_90,
     _np_rotate_90_and_pad_and_resize,
     _np_crop_and_resize
 )
+
+
+class Resize:
+
+    def __init__(self, dest_size: Tuple[int, int]) -> None:
+        self.dest_size = dest_size
+
+    def __call__(
+            self,
+            images: np.ndarray,
+            bboxes_list: List[np.ndarray]
+    ) -> Tuple[np.ndarray, List[np.ndarray]]:
+        return _np_resize(images, bboxes_list, self.dest_size)
 
 
 class RandomTransform:
