@@ -119,19 +119,26 @@ class RandomRotate90AndResize(RandomTransform):
 
 class RandomCropAndResize(RandomTransform):
 
-    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+    def __init__(
+            self,
+            max_x_offset_fraction: float = 0.2,
+            max_y_offset_fraction: float = 0.2,
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
         super().__init__(_np_crop_and_resize, probability, seed)
+        self.max_x_offset_fraction = max_x_offset_fraction
+        self.max_y_offset_fraction = max_y_offset_fraction
 
     def __call__(
             self,
             images: np.ndarray,
-            bboxes_list: List[np.ndarray],
-            x_offset_fractions: np.ndarray,
-            y_offset_fractions: np.ndarray
+            bboxes_list: List[np.ndarray]
     ) -> Tuple[np.ndarray, List[np.ndarray]]:
+        batch_size = np.shape(images)[0]
         return super().call(
             images,
             bboxes_list,
-            x_offset_fractions,
-            y_offset_fractions
+            self.rng.random(batch_size) * self.max_x_offset_fraction,
+            self.rng.random(batch_size) * self.max_y_offset_fraction
         )

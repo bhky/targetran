@@ -119,19 +119,30 @@ class TFRandomRotate90AndResize(TFRandomTransform):
 
 class TFRandomCropAndResize(TFRandomTransform):
 
-    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
+    def __init__(
+            self,
+            max_x_offset_fraction: float = 0.2,
+            max_y_offset_fraction: float = 0.2,
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
         super().__init__(_tf_crop_and_resize, probability, seed)
+        self.max_x_offset_fraction = max_x_offset_fraction
+        self.max_y_offset_fraction = max_y_offset_fraction
 
     def __call__(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor],
-            x_offset_fractions: tf.Tensor,
-            y_offset_fractions: tf.Tensor
+            bboxes_list: List[tf.Tensor]
     ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        batch_size = tf.shape(images)[0]
         return super().call(
             images,
             bboxes_list,
-            x_offset_fractions,
-            y_offset_fractions
+            tf.random.uniform(
+                shape=[batch_size], maxval=self.max_x_offset_fraction
+            ),
+            tf.random.uniform(
+                shape=[batch_size], maxval=self.max_y_offset_fraction
+            )
         )
