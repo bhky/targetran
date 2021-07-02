@@ -61,7 +61,7 @@ def _np_logical_and(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def _np_pad_images(
-        x: np.ndarray,
+        images: np.ndarray,
         pad_offsets: np.ndarray
 ) -> np.ndarray:
     """
@@ -73,7 +73,7 @@ def _np_pad_images(
         (int(pad_offsets[2]), int(pad_offsets[3])),
         (0, 0)
     )
-    return np.pad(x, pad_width=pad_width, constant_values=0)
+    return np.pad(images, pad_width=pad_width, constant_values=0)
 
 
 def _np_resize_image(
