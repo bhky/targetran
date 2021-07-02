@@ -8,7 +8,7 @@ from typing import (
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
-import scipy.ndimage  # type: ignore
+import cv2  # type: ignore
 
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
@@ -83,9 +83,9 @@ def _np_resize_image(
     """
     dest_size: (height, width)
     """
-    h_factor = dest_size[0] / image.shape[0]
-    w_factor = dest_size[1] / image.shape[1]
-    return scipy.ndimage.zoom(image, (h_factor, w_factor, 1.0))
+    return cv2.resize(
+        image, dsize=(dest_size[1], dest_size[0]), interpolation=cv2.INTER_AREA
+    )
 
 
 def _np_boolean_mask(x: np.ndarray, mask: np.ndarray) -> np.ndarray:
@@ -135,7 +135,9 @@ def _tf_resize_image(
     """
     dest_size: (height, width)
     """
-    return tf.image.resize(image, size=dest_size)
+    return tf.image.resize(
+        image, size=dest_size, method=tf.image.ResizeMethod.AREA
+    )
 
 
 def _tf_make_bboxes_list(
