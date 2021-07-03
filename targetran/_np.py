@@ -2,7 +2,7 @@
 API for Numpy usage.
 """
 
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, Tuple
 
 import numpy as np
 
@@ -24,16 +24,16 @@ class Resize:
     def __call__(
             self,
             images: np.ndarray,
-            bboxes_list: List[np.ndarray]
-    ) -> Tuple[np.ndarray, List[np.ndarray]]:
-        return _np_resize(images, bboxes_list, self.dest_size)
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        return _np_resize(images, bboxes_ragged, self.dest_size)
 
 
 class RandomTransform:
 
     def __init__(
             self,
-            np_fn: Callable[..., Tuple[np.ndarray, List[np.ndarray]]],
+            np_fn: Callable[..., Tuple[np.ndarray, np.ndarray]],
             probability: float,
             seed: int,
     ) -> None:
@@ -44,25 +44,25 @@ class RandomTransform:
     def call(
             self,
             images: np.ndarray,
-            bboxes_list: List[np.ndarray],
+            bboxes_ragged: np.ndarray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, List[np.ndarray]]:
+    ) -> Tuple[np.ndarray, np.ndarray]:
 
-        transformed_images, transformed_bboxes_list = self._np_fn(
-            images, bboxes_list, *args, **kwargs
+        transformed_images, transformed_bboxes_ragged = self._np_fn(
+            images, bboxes_ragged, *args, **kwargs
         )
 
         rand = self.rng.random(size=np.shape(images)[0])
         is_used = rand < self.probability
 
         final_images = np.where(is_used, transformed_images, images)
-        final_bboxes_list = [
-            transformed_bboxes_list[i] if is_used[i] else bboxes_list[i]
-            for i in range(len(bboxes_list))
+        final_bboxes_ragged_list = [
+            transformed_bboxes_ragged[i] if is_used[i] else bboxes_ragged[i]
+            for i in range(len(bboxes_ragged))
         ]
 
-        return final_images, final_bboxes_list
+        return final_images, np.array(final_bboxes_ragged_list, dtype=object)
 
 
 class RandomFlipLeftRight(RandomTransform):
@@ -73,9 +73,9 @@ class RandomFlipLeftRight(RandomTransform):
     def __call__(
             self,
             images: np.ndarray,
-            bboxes_list: List[np.ndarray]
-    ) -> Tuple[np.ndarray, List[np.ndarray]]:
-        return super().call(images, bboxes_list)
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        return super().call(images, bboxes_ragged)
 
 
 class RandomFlipUpDown(RandomTransform):
@@ -86,9 +86,9 @@ class RandomFlipUpDown(RandomTransform):
     def __call__(
             self,
             images: np.ndarray,
-            bboxes_list: List[np.ndarray]
-    ) -> Tuple[np.ndarray, List[np.ndarray]]:
-        return super().call(images, bboxes_list)
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        return super().call(images, bboxes_ragged)
 
 
 class RandomRotate90(RandomTransform):
@@ -99,9 +99,9 @@ class RandomRotate90(RandomTransform):
     def __call__(
             self,
             images: np.ndarray,
-            bboxes_list: List[np.ndarray]
-    ) -> Tuple[np.ndarray, List[np.ndarray]]:
-        return super().call(images, bboxes_list)
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        return super().call(images, bboxes_ragged)
 
 
 class RandomRotate90AndResize(RandomTransform):
@@ -112,9 +112,9 @@ class RandomRotate90AndResize(RandomTransform):
     def __call__(
             self,
             images: np.ndarray,
-            bboxes_list: List[np.ndarray]
-    ) -> Tuple[np.ndarray, List[np.ndarray]]:
-        return super().call(images, bboxes_list)
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        return super().call(images, bboxes_ragged)
 
 
 class RandomCropAndResize(RandomTransform):
@@ -133,12 +133,12 @@ class RandomCropAndResize(RandomTransform):
     def __call__(
             self,
             images: np.ndarray,
-            bboxes_list: List[np.ndarray]
-    ) -> Tuple[np.ndarray, List[np.ndarray]]:
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         batch_size = np.shape(images)[0]
         return super().call(
             images,
-            bboxes_list,
+            bboxes_ragged,
             self.rng.random(batch_size) * self.max_x_offset_fraction,
             self.rng.random(batch_size) * self.max_y_offset_fraction
         )

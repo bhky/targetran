@@ -2,7 +2,7 @@
 API for TensorFlow usage.
 """
 
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, Tuple
 
 import tensorflow as tf
 
@@ -24,16 +24,16 @@ class TFResize:
     def __call__(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor]
-    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-        return _tf_resize(images, bboxes_list, self.dest_size)
+            bboxes_ragged: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+        return _tf_resize(images, bboxes_ragged, self.dest_size)
 
 
 class TFRandomTransform:
 
     def __init__(
             self,
-            tf_fn: Callable[..., Tuple[tf.Tensor, List[tf.Tensor]]],
+            tf_fn: Callable[..., Tuple[tf.Tensor, tf.Tensor]],
             probability: float,
             seed: int,
     ) -> None:
@@ -44,25 +44,25 @@ class TFRandomTransform:
     def call(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor],
+            bboxes_ragged: tf.Tensor,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
 
-        transformed_images, transformed_bboxes_list = self._tf_fn(
-            images, bboxes_list, *args, **kwargs
+        transformed_images, transformed_bboxes_ragged = self._tf_fn(
+            images, bboxes_ragged, *args, **kwargs
         )
 
         rand = tf.random.uniform(shape=tf.shape(images)[0], seed=self.seed)
         is_used = rand < self.probability
 
         final_images = tf.where(is_used, transformed_images, images)
-        final_bboxes_list = [
-            transformed_bboxes_list[i] if is_used[i] else bboxes_list[i]
-            for i in range(len(bboxes_list))
+        final_bboxes_ragged_list = [
+            transformed_bboxes_ragged[i] if is_used[i] else bboxes_ragged[i]
+            for i in range(len(bboxes_ragged))
         ]
 
-        return final_images, final_bboxes_list
+        return final_images, tf.ragged.stack(final_bboxes_ragged_list)
 
 
 class TFRandomFlipLeftRight(TFRandomTransform):
@@ -73,9 +73,9 @@ class TFRandomFlipLeftRight(TFRandomTransform):
     def __call__(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor]
-    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-        return super().call(images, bboxes_list)
+            bboxes_ragged: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+        return super().call(images, bboxes_ragged)
 
 
 class TFRandomFlipUpDown(TFRandomTransform):
@@ -86,9 +86,9 @@ class TFRandomFlipUpDown(TFRandomTransform):
     def __call__(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor]
-    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-        return super().call(images, bboxes_list)
+            bboxes_ragged: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+        return super().call(images, bboxes_ragged)
 
 
 class TFRandomRotate90(TFRandomTransform):
@@ -99,9 +99,9 @@ class TFRandomRotate90(TFRandomTransform):
     def __call__(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor]
-    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-        return super().call(images, bboxes_list)
+            bboxes_ragged: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+        return super().call(images, bboxes_ragged)
 
 
 class TFRandomRotate90AndResize(TFRandomTransform):
@@ -112,9 +112,9 @@ class TFRandomRotate90AndResize(TFRandomTransform):
     def __call__(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor]
-    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-        return super().call(images, bboxes_list)
+            bboxes_ragged: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+        return super().call(images, bboxes_ragged)
 
 
 class TFRandomCropAndResize(TFRandomTransform):
@@ -133,12 +133,12 @@ class TFRandomCropAndResize(TFRandomTransform):
     def __call__(
             self,
             images: tf.Tensor,
-            bboxes_list: List[tf.Tensor]
-    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+            bboxes_ragged: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         batch_size = tf.shape(images)[0]
         return super().call(
             images,
-            bboxes_list,
+            bboxes_ragged,
             tf.random.uniform(
                 shape=[batch_size], maxval=self.max_x_offset_fraction
             ),

@@ -3,7 +3,7 @@ Functional helper utilities.
 """
 
 from typing import (
-    Any, Callable, Iterable, List, Optional, Tuple, TypeVar, Union
+    Any, Callable, Iterable, List, Optional, Tuple, TypeVar
 )
 
 import numpy as np  # type: ignore
@@ -14,20 +14,9 @@ import cv2  # type: ignore
 T = TypeVar("T", np.ndarray, tf.Tensor)
 
 
-def _reshape_bboxes(
-        bboxes_list: List[T],
-        convert_fn: Callable[..., T],
-        reshape_fn: Callable[[T, Tuple[int, int]], T]
-) -> List[T]:
-    """
-    This seemingly extra process is mainly for tackling empty bboxes array.
-    """
-    return [reshape_fn(convert_fn(bboxes), (-1, 4)) for bboxes in bboxes_list]
-
-
 def _map_single(
         fn: Callable[..., Tuple[T, T]],
-        images: Union[T, Iterable[T]],
+        image_list: List[T],
         bboxes_list: List[T],
         iterable_args: Optional[List[Iterable[Any]]],
         *args: Any,
@@ -40,8 +29,8 @@ def _map_single(
 
     Note: Return image_list and bboxes_list.
     """
-    iters = [images, bboxes_list, *iterable_args] if iterable_args \
-        else [images, bboxes_list]
+    iters = [image_list, bboxes_list, *iterable_args] if iterable_args \
+        else [image_list, bboxes_list]
     pairs = [fn(*iterables, *args, **kwargs) for iterables in zip(*iters)]
     image_list, bboxes_list = zip(*pairs)
     return image_list, bboxes_list
@@ -50,11 +39,23 @@ def _map_single(
 # Numpy.
 
 def _np_convert(x: Any) -> np.ndarray:
-    return np.asarray(x, dtype=np.float32)
+    return np.array(x, dtype=np.float32)
 
 
-def _np_stack_bboxes(bboxes_list: List[np.ndarray]) -> np.ndarray:
-    bboxes_list = _reshape_bboxes(bboxes_list, _np_convert, np.reshape)
+def _np_ragged_to_list(bboxes_ragged: np.ndarray) -> List[np.ndarray]:
+    return [
+        np.reshape(np.array(bboxes), (-1, 4)) for bboxes in bboxes_ragged
+    ]
+
+
+def _np_list_to_ragged(bboxes_list: List[np.ndarray]) -> np.ndarray:
+    return np.array(
+        [np.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list], dtype=object
+    )
+
+
+def _np_stack_bboxes(bboxes_ragged: np.ndarray) -> np.ndarray:
+    bboxes_list = _np_ragged_to_list(bboxes_ragged)
     all_bboxes = np.concatenate(bboxes_list, 0)
     assert np.shape(all_bboxes)[-1] == 4
     return all_bboxes
@@ -103,14 +104,14 @@ def _np_boolean_mask(x: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return x[mask]
 
 
-def _np_make_bboxes_list(
+def _np_make_bboxes_ragged(
         all_bboxes: np.ndarray,
-        bboxes_list: List[np.ndarray],
-) -> List[np.ndarray]:
-    bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
+        bboxes_ragged: np.ndarray,
+) -> np.ndarray:
+    bboxes_nums = [len(bboxes) for bboxes in bboxes_ragged]
     indices = np.cumsum(bboxes_nums)[:-1]
     bboxes_list = np.split(all_bboxes, indices, 0)
-    return [np.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list]
+    return _np_list_to_ragged(bboxes_list)
 
 
 # TF.
@@ -119,10 +120,20 @@ def _tf_convert(x: Any) -> tf.Tensor:
     return tf.convert_to_tensor(np.array(x), dtype=tf.float32)
 
 
-def _tf_stack_bboxes(bboxes_list: List[tf.Tensor]) -> tf.Tensor:
-    bboxes_list = _reshape_bboxes(bboxes_list, _tf_convert, tf.reshape)
+def _tf_ragged_to_list(bboxes_ragged: tf.Tensor) -> List[tf.Tensor]:
+    return [
+        tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_ragged.to_list()
+    ]
+
+
+def _tf_list_to_ragged(bboxes_list: List[tf.Tensor]) -> tf.Tensor:
+    return tf.ragged.stack(bboxes_list)
+
+
+def _tf_stack_bboxes(bboxes_ragged: tf.Tensor) -> tf.Tensor:
+    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     all_bboxes = tf.concat(bboxes_list, 0)
-    assert tf.shape(all_bboxes)[-1] == 4
+    assert np.shape(all_bboxes)[-1] == 4
     return all_bboxes
 
 
@@ -156,10 +167,9 @@ def _tf_resize_image(
     )
 
 
-def _tf_make_bboxes_list(
+def _tf_make_bboxes_ragged(
         all_bboxes: tf.Tensor,
-        bboxes_list: List[tf.Tensor],
-) -> List[tf.Tensor]:
-    bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
-    bboxes_list = tf.split(all_bboxes, bboxes_nums, 0)
-    return [tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list]
+        bboxes_ragged: tf.Tensor,
+) -> tf.Tensor:
+    bboxes_nums = [len(bboxes) for bboxes in bboxes_ragged.to_list()]
+    return tf.RaggedTensor.from_row_lengths(all_bboxes, bboxes_nums)

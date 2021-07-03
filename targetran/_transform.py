@@ -10,18 +10,22 @@ import tensorflow as tf  # type: ignore
 from ._functional import (
     _map_single,
     _np_convert,
+    _np_ragged_to_list,
+    _np_list_to_ragged,
     _np_stack_bboxes,
     _np_resize_image,
     _np_boolean_mask,
     _np_multiply,
     _np_logical_and,
     _np_pad_images,
-    _np_make_bboxes_list,
+    _np_make_bboxes_ragged,
     _tf_convert,
+    _tf_ragged_to_list,
+    _tf_list_to_ragged,
     _tf_stack_bboxes,
     _tf_resize_image,
     _tf_pad_images,
-    _tf_make_bboxes_list
+    _tf_make_bboxes_ragged
 )
 
 
@@ -30,13 +34,13 @@ T = TypeVar("T", np.ndarray, tf.Tensor)
 
 def _flip_left_right(
         images: T,
-        bboxes_list: List[T],
+        bboxes_ragged: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
-        stack_bboxes_fn: Callable[[List[T]], T],
+        stack_bboxes_fn: Callable[[T], T],
         concat_fn: Callable[[List[T], int], T],
-        make_bboxes_list_fn: Callable[[T, List[T]], List[T]]
-) -> Tuple[T, List[T]]:
+        make_bboxes_ragged_fn: Callable[[T, T], T]
+) -> Tuple[T, T]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
@@ -48,25 +52,27 @@ def _flip_left_right(
 
     images = images[..., ::-1, :]
 
-    all_bboxes = stack_bboxes_fn(bboxes_list)
+    all_bboxes = stack_bboxes_fn(bboxes_ragged)
 
     xs = image_width - all_bboxes[:, :1] - all_bboxes[:, 2:3]
-    all_bboxes = concat_fn([xs, all_bboxes[:, 1:]], 1)  # Along axis 1.
+    all_bboxes = concat_fn(
+        [xs, all_bboxes[:, 1:]], 1  # Along axis 1.
+    )
 
-    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_list)
+    bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
-    return images, bboxes_list
+    return images, bboxes_ragged
 
 
 def _flip_up_down(
         images: T,
-        bboxes_list: List[T],
+        bboxes_ragged: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
-        stack_bboxes_fn: Callable[[List[T]], T],
+        stack_bboxes_fn: Callable[[T], T],
         concat_fn: Callable[[List[T], int], T],
-        make_bboxes_list_fn: Callable[[T, List[T]], List[T]]
-) -> Tuple[T, List[T]]:
+        make_bboxes_ragged_fn: Callable[[T, T], T]
+) -> Tuple[T, T]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
@@ -78,28 +84,28 @@ def _flip_up_down(
 
     images = images[:, ::-1, ...]
 
-    all_bboxes = stack_bboxes_fn(bboxes_list)
+    all_bboxes = stack_bboxes_fn(bboxes_ragged)
 
     ys = image_height - all_bboxes[:, 1:2] - all_bboxes[:, 3:]
     all_bboxes = concat_fn(
         [all_bboxes[:, :1], ys, all_bboxes[:, 2:]], 1  # Along axis 1.
     )
 
-    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_list)
+    bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
-    return images, bboxes_list
+    return images, bboxes_ragged
 
 
 def _rotate_90(
         images: T,
-        bboxes_list: List[T],
+        bboxes_ragged: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         transpose_fn: Callable[[T, Tuple[int, ...]], T],
-        stack_bboxes_fn: Callable[[List[T]], T],
+        stack_bboxes_fn: Callable[[T], T],
         concat_fn: Callable[[List[T], int], T],
-        make_bboxes_list_fn: Callable[[T, List[T]], List[T]]
-) -> Tuple[T, List[T]]:
+        make_bboxes_ragged_fn: Callable[[T, T], T]
+) -> Tuple[T, T]:
     """
     Rotate 90 degrees anti-clockwise.
 
@@ -113,7 +119,7 @@ def _rotate_90(
 
     images = transpose_fn(images, (0, 2, 1, 3))[:, ::-1, :, :]
 
-    all_bboxes = stack_bboxes_fn(bboxes_list)
+    all_bboxes = stack_bboxes_fn(bboxes_ragged)
 
     all_bboxes = concat_fn([
         all_bboxes[:, 1:2],
@@ -122,21 +128,21 @@ def _rotate_90(
         all_bboxes[:, 2:3],
     ], 1)  # Along axis 1.
 
-    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_list)
+    bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
-    return images, bboxes_list
+    return images, bboxes_ragged
 
 
 def _pad(
         images: T,
-        bboxes_list: List[T],
+        bboxes_ragged: T,
         pad_offsets: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         pad_images_fn: Callable[[T, T], T],
-        stack_bboxes_fn: Callable[[List[T]], T],
+        stack_bboxes_fn: Callable[[T], T],
         concat_fn: Callable[[List[T], int], T],
-        make_bboxes_list_fn: Callable[[T, List[T]], List[T]]
-) -> Tuple[T, List[T]]:
+        make_bboxes_ragged_fn: Callable[[T, T], T]
+) -> Tuple[T, T]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
@@ -147,7 +153,7 @@ def _pad(
 
     images = pad_images_fn(images, pad_offsets)
 
-    all_bboxes = stack_bboxes_fn(bboxes_list)
+    all_bboxes = stack_bboxes_fn(bboxes_ragged)
 
     all_bboxes = concat_fn([
         all_bboxes[:, :1] + int(pad_offsets[2]),
@@ -156,35 +162,35 @@ def _pad(
         all_bboxes[:, 3:],
     ], 1)  # Along axis 1.
 
-    bboxes_list = make_bboxes_list_fn(all_bboxes, bboxes_list)
+    bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
-    return images, bboxes_list
+    return images, bboxes_ragged
 
 
 def _rotate_90_and_pad(
         images: T,
-        bboxes_list: List[T],
+        bboxes_ragged: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         transpose_fn: Callable[[T, Tuple[int, ...]], T],
-        stack_bboxes_fn: Callable[[List[T]], T],
+        stack_bboxes_fn: Callable[[T], T],
         concat_fn: Callable[[List[T], int], T],
         where_fn: Callable[[T, T, T], T],
         ceil_fn: Callable[[T], T],
         floor_fn: Callable[[T], T],
         pad_images_fn: Callable[[T, T], T],
-        make_bboxes_list_fn: Callable[[T, List[T]], List[T]]
-) -> Tuple[T, List[T]]:
+        make_bboxes_ragged_fn: Callable[[T, T], T]
+) -> Tuple[T, T]:
     """
     Rotate 90 degrees anti-clockwise and *try* to pad to the same aspect ratio.
 
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
-    images, bboxes_list = _rotate_90(
-        images, bboxes_list,
+    images, bboxes_ragged = _rotate_90(
+        images, bboxes_ragged,
         shape_fn, convert_fn, transpose_fn, stack_bboxes_fn, concat_fn,
-        make_bboxes_list_fn
+        make_bboxes_ragged_fn
     )
     new_height = convert_fn(shape_fn(images)[1])
     new_width = convert_fn(shape_fn(images)[2])
@@ -202,8 +208,8 @@ def _rotate_90_and_pad(
         convert_fn((pad_major, pad_minor, 0, 0))
     )
     return _pad(
-        images, bboxes_list, pad_offsets, shape_fn, pad_images_fn,
-        stack_bboxes_fn, concat_fn, make_bboxes_list_fn
+        images, bboxes_ragged, pad_offsets, shape_fn, pad_images_fn,
+        stack_bboxes_fn, concat_fn, make_bboxes_ragged_fn
     )
 
 
@@ -307,79 +313,84 @@ def _crop_single(
 
 def _np_flip_left_right(
         images: np.ndarray,
-        bboxes_list: List[np.ndarray]
-) -> Tuple[np.ndarray, List[np.ndarray]]:
+        bboxes_ragged: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     return _flip_left_right(
-        images, bboxes_list,
+        images, bboxes_ragged,
         np.shape, _np_convert, _np_stack_bboxes, np.concatenate,
-        _np_make_bboxes_list
+        _np_make_bboxes_ragged
     )
 
 
 def _np_flip_up_down(
         images: np.ndarray,
-        bboxes_list: List[np.ndarray]
-) -> Tuple[np.ndarray, List[np.ndarray]]:
+        bboxes_ragged: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     return _flip_up_down(
-        images, bboxes_list,
+        images, bboxes_ragged,
         np.shape, _np_convert, _np_stack_bboxes, np.concatenate,
-        _np_make_bboxes_list
+        _np_make_bboxes_ragged
     )
 
 
 def _np_rotate_90(
         images: np.ndarray,
-        bboxes_list: List[np.ndarray]
-) -> Tuple[np.ndarray, List[np.ndarray]]:
+        bboxes_ragged: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     return _rotate_90(
-        images, bboxes_list,
+        images, bboxes_ragged,
         np.shape, _np_convert, np.transpose, _np_stack_bboxes, np.concatenate,
-        _np_make_bboxes_list
+        _np_make_bboxes_ragged
     )
 
 
 def _np_resize(
         images: np.ndarray,
-        bboxes_list: List[np.ndarray],
+        bboxes_ragged: np.ndarray,
         dest_size: Tuple[int, int]
-) -> Tuple[np.ndarray, List[np.ndarray]]:
+) -> Tuple[np.ndarray, np.ndarray]:
+    image_list = [image for image in images]
+    bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
-        _resize_single, images, bboxes_list, None,
+        _resize_single, image_list, bboxes_list, None,
         dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
     )
     images = _np_convert(image_list)
-    return images, bboxes_list
+    bboxes_ragged = _np_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
 
 
 def _np_rotate_90_and_pad(
         images: np.ndarray,
-        bboxes_list: List[np.ndarray],
-) -> Tuple[np.ndarray, List[np.ndarray]]:
+        bboxes_ragged: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray]:
     return _rotate_90_and_pad(
-        images, bboxes_list,
+        images, bboxes_ragged,
         np.shape, _np_convert, np.transpose, _np_stack_bboxes, np.concatenate,
         np.where, np.ceil, np.floor, _np_pad_images,
-        _np_make_bboxes_list
+        _np_make_bboxes_ragged
     )
 
 
 def _np_rotate_90_and_pad_and_resize(
         images: np.ndarray,
-        bboxes_list: List[np.ndarray],
-) -> Tuple[np.ndarray, List[np.ndarray]]:
+        bboxes_ragged: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray]:
     height, width = int(np.shape(images)[1]), int(np.shape(images)[2])
-    images, bboxes_list = _np_rotate_90_and_pad(images, bboxes_list)
-    return _np_resize(images, bboxes_list, (height, width))
+    images, bboxes_ragged = _np_rotate_90_and_pad(images, bboxes_ragged)
+    return _np_resize(images, bboxes_ragged, (height, width))
 
 
 def _np_crop_and_resize(
         images: np.ndarray,
-        bboxes_list: List[np.ndarray],
+        bboxes_ragged: np.ndarray,
         x_offset_fractions: np.ndarray,
         y_offset_fractions: np.ndarray
-) -> Tuple[np.ndarray, List[np.ndarray]]:
+) -> Tuple[np.ndarray, np.ndarray]:
+    image_list = [image for image in images]
+    bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
-        _crop_single, images, bboxes_list,
+        _crop_single, image_list, bboxes_list,
         [x_offset_fractions, y_offset_fractions],
         np.shape, np.reshape, _np_convert,
         _np_multiply, np.rint, np.abs, np.where, np.concatenate,
@@ -391,84 +402,90 @@ def _np_crop_and_resize(
         _np_convert, np.concatenate
     )
     images = _np_convert(image_list)
-    return images, bboxes_list
+    bboxes_ragged = _np_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
 
 
 def _tf_flip_left_right(
         images: tf.Tensor,
-        bboxes_list: List[tf.Tensor]
-) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        bboxes_ragged: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor]:
     return _flip_left_right(
-        images, bboxes_list,
+        images, bboxes_ragged,
         tf.shape, _tf_convert, _tf_stack_bboxes, tf.concat,
-        _tf_make_bboxes_list
+        _tf_make_bboxes_ragged
     )
 
 
 def _tf_flip_up_down(
         images: tf.Tensor,
-        bboxes_list: List[tf.Tensor]
-) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        bboxes_ragged: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor]:
     return _flip_up_down(
-        images, bboxes_list,
+        images, bboxes_ragged,
         tf.shape, _tf_convert, _tf_stack_bboxes, tf.concat,
-        _tf_make_bboxes_list
+        _tf_make_bboxes_ragged
     )
 
 
 def _tf_rotate_90(
         images: tf.Tensor,
-        bboxes_list: List[tf.Tensor]
-) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        bboxes_ragged: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor]:
     return _rotate_90(
-        images, bboxes_list,
+        images, bboxes_ragged,
         tf.shape, _tf_convert, tf.transpose, _tf_stack_bboxes, tf.concat,
-        _tf_make_bboxes_list
+        _tf_make_bboxes_ragged
     )
 
 
 def _tf_resize(
         images: tf.Tensor,
-        bboxes_list: List[tf.Tensor],
+        bboxes_ragged: tf.Tensor,
         dest_size: Tuple[int, int]
-) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-    image_list, bboxes_list = _map_single(
-        _resize_single, images, bboxes_list, None,
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    image_list = [image for image in images]
+    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
+    image_list, bboxes_ragged = _map_single(
+        _resize_single, image_list, bboxes_list, None,
         dest_size, tf.shape, _tf_resize_image, _tf_convert, tf.concat
     )
     images = _tf_convert(image_list)
-    return images, bboxes_list
+    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
 
 
 def _tf_rotate_90_and_pad(
         images: tf.Tensor,
-        bboxes_list: List[tf.Tensor],
-) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        bboxes_ragged: tf.Tensor,
+) -> Tuple[tf.Tensor, tf.Tensor]:
     return _rotate_90_and_pad(
-        images, bboxes_list,
+        images, bboxes_ragged,
         tf.shape, _tf_convert, tf.transpose, _tf_stack_bboxes, tf.concat,
         tf.where, tf.math.ceil, tf.math.floor, _tf_pad_images,
-        _tf_make_bboxes_list
+        _tf_make_bboxes_ragged
     )
 
 
 def _tf_rotate_90_and_pad_and_resize(
         images: tf.Tensor,
-        bboxes_list: List[tf.Tensor],
-) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        bboxes_ragged: tf.Tensor,
+) -> Tuple[tf.Tensor, tf.Tensor]:
     height, width = int(tf.shape(images)[1]), int(tf.shape(images)[2])
-    images, bboxes_list = _tf_rotate_90_and_pad(images, bboxes_list)
-    return _tf_resize(images, bboxes_list, (height, width))
+    images, bboxes_ragged = _tf_rotate_90_and_pad(images, bboxes_ragged)
+    return _tf_resize(images, bboxes_ragged, (height, width))
 
 
 def _tf_crop_and_resize(
         images: tf.Tensor,
-        bboxes_list: List[tf.Tensor],
+        bboxes_ragged: tf.Tensor,
         x_offset_fractions: tf.Tensor,
         y_offset_fractions: tf.Tensor
-) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    image_list = [image for image in images]
+    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
-        _crop_single, images, bboxes_list,
+        _crop_single, image_list, bboxes_list,
         [x_offset_fractions, y_offset_fractions],
         tf.shape, tf.reshape, _tf_convert,
         tf.multiply, tf.math.rint, tf.abs, tf.where, tf.concat,
@@ -480,4 +497,5 @@ def _tf_crop_and_resize(
         _tf_convert, tf.concat
     )
     images = _tf_convert(image_list)
-    return images, bboxes_list
+    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
