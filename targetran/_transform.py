@@ -218,7 +218,7 @@ def _rotate_90_and_pad(
     )
 
 
-def _resize(
+def _resize_single(
         image: T,
         bboxes: T,
         dest_size: Tuple[int, int],
@@ -353,7 +353,7 @@ def _np_resize(
         dest_size: Tuple[int, int]
 ) -> Tuple[np.ndarray, List[np.ndarray]]:
     image_list, bboxes_list = _map_single(
-        _resize, images, bboxes_list, None,
+        _resize_single, images, bboxes_list, None,
         dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
     )
     images = _np_convert(image_list)
@@ -394,7 +394,7 @@ def _np_crop_and_resize(
         _np_logical_and, np.squeeze, _np_boolean_mask
     )
     image_list, bboxes_list = _map_single(
-        _resize, image_list, bboxes_list, None,
+        _resize_single, image_list, bboxes_list, None,
         np.shape(images)[1:3], np.shape, _np_resize_image,
         _np_convert, np.concatenate
     )
@@ -439,7 +439,7 @@ def _tf_resize(
         dest_size: Tuple[int, int]
 ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
     image_list, bboxes_list = _map_single(
-        _resize, images, bboxes_list, None,
+        _resize_single, images, bboxes_list, None,
         dest_size, tf.shape, _tf_resize_image, _tf_convert, tf.concat
     )
     images = _tf_convert(image_list)
@@ -481,7 +481,7 @@ def _tf_crop_and_resize(
         tf.logical_and, tf.squeeze, tf.boolean_mask
     )
     image_list, bboxes_list = _map_single(
-        _resize, image_list, bboxes_list, None,
+        _resize_single, image_list, bboxes_list, None,
         tf.shape(images)[1:3], tf.shape, _tf_resize_image,
         _tf_convert, tf.concat
     )
