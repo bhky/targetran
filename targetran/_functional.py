@@ -52,6 +52,13 @@ def _np_convert(x: Any) -> np.ndarray:
     return np.asarray(x, dtype=np.float32)
 
 
+def _np_stack_bboxes(bboxes_list: List[np.ndarray]) -> np.ndarray:
+    bboxes_list = _reshape_bboxes(bboxes_list, np.reshape)
+    all_bboxes = np.concatenate(bboxes_list, 0)
+    assert np.shape(all_bboxes)[-1] == 4
+    return all_bboxes
+
+
 def _np_multiply(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.multiply(x, y)
 
@@ -97,8 +104,9 @@ def _np_boolean_mask(x: np.ndarray, mask: np.ndarray) -> np.ndarray:
 
 def _np_make_bboxes_list(
         all_bboxes: np.ndarray,
-        bboxes_nums: List[int]
+        bboxes_list: List[np.ndarray],
 ) -> List[np.ndarray]:
+    bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
     indices = np.cumsum(bboxes_nums)[:-1]
     bboxes_list = np.split(all_bboxes, indices, 0)
     return [np.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list]
@@ -108,6 +116,13 @@ def _np_make_bboxes_list(
 
 def _tf_convert(x: Any) -> tf.Tensor:
     return tf.convert_to_tensor(np.array(x), dtype=tf.float32)
+
+
+def _tf_stack_bboxes(bboxes_list: List[tf.Tensor]) -> tf.Tensor:
+    bboxes_list = _reshape_bboxes(bboxes_list, tf.reshape)
+    all_bboxes = tf.concat(bboxes_list, 0)
+    assert tf.shape(all_bboxes)[-1] == 4
+    return all_bboxes
 
 
 def _tf_pad_images(
@@ -142,7 +157,8 @@ def _tf_resize_image(
 
 def _tf_make_bboxes_list(
         all_bboxes: tf.Tensor,
-        bboxes_nums: List[int]
+        bboxes_list: List[tf.Tensor],
 ) -> List[tf.Tensor]:
+    bboxes_nums = [len(bboxes) for bboxes in bboxes_list]
     bboxes_list = tf.split(all_bboxes, bboxes_nums, 0)
     return [tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list]
