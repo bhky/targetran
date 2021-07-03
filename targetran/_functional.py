@@ -16,12 +16,13 @@ T = TypeVar("T", np.ndarray, tf.Tensor)
 
 def _reshape_bboxes(
         bboxes_list: List[T],
+        convert_fn: Callable[..., T],
         reshape_fn: Callable[[T, Tuple[int, int]], T]
 ) -> List[T]:
     """
     This seemingly extra process is mainly for tackling empty bboxes array.
     """
-    return [reshape_fn(bboxes, (-1, 4)) for bboxes in bboxes_list]
+    return [reshape_fn(convert_fn(bboxes), (-1, 4)) for bboxes in bboxes_list]
 
 
 def _map_single(
@@ -53,7 +54,7 @@ def _np_convert(x: Any) -> np.ndarray:
 
 
 def _np_stack_bboxes(bboxes_list: List[np.ndarray]) -> np.ndarray:
-    bboxes_list = _reshape_bboxes(bboxes_list, np.reshape)
+    bboxes_list = _reshape_bboxes(bboxes_list, _np_convert, np.reshape)
     all_bboxes = np.concatenate(bboxes_list, 0)
     assert np.shape(all_bboxes)[-1] == 4
     return all_bboxes
@@ -119,7 +120,7 @@ def _tf_convert(x: Any) -> tf.Tensor:
 
 
 def _tf_stack_bboxes(bboxes_list: List[tf.Tensor]) -> tf.Tensor:
-    bboxes_list = _reshape_bboxes(bboxes_list, tf.reshape)
+    bboxes_list = _reshape_bboxes(bboxes_list, _tf_convert, tf.reshape)
     all_bboxes = tf.concat(bboxes_list, 0)
     assert tf.shape(all_bboxes)[-1] == 4
     return all_bboxes
