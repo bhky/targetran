@@ -23,11 +23,9 @@ def _map_single(
         **kwargs: Any
 ) -> Tuple[List[T], List[T]]:
     """
-    Map each image and bboxes array/tensor to the fn which takes as input
-    a single image and bboxes, together with other arguments.
+    Map each image and bboxes array/tensor from the lists, to the fn which
+    takes as input a single image and bboxes, together with other arguments.
     Set iterable_args to None if not available.
-
-    Note: Return image_list and bboxes_list.
     """
     iters = [image_list, bboxes_list, *iterable_args] if iterable_args \
         else [image_list, bboxes_list]
