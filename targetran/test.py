@@ -309,10 +309,11 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
 
-        x_offset_fractions = np.array([0.25, -0.25, -0.25, 0.2],
-                                      dtype=np.float32)
-        y_offset_fractions = np.array([0.25, -0.25, -0.25, -0.1],
-                                      dtype=np.float32)
+        offset_heights = np.array([128 * 0.25, 0.0, 0.0, 99.0])
+        offset_widths = np.array([128 * 0.25, 0.0, 0.0, 59.0])
+        cropped_image_heights = np.array([128 * 0.75] * 4)
+        cropped_image_widths = np.array([128 * 0.75] * 4)
+
         f = 4 / 3
         expected_bboxes_ragged = np.array([
             np.array([
@@ -320,7 +321,7 @@ class TestTransform(unittest.TestCase):
                 [12 * f, 16 * f, 12 * f, 8 * f],
             ], dtype=np.float32),
             np.array([
-                [56 * f, 44 * f, 20 * f, 24 * f],
+                [24 * f, 12 * f, 20 * f, 24 * f],
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
             np.array([], dtype=np.float32).reshape(-1, 4),
@@ -329,7 +330,8 @@ class TestTransform(unittest.TestCase):
         # Numpy.
         _, bboxes_ragged = _np_crop_and_resize(
             dummy_images, original_bboxes_ragged,
-            x_offset_fractions, y_offset_fractions
+            offset_heights, offset_widths,
+            cropped_image_heights, cropped_image_widths
         )
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
@@ -344,8 +346,10 @@ class TestTransform(unittest.TestCase):
         )
         _, tf_bboxes_ragged = _tf_crop_and_resize(
             tf_dummy_images, tf_original_bboxes_ragged,
-            tf.convert_to_tensor(x_offset_fractions),
-            tf.convert_to_tensor(y_offset_fractions)
+            tf.convert_to_tensor(offset_heights),
+            tf.convert_to_tensor(offset_widths),
+            tf.convert_to_tensor(cropped_image_heights),
+            tf.convert_to_tensor(cropped_image_widths)
         )
         for expected_bboxes, bboxes in zip(tf_expected_bboxes_ragged,
                                            tf_bboxes_ragged):

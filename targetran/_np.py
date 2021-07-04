@@ -12,6 +12,7 @@ from ._transform import (
     _np_flip_up_down,
     _np_rotate_90,
     _np_rotate_90_and_pad_and_resize,
+    _np_fractions_to_heights_and_widths,
     _np_crop_and_resize
 )
 
@@ -121,24 +122,33 @@ class RandomCropAndResize(RandomTransform):
 
     def __init__(
             self,
-            max_x_offset_fraction: float = 0.2,
-            max_y_offset_fraction: float = 0.2,
+            height_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            width_fraction_range: Tuple[float, float] = (0.6, 0.9),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
         super().__init__(_np_crop_and_resize, probability, seed)
-        self.max_x_offset_fraction = max_x_offset_fraction
-        self.max_y_offset_fraction = max_y_offset_fraction
+        self.height_fraction_range = height_fraction_range
+        self.width_fraction_range = width_fraction_range
 
     def __call__(
             self,
             images: np.ndarray,
             bboxes_ragged: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        batch_size = np.shape(images)[0]
+
+        images_shape = np.shape(images)
+
+        def rand_fn() -> np.ndarray:
+            return self.rng.random(images_shape[0])
+
+        offset_heights, offset_widths, cropped_heights, cropped_widths = \
+            _np_fractions_to_heights_and_widths(
+                images_shape[1], images_shape[2],
+                self.height_fraction_range, self.width_fraction_range, rand_fn
+            )
+
         return super().call(
-            images,
-            bboxes_ragged,
-            self.rng.random(batch_size) * self.max_x_offset_fraction,
-            self.rng.random(batch_size) * self.max_y_offset_fraction
+            images, bboxes_ragged,
+            offset_heights, offset_widths, cropped_heights, cropped_widths
         )

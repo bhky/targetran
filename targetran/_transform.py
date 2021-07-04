@@ -15,7 +15,6 @@ from ._functional import (
     _np_stack_bboxes,
     _np_resize_image,
     _np_boolean_mask,
-    _np_multiply,
     _np_logical_and,
     _np_pad_images,
     _np_make_bboxes_ragged,
@@ -244,18 +243,57 @@ def _resize_single(
     return image, bboxes
 
 
+def _fractions_to_heights_and_widths(
+        image_height: int,
+        image_width: int,
+        height_fraction_range: Tuple[float, float],
+        width_fraction_range: Tuple[float, float],
+        rand_fn: Callable[..., T],
+        convert_fn: Callable[..., T],
+        rint_fn: Callable[[T], T]
+) -> Tuple[T, T, T, T]:
+    """
+    rand_fn: generate random [0.0, 1.0) array of batch size.
+    Return: randomized (offset_heights, offset_widths,
+                        cropped_image_heights, cropped_image_widths)
+    """
+    image_height = convert_fn(image_height)
+    image_width = convert_fn(image_width)
+    height_fraction_range = convert_fn(height_fraction_range)
+    width_fraction_range = convert_fn(width_fraction_range)
+
+    min_height_fraction = height_fraction_range[0]
+    min_width_fraction = width_fraction_range[0]
+    height_fraction_diff = height_fraction_range[1] - min_height_fraction
+    width_fraction_diff = width_fraction_range[1] - min_width_fraction
+    assert height_fraction_diff > 0
+    assert width_fraction_diff > 0
+
+    height_fractions = height_fraction_diff * rand_fn() + min_height_fraction
+    width_fractions = width_fraction_diff * rand_fn() + min_width_fraction
+
+    cropped_image_heights = image_height * height_fractions
+    cropped_image_widths = image_height * width_fractions
+
+    offset_heights = rint_fn((image_height - cropped_image_heights) * rand_fn())
+    offset_widths = rint_fn((image_width - cropped_image_widths) * rand_fn())
+
+    return (
+        offset_heights, offset_widths,
+        cropped_image_heights, cropped_image_widths
+    )
+
+
 def _crop_single(
         image: T,
         bboxes: T,
-        x_offset_fraction: float,
-        y_offset_fraction: float,
+        offset_height: int,
+        offset_width: int,
+        cropped_image_height: int,
+        cropped_image_width: int,
         shape_fn: Callable[[T], Tuple[int, ...]],
         reshape_fn: Callable[[T, Tuple[int, int]], T],
         convert_fn: Callable[..., T],
-        multiply_fn: Callable[[T, T], T],
-        rint_fn: Callable[[T], T],
-        abs_fn: Callable[[T], T],
-        where_fn: Callable[[T, T, T], T],
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
         squeeze_fn: Callable[[T, int], T],
@@ -269,22 +307,13 @@ def _crop_single(
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
 
-    image_height, image_width = image_shape[0:2]
-    image_height = convert_fn(image_height)
-    image_width = convert_fn(image_width)
-    x_offset_fraction = convert_fn(x_offset_fraction)
-    y_offset_fraction = convert_fn(y_offset_fraction)
+    offset_height = convert_fn(offset_height)
+    offset_width = convert_fn(offset_width)
+    cropped_image_height = convert_fn(cropped_image_height)
+    cropped_image_width = convert_fn(cropped_image_width)
 
-    # Positive means the image move downward w.r.t. the original.
-    offset_height = rint_fn(multiply_fn(y_offset_fraction, image_height))
-    # Positive means the image move to the right w.r.t. the original.
-    offset_width = rint_fn(multiply_fn(x_offset_fraction, image_width))
-
-    cropped_image_height = image_height - abs_fn(offset_height)
-    cropped_image_width = image_width - abs_fn(offset_width)
-
-    top = where_fn(offset_height > 0, convert_fn(0), -offset_height)
-    left = where_fn(offset_width > 0, convert_fn(0), -offset_width)
+    top = offset_height
+    left = offset_width
     bottom = top + cropped_image_height
     right = left + cropped_image_width
 
@@ -303,8 +332,8 @@ def _crop_single(
     xmaxs = xs + widths
     ymaxs = ys + heights
     included = squeeze_fn(logical_and_fn(
-        logical_and_fn(xs >= 0, xmaxs <= image_width),
-        logical_and_fn(ys >= 0, ymaxs <= image_height)
+        logical_and_fn(xs >= 0, xmaxs <= cropped_image_width),
+        logical_and_fn(ys >= 0, ymaxs <= cropped_image_height)
     ), -1)  # Squeeze along the last axis.
     bboxes = boolean_mask_fn(bboxes, included)
 
@@ -381,19 +410,34 @@ def _np_rotate_90_and_pad_and_resize(
     return _np_resize(images, bboxes_ragged, (height, width))
 
 
+def _np_fractions_to_heights_and_widths(
+        image_height: int,
+        image_width: int,
+        height_fraction_range: Tuple[float, float],
+        width_fraction_range: Tuple[float, float],
+        rand_fn: Callable[..., np.ndarray]
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    return _fractions_to_heights_and_widths(
+        image_height, image_width, height_fraction_range, width_fraction_range,
+        rand_fn, _np_convert, np.rint
+    )
+
+
 def _np_crop_and_resize(
         images: np.ndarray,
         bboxes_ragged: np.ndarray,
-        x_offset_fractions: np.ndarray,
-        y_offset_fractions: np.ndarray
+        offset_heights: np.ndarray,
+        offset_widths: np.ndarray,
+        cropped_image_heights: np.ndarray,
+        cropped_image_widths: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     image_list = [image for image in images]
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _crop_single, image_list, bboxes_list,
-        [x_offset_fractions, y_offset_fractions],
-        np.shape, np.reshape, _np_convert,
-        _np_multiply, np.rint, np.abs, np.where, np.concatenate,
+        [offset_heights, offset_widths,
+         cropped_image_heights, cropped_image_widths],
+        np.shape, np.reshape, _np_convert, np.concatenate,
         _np_logical_and, np.squeeze, _np_boolean_mask
     )
     image_list, bboxes_list = _map_single(
@@ -476,19 +520,34 @@ def _tf_rotate_90_and_pad_and_resize(
     return _tf_resize(images, bboxes_ragged, (height, width))
 
 
+def _tf_fractions_to_heights_and_widths(
+        image_height: int,
+        image_width: int,
+        height_fraction_range: Tuple[float, float],
+        width_fraction_range: Tuple[float, float],
+        rand_fn: Callable[..., tf.Tensor]
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
+    return _fractions_to_heights_and_widths(
+        image_height, image_width, height_fraction_range, width_fraction_range,
+        rand_fn, _tf_convert, tf.math.rint
+    )
+
+
 def _tf_crop_and_resize(
         images: tf.Tensor,
         bboxes_ragged: tf.Tensor,
-        x_offset_fractions: tf.Tensor,
-        y_offset_fractions: tf.Tensor
+        offset_heights: tf.Tensor,
+        offset_widths: tf.Tensor,
+        cropped_image_heights: tf.Tensor,
+        cropped_image_widths: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor]:
     image_list = [image for image in images]
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _crop_single, image_list, bboxes_list,
-        [x_offset_fractions, y_offset_fractions],
-        tf.shape, tf.reshape, _tf_convert,
-        tf.multiply, tf.math.rint, tf.abs, tf.where, tf.concat,
+        [offset_heights, offset_widths,
+         cropped_image_heights, cropped_image_widths],
+        tf.shape, tf.reshape, _tf_convert, tf.concat,
         tf.logical_and, tf.squeeze, tf.boolean_mask
     )
     image_list, bboxes_list = _map_single(

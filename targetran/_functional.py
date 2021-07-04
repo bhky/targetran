@@ -61,10 +61,6 @@ def _np_stack_bboxes(bboxes_ragged: np.ndarray) -> np.ndarray:
     return all_bboxes
 
 
-def _np_multiply(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-    return np.multiply(x, y)
-
-
 def _np_logical_and(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.logical_and(x, y)
 

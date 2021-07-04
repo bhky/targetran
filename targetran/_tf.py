@@ -12,6 +12,7 @@ from ._transform import (
     _tf_flip_up_down,
     _tf_rotate_90,
     _tf_rotate_90_and_pad_and_resize,
+    _tf_fractions_to_heights_and_widths,
     _tf_crop_and_resize
 )
 
@@ -121,28 +122,33 @@ class TFRandomCropAndResize(TFRandomTransform):
 
     def __init__(
             self,
-            max_x_offset_fraction: float = 0.2,
-            max_y_offset_fraction: float = 0.2,
+            height_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            width_fraction_range: Tuple[float, float] = (0.6, 0.9),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
         super().__init__(_tf_crop_and_resize, probability, seed)
-        self.max_x_offset_fraction = max_x_offset_fraction
-        self.max_y_offset_fraction = max_y_offset_fraction
+        self.height_fraction_range = height_fraction_range
+        self.width_fraction_range = width_fraction_range
 
     def __call__(
             self,
             images: tf.Tensor,
             bboxes_ragged: tf.Tensor
     ) -> Tuple[tf.Tensor, tf.Tensor]:
-        batch_size = tf.shape(images)[0]
-        return super().call(
-            images,
-            bboxes_ragged,
-            tf.random.uniform(
-                shape=[batch_size], maxval=self.max_x_offset_fraction
-            ),
-            tf.random.uniform(
-                shape=[batch_size], maxval=self.max_y_offset_fraction
+
+        images_shape = tf.shape(images)
+
+        def rand_fn() -> tf.Tensor:
+            return tf.random.uniform(images_shape[0], seed=self.seed)
+
+        offset_heights, offset_widths, cropped_heights, cropped_widths = \
+            _tf_fractions_to_heights_and_widths(
+                images_shape[1], images_shape[2],
+                self.height_fraction_range, self.width_fraction_range, rand_fn
             )
+
+        return super().call(
+            images, bboxes_ragged,
+            offset_heights, offset_widths, cropped_heights, cropped_widths
         )
