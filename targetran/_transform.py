@@ -302,7 +302,6 @@ def _crop_single(
     """
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
-    offset_fraction: float in [0.0, 1.0)
     """
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
