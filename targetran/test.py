@@ -3,6 +3,7 @@ Unit tests.
 """
 
 from typing import Tuple
+
 import unittest
 
 import numpy as np  # type: ignore
