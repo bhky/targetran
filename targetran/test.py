@@ -3,10 +3,10 @@ Unit tests.
 """
 
 from typing import Tuple
+import unittest
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
-import unittest
 
 from ._transform import (
     _np_flip_left_right,
