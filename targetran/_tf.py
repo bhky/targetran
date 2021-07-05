@@ -4,7 +4,7 @@ API for TensorFlow usage.
 
 from typing import Any, Callable, Tuple
 
-import tensorflow as tf
+import tensorflow as tf  # type: ignore
 
 from ._transform import (
     _tf_resize,

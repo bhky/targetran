@@ -4,7 +4,7 @@ API for Numpy usage.
 
 from typing import Any, Callable, Tuple
 
-import numpy as np
+import numpy as np  # type: ignore
 
 from ._transform import (
     _np_resize,
