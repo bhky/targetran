@@ -6,14 +6,17 @@ from typing import Any, Callable, Tuple
 
 import tensorflow as tf  # type: ignore
 
+from ._functional import _tf_convert
 from ._transform import (
+    _get_random_size_fractions,
     _tf_resize,
     _tf_flip_left_right,
     _tf_flip_up_down,
     _tf_rotate_90,
     _tf_rotate_90_and_pad_and_resize,
     _tf_get_random_crop_inputs,
-    _tf_crop_and_resize
+    _tf_crop_and_resize,
+    _tf_translate
 )
 
 
@@ -122,14 +125,14 @@ class TFRandomCropAndResize(TFRandomTransform):
 
     def __init__(
             self,
-            height_fraction_range: Tuple[float, float] = (0.6, 0.9),
-            width_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            crop_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            crop_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
         super().__init__(_tf_crop_and_resize, probability, seed)
-        self.height_fraction_range = height_fraction_range
-        self.width_fraction_range = width_fraction_range
+        self.crop_height_fraction_range = crop_height_fraction_range
+        self.crop_width_fraction_range = crop_width_fraction_range
 
     def __call__(
             self,
@@ -145,10 +148,50 @@ class TFRandomCropAndResize(TFRandomTransform):
         offset_heights, offset_widths, cropped_heights, cropped_widths = \
             _tf_get_random_crop_inputs(
                 images_shape[1], images_shape[2],
-                self.height_fraction_range, self.width_fraction_range, rand_fn
+                self.crop_height_fraction_range,
+                self.crop_width_fraction_range,
+                rand_fn
             )
 
         return super().call(
             images, bboxes_ragged,
             offset_heights, offset_widths, cropped_heights, cropped_widths
+        )
+
+
+class RandomTranslate(TFRandomTransform):
+
+    def __init__(
+            self,
+            translate_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            translate_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(_tf_translate, probability, seed)
+        self.translate_height_fraction_range = translate_height_fraction_range
+        self.translate_width_fraction_range = translate_width_fraction_range
+
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_ragged: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+
+        images_shape = tf.shape(images)
+
+        def rand_fn() -> tf.Tensor:
+            return tf.random.uniform(images_shape[0], seed=self.seed)
+
+        height_fractions, width_fractions = _get_random_size_fractions(
+            self.translate_height_fraction_range,
+            self.translate_width_fraction_range,
+            rand_fn, _tf_convert
+        )
+
+        translate_heights = images_shape[1] * height_fractions
+        translate_widths = images_shape[2] * width_fractions
+
+        return super().call(
+            images, bboxes_ragged, translate_heights, translate_widths
         )

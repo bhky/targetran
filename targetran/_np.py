@@ -6,14 +6,17 @@ from typing import Any, Callable, Tuple
 
 import numpy as np  # type: ignore
 
+from ._functional import _np_convert
 from ._transform import (
+    _get_random_size_fractions,
     _np_resize,
     _np_flip_left_right,
     _np_flip_up_down,
     _np_rotate_90,
     _np_rotate_90_and_pad_and_resize,
     _np_get_random_crop_inputs,
-    _np_crop_and_resize
+    _np_crop_and_resize,
+    _np_translate
 )
 
 
@@ -122,14 +125,14 @@ class RandomCropAndResize(RandomTransform):
 
     def __init__(
             self,
-            height_fraction_range: Tuple[float, float] = (0.6, 0.9),
-            width_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            crop_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            crop_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
         super().__init__(_np_crop_and_resize, probability, seed)
-        self.height_fraction_range = height_fraction_range
-        self.width_fraction_range = width_fraction_range
+        self.crop_height_fraction_range = crop_height_fraction_range
+        self.crop_width_fraction_range = crop_width_fraction_range
 
     def __call__(
             self,
@@ -145,10 +148,50 @@ class RandomCropAndResize(RandomTransform):
         offset_heights, offset_widths, cropped_heights, cropped_widths = \
             _np_get_random_crop_inputs(
                 images_shape[1], images_shape[2],
-                self.height_fraction_range, self.width_fraction_range, rand_fn
+                self.crop_height_fraction_range,
+                self.crop_width_fraction_range,
+                rand_fn
             )
 
         return super().call(
             images, bboxes_ragged,
             offset_heights, offset_widths, cropped_heights, cropped_widths
+        )
+
+
+class RandomTranslate(RandomTransform):
+
+    def __init__(
+            self,
+            translate_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            translate_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(_np_translate, probability, seed)
+        self.translate_height_fraction_range = translate_height_fraction_range
+        self.translate_width_fraction_range = translate_width_fraction_range
+
+    def __call__(
+            self,
+            images: np.ndarray,
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+
+        images_shape = np.shape(images)
+
+        def rand_fn() -> np.ndarray:
+            return self.rng.random(images_shape[0])
+
+        height_fractions, width_fractions = _get_random_size_fractions(
+            self.translate_height_fraction_range,
+            self.translate_width_fraction_range,
+            rand_fn, _np_convert
+        )
+
+        translate_heights = images_shape[1] * height_fractions
+        translate_widths = images_shape[2] * width_fractions
+
+        return super().call(
+            images, bboxes_ragged, translate_heights, translate_widths
         )

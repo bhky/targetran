@@ -261,7 +261,8 @@ def _get_random_size_fractions(
         convert_fn: Callable[..., T],
 ) -> Tuple[T, T]:
     """
-    rand_fn: should generate random (-1.0, 1.0) array of batch size.
+    height_fraction_range, width_fraction_range: (-1.0, 1.0)
+    rand_fn: generate random [0.0, 1.0) array of batch size
     """
     height_fraction_range = convert_fn(height_fraction_range)
     width_fraction_range = convert_fn(width_fraction_range)
@@ -289,7 +290,8 @@ def _get_random_crop_inputs(
         rint_fn: Callable[[T], T]
 ) -> Tuple[T, T, T, T]:
     """
-    rand_fn: should generate random [0.0, 1.0) array of batch size.
+    height_fraction_range, width_fraction_range: [0.0, 1.0)
+    rand_fn: generate random [0.0, 1.0) array of batch size
     Return: randomized (offset_heights, offset_widths,
                         cropped_image_heights, cropped_image_widths)
     """
