@@ -12,7 +12,7 @@ from ._transform import (
     _np_flip_up_down,
     _np_rotate_90,
     _np_rotate_90_and_pad_and_resize,
-    _np_fractions_to_heights_and_widths,
+    _np_get_random_crop_inputs,
     _np_crop_and_resize
 )
 
@@ -143,7 +143,7 @@ class RandomCropAndResize(RandomTransform):
             return self.rng.random(images_shape[0])
 
         offset_heights, offset_widths, cropped_heights, cropped_widths = \
-            _np_fractions_to_heights_and_widths(
+            _np_get_random_crop_inputs(
                 images_shape[1], images_shape[2],
                 self.height_fraction_range, self.width_fraction_range, rand_fn
             )

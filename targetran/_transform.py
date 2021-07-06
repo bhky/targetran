@@ -254,7 +254,7 @@ def _resize_single(
     return image, bboxes
 
 
-def _fractions_to_heights_and_widths(
+def _get_random_crop_inputs(
         image_height: int,
         image_width: int,
         height_fraction_range: Tuple[float, float],
@@ -483,14 +483,14 @@ def _np_rotate_90_and_pad_and_resize(
     return _np_resize(images, bboxes_ragged, (height, width))
 
 
-def _np_fractions_to_heights_and_widths(
+def _np_get_random_crop_inputs(
         image_height: int,
         image_width: int,
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
         rand_fn: Callable[..., np.ndarray]
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    return _fractions_to_heights_and_widths(
+    return _get_random_crop_inputs(
         image_height, image_width, height_fraction_range, width_fraction_range,
         rand_fn, _np_convert, np.rint
     )
@@ -613,14 +613,14 @@ def _tf_rotate_90_and_pad_and_resize(
     return _tf_resize(images, bboxes_ragged, (height, width))
 
 
-def _tf_fractions_to_heights_and_widths(
+def _tf_get_random_crop_inputs(
         image_height: int,
         image_width: int,
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
         rand_fn: Callable[..., tf.Tensor]
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _fractions_to_heights_and_widths(
+    return _get_random_crop_inputs(
         image_height, image_width, height_fraction_range, width_fraction_range,
         rand_fn, _tf_convert, tf.math.rint
     )

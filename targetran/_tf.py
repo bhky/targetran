@@ -12,7 +12,7 @@ from ._transform import (
     _tf_flip_up_down,
     _tf_rotate_90,
     _tf_rotate_90_and_pad_and_resize,
-    _tf_fractions_to_heights_and_widths,
+    _tf_get_random_crop_inputs,
     _tf_crop_and_resize
 )
 
@@ -143,7 +143,7 @@ class TFRandomCropAndResize(TFRandomTransform):
             return tf.random.uniform(images_shape[0], seed=self.seed)
 
         offset_heights, offset_widths, cropped_heights, cropped_widths = \
-            _tf_fractions_to_heights_and_widths(
+            _tf_get_random_crop_inputs(
                 images_shape[1], images_shape[2],
                 self.height_fraction_range, self.width_fraction_range, rand_fn
             )
