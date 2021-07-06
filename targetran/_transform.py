@@ -132,6 +132,20 @@ def _rotate_90(
     return images, bboxes_ragged
 
 
+def _translate_bboxes(
+        bboxes: T,
+        top_offset: int,
+        left_offset: int,
+        concat_fn: Callable[[List[T], int], T]
+) -> T:
+    return concat_fn([
+        bboxes[:, :1] + left_offset,
+        bboxes[:, 1:2] + top_offset,
+        bboxes[:, 2:3],
+        bboxes[:, 3:],
+    ], 1)  # Along axis 1.
+
+
 def _pad(
         images: T,
         bboxes_ragged: T,
@@ -154,12 +168,9 @@ def _pad(
 
     all_bboxes = stack_bboxes_fn(bboxes_ragged)
 
-    all_bboxes = concat_fn([
-        all_bboxes[:, :1] + int(pad_offsets[2]),
-        all_bboxes[:, 1:2] + int(pad_offsets[0]),
-        all_bboxes[:, 2:3],
-        all_bboxes[:, 3:],
-    ], 1)  # Along axis 1.
+    all_bboxes = _translate_bboxes(
+        all_bboxes, int(pad_offsets[0]), int(pad_offsets[2]), concat_fn
+    )
 
     bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
@@ -302,6 +313,8 @@ def _crop_single(
     """
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    offset_height: [0, image_height - 1]
+    offset_width: [0, image_width - 1]
     """
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
@@ -335,6 +348,67 @@ def _crop_single(
         logical_and_fn(ys >= 0, ymaxs <= cropped_image_height)
     ), -1)  # Squeeze along the last axis.
     bboxes = boolean_mask_fn(bboxes, included)
+
+    return image, bboxes
+
+
+def _translate_single(
+        image: T,
+        bboxes: T,
+        translate_height: int,
+        translate_width: int,
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, int]], T],
+        convert_fn: Callable[..., T],
+        where_fn: Callable[[T, T, T], T],
+        concat_fn: Callable[[List[T], int], T],
+        logical_and_fn: Callable[[T, T], T],
+        expand_dim_fn: Callable[[T, int], T],
+        squeeze_fn: Callable[[T, int], T],
+        boolean_mask_fn: Callable[[T, T], T],
+        pad_images_fn: Callable[[T, T], T],
+) -> Tuple[T, T]:
+    """
+    Making use of cropping and padding to perform translation.
+
+    image: [h, w, c]
+    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    translate_height: [-image_height + 1: image_height - 1]
+    translate_width: [-image_width + 1: image_width - 1]
+    """
+    image_shape = shape_fn(image)
+    assert len(image_shape) == 3
+
+    translate_height = convert_fn(translate_height)
+    translate_width = convert_fn(translate_width)
+
+    offset_height, pad_top, pad_bottom = where_fn(
+        translate_height >= 0,
+        convert_fn([0, translate_height, 0]),
+        convert_fn([translate_height, 0, translate_height])
+    )
+    offset_width, pad_left, pad_right = where_fn(
+        translate_width >= 0,
+        convert_fn([0, translate_width, 0]),
+        convert_fn([translate_width, 0, translate_width])
+    )
+
+    cropped_height = image_shape[1] - translate_height
+    cropped_width = image_shape[2] - translate_width
+
+    image, bboxes = _crop_single(
+        image, bboxes,
+        offset_height, offset_width, cropped_height, cropped_width,
+        shape_fn, reshape_fn, convert_fn, concat_fn, logical_and_fn,
+        squeeze_fn, boolean_mask_fn
+    )
+
+    image = squeeze_fn(pad_images_fn(
+        expand_dim_fn(image, 0),
+        convert_fn([pad_top, pad_bottom, pad_left, pad_right])
+    ), 0)
+
+    bboxes = _translate_bboxes(bboxes, int(pad_top), int(pad_left), concat_fn)
 
     return image, bboxes
 
@@ -449,6 +523,26 @@ def _np_crop_and_resize(
     return images, bboxes_ragged
 
 
+def _np_translate(
+        images: np.ndarray,
+        bboxes_ragged: np.ndarray,
+        translate_heights: np.ndarray,
+        translate_widths: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    image_list = [image for image in images]
+    bboxes_list = _np_ragged_to_list(bboxes_ragged)
+    image_list, bboxes_list = _map_single(
+        _translate_single, image_list, bboxes_list,
+        [translate_heights, translate_widths],
+        np.shape, np.reshape, _np_convert, np.where, np.concatenate,
+        _np_logical_and, np.expand_dims, np.squeeze, _np_boolean_mask,
+        _np_pad_images
+    )
+    images = _np_convert(image_list)
+    bboxes_ragged = _np_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
+
+
 def _tf_flip_left_right(
         images: tf.Tensor,
         bboxes_ragged: tf.Tensor
@@ -553,6 +647,26 @@ def _tf_crop_and_resize(
         _resize_single, image_list, bboxes_list, None,
         tf.shape(images)[1:3], tf.shape, _tf_resize_image,
         _tf_convert, tf.concat
+    )
+    images = _tf_convert(image_list)
+    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
+
+
+def _tf_translate(
+        images: tf.Tensor,
+        bboxes_ragged: tf.Tensor,
+        translate_heights: tf.Tensor,
+        translate_widths: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    image_list = [image for image in images]
+    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
+    image_list, bboxes_list = _map_single(
+        _translate_single, image_list, bboxes_list,
+        [translate_heights, translate_widths],
+        tf.shape, tf.reshape, _tf_convert, tf.where, tf.concat,
+        tf.logical_and, tf.expand_dims, tf.squeeze, tf.boolean_mask,
+        _tf_pad_images
     )
     images = _tf_convert(image_list)
     bboxes_ragged = _tf_list_to_ragged(bboxes_list)
