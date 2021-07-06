@@ -254,22 +254,15 @@ def _resize_single(
     return image, bboxes
 
 
-def _get_random_crop_inputs(
-        image_height: int,
-        image_width: int,
+def _get_random_size_fractions(
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
         rand_fn: Callable[..., T],
         convert_fn: Callable[..., T],
-        rint_fn: Callable[[T], T]
-) -> Tuple[T, T, T, T]:
+) -> Tuple[T, T]:
     """
-    rand_fn: generate random [0.0, 1.0) array of batch size.
-    Return: randomized (offset_heights, offset_widths,
-                        cropped_image_heights, cropped_image_widths)
+    rand_fn: should generate random (-1.0, 1.0) array of batch size.
     """
-    image_height = convert_fn(image_height)
-    image_width = convert_fn(image_width)
     height_fraction_range = convert_fn(height_fraction_range)
     width_fraction_range = convert_fn(width_fraction_range)
 
@@ -282,6 +275,32 @@ def _get_random_crop_inputs(
 
     height_fractions = height_fraction_diff * rand_fn() + min_height_fraction
     width_fractions = width_fraction_diff * rand_fn() + min_width_fraction
+
+    return height_fractions, width_fractions
+
+
+def _get_random_crop_inputs(
+        image_height: int,
+        image_width: int,
+        height_fraction_range: Tuple[float, float],
+        width_fraction_range: Tuple[float, float],
+        rand_fn: Callable[..., T],
+        convert_fn: Callable[..., T],
+        rint_fn: Callable[[T], T]
+) -> Tuple[T, T, T, T]:
+    """
+    rand_fn: should generate random [0.0, 1.0) array of batch size.
+    Return: randomized (offset_heights, offset_widths,
+                        cropped_image_heights, cropped_image_widths)
+    """
+    image_height = convert_fn(image_height)
+    image_width = convert_fn(image_width)
+    height_fraction_range = convert_fn(height_fraction_range)
+    width_fraction_range = convert_fn(width_fraction_range)
+
+    height_fractions, width_fractions = _get_random_size_fractions(
+        height_fraction_range, width_fraction_range, rand_fn, convert_fn
+    )
 
     cropped_image_heights = image_height * height_fractions
     cropped_image_widths = image_height * width_fractions
