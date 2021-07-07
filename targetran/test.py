@@ -13,7 +13,7 @@ from ._np import (
     flip_left_right,
     flip_up_down,
     rotate_90,
-    rotate_90_and_pad,
+    _np_rotate_90_and_pad,
     crop_and_resize,
     translate
 )
@@ -22,7 +22,7 @@ from ._tf import (
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate_90,
-    tf_rotate_90_and_pad,
+    _tf_rotate_90_and_pad,
     tf_crop_and_resize,
     tf_translate
 )
@@ -270,7 +270,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        images, bboxes_ragged = rotate_90_and_pad(
+        images, bboxes_ragged = _np_rotate_90_and_pad(
             ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
         )
         self.assertTrue(
@@ -284,7 +284,7 @@ class TestTransform(unittest.TestCase):
         tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
             expected_images, expected_bboxes_ragged
         )
-        tf_images, tf_bboxes_ragged = tf_rotate_90_and_pad(
+        tf_images, tf_bboxes_ragged = _tf_rotate_90_and_pad(
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
         )
 

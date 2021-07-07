@@ -55,17 +55,6 @@ def flip_up_down(
     )
 
 
-def rotate_90(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
-    return _rotate_90(
-        images, bboxes_ragged,
-        np.shape, _np_convert, np.transpose, _np_stack_bboxes, np.concatenate,
-        _np_make_bboxes_ragged
-    )
-
-
 def resize(
         images: np.ndarray,
         bboxes_ragged: np.ndarray,
@@ -82,10 +71,24 @@ def resize(
     return images, bboxes_ragged
 
 
-def rotate_90_and_pad(
+def rotate_90(
+        images: np.ndarray,
+        bboxes_ragged: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    return _rotate_90(
+        images, bboxes_ragged,
+        np.shape, _np_convert, np.transpose, _np_stack_bboxes, np.concatenate,
+        _np_make_bboxes_ragged
+    )
+
+
+def _np_rotate_90_and_pad(
         images: np.ndarray,
         bboxes_ragged: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Middle-step function for easy testing.
+    """
     return _rotate_90_and_pad(
         images, bboxes_ragged,
         np.shape, _np_convert, np.transpose, _np_stack_bboxes, np.concatenate,
@@ -94,12 +97,15 @@ def rotate_90_and_pad(
     )
 
 
-def rotate_90_and_pad_and_resize(
+def rotate_90_and_resize(
         images: np.ndarray,
         bboxes_ragged: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Could be rotate_90_and_pad_and_resize, but thought it is too clumsy.
+    """
     height, width = int(np.shape(images)[1]), int(np.shape(images)[2])
-    images, bboxes_ragged = rotate_90_and_pad(images, bboxes_ragged)
+    images, bboxes_ragged = _np_rotate_90_and_pad(images, bboxes_ragged)
     return resize(images, bboxes_ragged, (height, width))
 
 
@@ -254,7 +260,7 @@ class RandomRotate90(RandomTransform):
 class RandomRotate90AndResize(RandomTransform):
 
     def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(rotate_90_and_pad_and_resize, probability, seed)
+        super().__init__(rotate_90_and_resize, probability, seed)
 
     def __call__(
             self,

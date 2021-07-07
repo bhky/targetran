@@ -53,17 +53,6 @@ def tf_flip_up_down(
     )
 
 
-def tf_rotate_90(
-        images: tf.Tensor,
-        bboxes_ragged: tf.Tensor
-) -> Tuple[tf.Tensor, tf.Tensor]:
-    return _rotate_90(
-        images, bboxes_ragged,
-        tf.shape, _tf_convert, tf.transpose, _tf_stack_bboxes, tf.concat,
-        _tf_make_bboxes_ragged
-    )
-
-
 def tf_resize(
         images: tf.Tensor,
         bboxes_ragged: tf.Tensor,
@@ -80,10 +69,24 @@ def tf_resize(
     return images, bboxes_ragged
 
 
-def tf_rotate_90_and_pad(
+def tf_rotate_90(
+        images: tf.Tensor,
+        bboxes_ragged: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    return _rotate_90(
+        images, bboxes_ragged,
+        tf.shape, _tf_convert, tf.transpose, _tf_stack_bboxes, tf.concat,
+        _tf_make_bboxes_ragged
+    )
+
+
+def _tf_rotate_90_and_pad(
         images: tf.Tensor,
         bboxes_ragged: tf.Tensor,
 ) -> Tuple[tf.Tensor, tf.Tensor]:
+    """
+    Middle-step function for easy testing.
+    """
     return _rotate_90_and_pad(
         images, bboxes_ragged,
         tf.shape, _tf_convert, tf.transpose, _tf_stack_bboxes, tf.concat,
@@ -92,12 +95,15 @@ def tf_rotate_90_and_pad(
     )
 
 
-def tf_rotate_90_and_pad_and_resize(
+def tf_rotate_90_and_resize(
         images: tf.Tensor,
         bboxes_ragged: tf.Tensor,
 ) -> Tuple[tf.Tensor, tf.Tensor]:
+    """
+    Could be tf_rotate_90_and_pad_and_resize, but thought it is too clumsy.
+    """
     height, width = int(tf.shape(images)[1]), int(tf.shape(images)[2])
-    images, bboxes_ragged = tf_rotate_90_and_pad(images, bboxes_ragged)
+    images, bboxes_ragged = _tf_rotate_90_and_pad(images, bboxes_ragged)
     return tf_resize(images, bboxes_ragged, (height, width))
 
 
@@ -252,7 +258,7 @@ class TFRandomRotate90(TFRandomTransform):
 class TFRandomRotate90AndResize(TFRandomTransform):
 
     def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(tf_rotate_90_and_pad_and_resize, probability, seed)
+        super().__init__(tf_rotate_90_and_resize, probability, seed)
 
     def __call__(
             self,
