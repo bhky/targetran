@@ -382,6 +382,7 @@ def _translate_single(
         reshape_fn: Callable[[T, Tuple[int, int]], T],
         convert_fn: Callable[..., T],
         where_fn: Callable[[T, T, T], T],
+        abs_fn: Callable[[T], T],
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
         expand_dim_fn: Callable[[T, int], T],
@@ -406,16 +407,16 @@ def _translate_single(
     offset_height, pad_top, pad_bottom = where_fn(
         translate_height >= 0,
         convert_fn([0, translate_height, 0]),
-        convert_fn([translate_height, 0, translate_height])
+        convert_fn([-translate_height, 0, -translate_height])
     )
     offset_width, pad_left, pad_right = where_fn(
         translate_width >= 0,
         convert_fn([0, translate_width, 0]),
-        convert_fn([translate_width, 0, translate_width])
+        convert_fn([-translate_width, 0, -translate_width])
     )
 
-    cropped_height = image_shape[1] - translate_height
-    cropped_width = image_shape[2] - translate_width
+    cropped_height = convert_fn(image_shape[0]) - abs_fn(translate_height)
+    cropped_width = convert_fn(image_shape[1]) - abs_fn(translate_width)
 
     image, bboxes = _crop_single(
         image, bboxes,
@@ -555,7 +556,7 @@ def _np_translate(
     image_list, bboxes_list = _map_single(
         _translate_single, image_list, bboxes_list,
         [translate_heights, translate_widths],
-        np.shape, np.reshape, _np_convert, np.where, np.concatenate,
+        np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
         _np_logical_and, np.expand_dims, np.squeeze, _np_boolean_mask,
         _np_pad_images
     )
@@ -685,7 +686,7 @@ def _tf_translate(
     image_list, bboxes_list = _map_single(
         _translate_single, image_list, bboxes_list,
         [translate_heights, translate_widths],
-        tf.shape, tf.reshape, _tf_convert, tf.where, tf.concat,
+        tf.shape, tf.reshape, _tf_convert, tf.where, tf.abs, tf.concat,
         tf.logical_and, tf.expand_dims, tf.squeeze, tf.boolean_mask,
         _tf_pad_images
     )

@@ -15,11 +15,13 @@ from ._transform import (
     _np_rotate_90,
     _np_rotate_90_and_pad,
     _np_crop_and_resize,
+    _np_translate,
     _tf_flip_left_right,
     _tf_flip_up_down,
     _tf_rotate_90,
     _tf_rotate_90_and_pad,
-    _tf_crop_and_resize
+    _tf_crop_and_resize,
+    _tf_translate
 )
 
 
@@ -357,6 +359,65 @@ class TestTransform(unittest.TestCase):
             self.assertTrue(
                 np.allclose(expected_bboxes.numpy(), bboxes.numpy())
             )
+
+    def test_translate(self) -> None:
+
+        translate_heights = np.array([-1, 0, 1])
+        translate_widths = np.array([0, 1, 1])
+
+        expected_images = np.array([
+            [[[4], [5], [6]],
+             [[7], [8], [9]],
+             [[10], [11], [12]],
+             [[0], [0], [0]]],
+            [[[0], [11], [12]],
+             [[0], [14], [15]],
+             [[0], [17], [18]],
+             [[0], [20], [21]]],
+            [[[0], [0], [0]],
+             [[0], [21], [22]],
+             [[0], [24], [25]],
+             [[0], [27], [28]]],
+        ], dtype=np.float32)
+        expected_bboxes_ragged = np.array([
+            np.array([
+                [0, 0, 3, 2],
+            ], dtype=np.float32),
+            np.array([
+                [1, 0, 2, 3],
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
+        ], dtype=object)
+
+        # Numpy.
+        images, bboxes_ragged = _np_translate(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED,
+            translate_heights, translate_widths
+        )
+
+        self.assertTrue(np.array_equal(expected_images, images))
+        for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
+                                           bboxes_ragged):
+            self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+
+        # TF.
+        tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
+            expected_images, expected_bboxes_ragged
+        )
+        tf_images, tf_bboxes_ragged = _tf_translate(
+            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED,
+            tf.convert_to_tensor(translate_heights),
+            tf.convert_to_tensor(translate_widths)
+        )
+
+        self.assertTrue(
+            np.array_equal(tf_expected_images.numpy(),
+                           tf_images.numpy())
+        )
+        self.assertTrue(
+            np.array_equal(tf_expected_bboxes_ragged.to_list(),
+                           tf_bboxes_ragged.to_list())
+        )
 
 
 if __name__ == "__main__":
