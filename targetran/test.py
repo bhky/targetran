@@ -9,19 +9,22 @@ import unittest
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
-from ._transform import (
-    _np_flip_left_right,
-    _np_flip_up_down,
-    _np_rotate_90,
-    _np_rotate_90_and_pad,
-    _np_crop_and_resize,
-    _np_translate,
-    _tf_flip_left_right,
-    _tf_flip_up_down,
-    _tf_rotate_90,
-    _tf_rotate_90_and_pad,
-    _tf_crop_and_resize,
-    _tf_translate
+from ._np import (
+    flip_left_right,
+    flip_up_down,
+    rotate_90,
+    rotate_90_and_pad,
+    crop_and_resize,
+    translate
+)
+
+from ._tf import (
+    tf_flip_left_right,
+    tf_flip_up_down,
+    tf_rotate_90,
+    tf_rotate_90_and_pad,
+    tf_crop_and_resize,
+    tf_translate
 )
 
 
@@ -100,7 +103,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        images, bboxes_ragged = _np_flip_left_right(
+        images, bboxes_ragged = flip_left_right(
             ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
         )
         self.assertTrue(
@@ -114,7 +117,7 @@ class TestTransform(unittest.TestCase):
         tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
             expected_images, expected_bboxes_ragged
         )
-        tf_images, tf_bboxes_ragged = _tf_flip_left_right(
+        tf_images, tf_bboxes_ragged = tf_flip_left_right(
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
         )
 
@@ -155,7 +158,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        images, bboxes_ragged = _np_flip_up_down(
+        images, bboxes_ragged = flip_up_down(
             ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
         )
 
@@ -168,7 +171,7 @@ class TestTransform(unittest.TestCase):
         tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
             expected_images, expected_bboxes_ragged
         )
-        tf_images, tf_bboxes_ragged = _tf_flip_up_down(
+        tf_images, tf_bboxes_ragged = tf_flip_up_down(
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
         )
 
@@ -206,7 +209,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        images, bboxes_ragged = _np_rotate_90(
+        images, bboxes_ragged = rotate_90(
             ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
         )
         self.assertTrue(
@@ -220,7 +223,7 @@ class TestTransform(unittest.TestCase):
         tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
             expected_images, expected_bboxes_ragged
         )
-        tf_images, tf_bboxes_ragged = _tf_rotate_90(
+        tf_images, tf_bboxes_ragged = tf_rotate_90(
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
         )
 
@@ -267,7 +270,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        images, bboxes_ragged = _np_rotate_90_and_pad(
+        images, bboxes_ragged = rotate_90_and_pad(
             ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
         )
         self.assertTrue(
@@ -281,7 +284,7 @@ class TestTransform(unittest.TestCase):
         tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
             expected_images, expected_bboxes_ragged
         )
-        tf_images, tf_bboxes_ragged = _tf_rotate_90_and_pad(
+        tf_images, tf_bboxes_ragged = tf_rotate_90_and_pad(
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
         )
 
@@ -331,7 +334,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        _, bboxes_ragged = _np_crop_and_resize(
+        _, bboxes_ragged = crop_and_resize(
             dummy_images, original_bboxes_ragged,
             offset_heights, offset_widths,
             cropped_image_heights, cropped_image_widths
@@ -347,7 +350,7 @@ class TestTransform(unittest.TestCase):
         _, tf_expected_bboxes_ragged = _np_to_tf(
             dummy_images, expected_bboxes_ragged
         )
-        _, tf_bboxes_ragged = _tf_crop_and_resize(
+        _, tf_bboxes_ragged = tf_crop_and_resize(
             tf_dummy_images, tf_original_bboxes_ragged,
             tf.convert_to_tensor(offset_heights),
             tf.convert_to_tensor(offset_widths),
@@ -390,7 +393,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        images, bboxes_ragged = _np_translate(
+        images, bboxes_ragged = translate(
             ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED,
             translate_heights, translate_widths
         )
@@ -404,7 +407,7 @@ class TestTransform(unittest.TestCase):
         tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
             expected_images, expected_bboxes_ragged
         )
-        tf_images, tf_bboxes_ragged = _tf_translate(
+        tf_images, tf_bboxes_ragged = tf_translate(
             TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED,
             tf.convert_to_tensor(translate_heights),
             tf.convert_to_tensor(translate_widths)
