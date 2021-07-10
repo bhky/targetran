@@ -203,6 +203,85 @@ def _rotate_90_and_pad(
     )
 
 
+def _rotate_single(
+        image: T,
+        bboxes: T,
+        angle_deg: float,
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        convert_fn: Callable[..., T],
+        expand_dim_fn: Callable[[T, int], T],
+        squeeze_fn: Callable[[T, int], T],
+        pad_images_fn: Callable[[T, T], T],
+        range_fn: Callable[[int, int, int], T],
+        repeat_fn: Callable[[T, T], T],
+        tile_fn: Callable[[T, T], T],
+        vstack_fn: Callable[[List[T]], T],
+        cos_fn: Callable[[T], T],
+        sin_fn: Callable[[T], T],
+        matmul_fn: Callable[[T, T], T],
+        cast_to_int_fn: Callable[[T], T],
+        clip_fn: Callable[[T, T, T], T],
+        transpose_fn: Callable[[T], T],
+        gather_fn: Callable[[T, T], T],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+) -> Tuple[T, T]:
+    """
+    References:
+    https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
+
+    image: [h, w, c]
+    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    """
+    image_shape = shape_fn(image)
+    assert len(image_shape) == 3
+
+    pad_offsets = convert_fn([1, 1, 1, 1])
+    image = squeeze_fn(pad_images_fn(expand_dim_fn(image, 0), pad_offsets), 0)
+
+    height, width = int(image_shape[0]) + 2, int(image_shape[1]) + 2
+    height_mod = height % 2
+    width_mod = width % 2
+
+    # Destination indices.
+    row_idxes = repeat_fn(
+        range_fn(height // 2 + height_mod, -height // 2, -1),
+        convert_fn([height])
+    )
+    col_idxes = tile_fn(
+        range_fn(-width // 2, width // 2 + width_mod, 1),
+        convert_fn([width])
+    )
+    idxes = vstack_fn([row_idxes, col_idxes])
+
+    # Rotation matrix. Clockwise for the indices, so the final image would
+    # appear to be rotated anti-clockwise.
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
+    rot_mat = convert_fn([
+        [cos_fn(ang_rad), sin_fn(ang_rad)],
+        [-sin_fn(ang_rad), cos_fn(ang_rad)]
+    ])
+    new_idxes = matmul_fn(rot_mat, idxes)
+    new_idxes = cast_to_int_fn(new_idxes)
+    new_idxes = clip_fn(
+        new_idxes,
+        convert_fn([-height // 2, -width // 2]),
+        convert_fn([height // 2 + height_mod, width // 2 + width_mod])
+    )
+
+    # Assigning original pixel values to new positions.
+    orig_idxes = vstack_fn([
+        new_idxes[:1] + height // 2,
+        new_idxes[1:] + width // 2
+    ])
+    values = gather_fn(image, transpose_fn(orig_idxes))
+    new_image = reshape_fn(values, (height, width, 3))
+
+    # Transform bboxes.
+
+
+
+
+
 def _resize_single(
         image: T,
         bboxes: T,
@@ -304,7 +383,7 @@ def _crop_single(
         cropped_image_height: int,
         cropped_image_width: int,
         shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, int]], T],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
         convert_fn: Callable[..., T],
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
@@ -359,7 +438,7 @@ def _translate_single(
         translate_height: int,
         translate_width: int,
         shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, int]], T],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
         convert_fn: Callable[..., T],
         where_fn: Callable[[T, T, T], T],
         abs_fn: Callable[[T], T],
