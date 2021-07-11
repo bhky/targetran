@@ -249,22 +249,24 @@ def _rotate_single(
     # https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
 
     # Destination indices.
-    row_idxes = repeat_fn(
-        range_fn(height // 2 + height_mod, -height // 2, -1),
+    row_idxes = repeat_fn(  # Along y-axis, from top to bottom.
+        range_fn(-height // 2, height // 2 + height_mod, 1),
         convert_fn([height])
     )
-    col_idxes = tile_fn(
+    col_idxes = tile_fn(  # Along x-axis, from left to right.
         range_fn(-width // 2, width // 2 + width_mod, 1),
         convert_fn([width])
     )
     image_idxes = concat_fn([row_idxes, col_idxes], 0)
 
     # Rotation matrix. Clockwise for the indices, so the final image would
-    # appear to be rotated anti-clockwise.
+    # appear to be rotated anti-clockwise. Note that because of the
+    # (row, col) -> (y, x) order swapping, the "clockwise" rotation matrix
+    # is transposed w.r.t the usual one.
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     image_rot_mat = convert_fn([
-        [cos_fn(ang_rad), sin_fn(ang_rad)],
-        [-sin_fn(ang_rad), cos_fn(ang_rad)]
+        [cos_fn(ang_rad), -sin_fn(ang_rad)],
+        [sin_fn(ang_rad), cos_fn(ang_rad)]
     ])
     new_image_idxes = matmul_fn(image_rot_mat, image_idxes)
     new_image_idxes = cast_to_int_fn(new_image_idxes)
@@ -294,10 +296,10 @@ def _rotate_single(
 
     orig_height, orig_width = int(image_shape[0]), int(image_shape[1])
     xs = concat_fn(
-        [top_left_xs - orig_height // 2,
-         top_right_xs - orig_height // 2,
-         bottom_left_xs - orig_height // 2,
-         bottom_right_xs - orig_height // 2],
+        [top_left_xs - orig_width // 2,
+         top_right_xs - orig_width // 2,
+         bottom_left_xs - orig_width // 2,
+         bottom_right_xs - orig_width // 2],
         1
     )
     ys = concat_fn(
@@ -309,9 +311,9 @@ def _rotate_single(
     )
     bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
 
-    bboxes_rot_mat = convert_fn([  # Anti-clockwise.
-        [cos_fn(ang_rad), -sin_fn(ang_rad)],
-        [sin_fn(ang_rad), cos_fn(ang_rad)]
+    bboxes_rot_mat = convert_fn([  # Anti-clockwise, usual (x, y) order.
+        [cos_fn(ang_rad), sin_fn(ang_rad)],
+        [-sin_fn(ang_rad), cos_fn(ang_rad)]
     ])
     new_bboxes_idxes = matmul_fn(bboxes_rot_mat, bboxes_idxes)
 
