@@ -215,7 +215,7 @@ def _rotate_single(
         range_fn: Callable[[int, int, int], T],
         repeat_fn: Callable[[T, T], T],
         tile_fn: Callable[[T, T], T],
-        vstack_fn: Callable[[List[T]], T],
+        concat_fn: Callable[[List[T], int], T],
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T],
         matmul_fn: Callable[[T, T], T],
@@ -224,11 +224,12 @@ def _rotate_single(
         transpose_fn: Callable[[T], T],
         gather_fn: Callable[[T, T], T],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        copy_fn: Callable[[T], T],
+        stack_fn: Callable[[List[T], int], T],
+        max_fn: Callable[[T, int], T],
+        min_fn: Callable[[T, int], T],
 ) -> Tuple[T, T]:
     """
-    References:
-    https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
-
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     """
@@ -242,6 +243,9 @@ def _rotate_single(
     height_mod = height % 2
     width_mod = width % 2
 
+    # References:
+    # https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
+
     # Destination indices.
     row_idxes = repeat_fn(
         range_fn(height // 2 + height_mod, -height // 2, -1),
@@ -251,34 +255,72 @@ def _rotate_single(
         range_fn(-width // 2, width // 2 + width_mod, 1),
         convert_fn([width])
     )
-    idxes = vstack_fn([row_idxes, col_idxes])
+    image_idxes = concat_fn([row_idxes, col_idxes], 0)
 
     # Rotation matrix. Clockwise for the indices, so the final image would
     # appear to be rotated anti-clockwise.
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
-    rot_mat = convert_fn([
+    image_rot_mat = convert_fn([
         [cos_fn(ang_rad), sin_fn(ang_rad)],
         [-sin_fn(ang_rad), cos_fn(ang_rad)]
     ])
-    new_idxes = matmul_fn(rot_mat, idxes)
-    new_idxes = cast_to_int_fn(new_idxes)
-    new_idxes = clip_fn(
-        new_idxes,
+    new_image_idxes = matmul_fn(image_rot_mat, image_idxes)
+    new_image_idxes = cast_to_int_fn(new_image_idxes)
+    new_image_idxes = clip_fn(
+        new_image_idxes,
         convert_fn([-height // 2, -width // 2]),
         convert_fn([height // 2 + height_mod, width // 2 + width_mod])
     )
 
     # Assigning original pixel values to new positions.
-    orig_idxes = vstack_fn([
-        new_idxes[:1] + height // 2,
-        new_idxes[1:] + width // 2
-    ])
-    values = gather_fn(image, transpose_fn(orig_idxes))
+    orig_image_idxes = concat_fn([
+        new_image_idxes[:1] + height // 2,
+        new_image_idxes[1:] + width // 2
+    ], 0)
+    values = gather_fn(image, transpose_fn(orig_image_idxes))
     new_image = reshape_fn(values, (height, width, 3))
 
     # Transform bboxes.
+    top_left_xs = bboxes[:, :1]
+    top_left_ys = bboxes[:, 1:2]
+    top_right_xs = bboxes[:, :1] + bboxes[:, 2:3]
+    top_right_ys = bboxes[:, 1:2]
+    bottom_left_xs = copy_fn(top_left_xs)
+    bottom_left_ys = copy_fn(top_left_ys + bboxes[:, 3:])
+    bottom_right_xs = copy_fn(top_right_xs)
+    bottom_right_ys = copy_fn(top_right_ys + bboxes[:, 3:])
 
+    orig_height, orig_width = int(image_shape[0]), int(image_shape[1])
+    xs = concat_fn(
+        [top_left_xs - orig_height // 2,
+         top_right_xs - orig_height // 2,
+         bottom_left_xs - orig_height // 2,
+         bottom_right_xs - orig_height // 2],
+        1
+    )
+    ys = concat_fn(
+        [top_left_ys - orig_height // 2,
+         top_right_ys - orig_height // 2,
+         bottom_left_ys - orig_height // 2,
+         bottom_right_ys - orig_height // 2],
+        1
+    )
+    bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
 
+    bboxes_rot_mat = convert_fn([  # Anti-clockwise.
+        [cos_fn(ang_rad), -sin_fn(ang_rad)],
+        [sin_fn(ang_rad), cos_fn(ang_rad)]
+    ])
+    new_bboxes_idxes = matmul_fn(bboxes_rot_mat, bboxes_idxes)
+
+    # Filter bboxes.
+    new_xs = new_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
+    new_ys = new_bboxes_idxes[:, 1, :]
+    max_xs = max_fn(new_xs, -1)  # Shape: [num_bboxes].
+    max_ys = max_fn(new_ys, -1)
+    min_xs = min_fn(new_xs, -1)
+    min_ys = min_fn(new_ys, -1)
+    # todo...
 
 
 
