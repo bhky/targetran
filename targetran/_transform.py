@@ -228,6 +228,8 @@ def _rotate_single(
         stack_fn: Callable[[List[T], int], T],
         max_fn: Callable[[T, int], T],
         min_fn: Callable[[T, int], T],
+        logical_and_fn: Callable[[T, T], T],
+        boolean_mask_fn: Callable[[T, T], T]
 ) -> Tuple[T, T]:
     """
     image: [h, w, c]
@@ -313,15 +315,36 @@ def _rotate_single(
     ])
     new_bboxes_idxes = matmul_fn(bboxes_rot_mat, bboxes_idxes)
 
-    # Filter bboxes.
+    # New bboxes, defined as the rectangle enclosing the transformed bboxes.
     new_xs = new_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
     new_ys = new_bboxes_idxes[:, 1, :]
     max_xs = max_fn(new_xs, -1)  # Shape: [num_bboxes].
     max_ys = max_fn(new_ys, -1)
     min_xs = min_fn(new_xs, -1)
     min_ys = min_fn(new_ys, -1)
-    # todo...
 
+    new_top_left_xs = expand_dim_fn(min_xs, -1)
+    new_top_left_ys = expand_dim_fn(min_ys, -1)
+    new_bottom_right_xs = expand_dim_fn(max_xs, -1)
+    new_bottom_right_ys = expand_dim_fn(max_ys, -1)
+    new_widths = new_bottom_right_xs - new_top_left_xs
+    new_heights = new_bottom_right_ys - new_top_left_ys
+    new_bboxes = concat_fn([  # Shape: [num_bboxes, 4].
+        new_top_left_xs, new_top_left_ys, new_widths, new_heights
+    ], -1)
+
+    # Filter new bboxes.
+    included = logical_and_fn(
+        logical_and_fn(
+            min_xs >= -orig_width // 2, max_xs <= orig_width // 2 + width_mod
+        ),
+        logical_and_fn(
+            min_ys >= -orig_height // 2, max_ys <= orig_height // 2 + height_mod
+        )
+    )
+    new_bboxes = boolean_mask_fn(new_bboxes, included)
+
+    return new_image, new_bboxes
 
 
 def _resize_single(
