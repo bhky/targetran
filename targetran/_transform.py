@@ -344,6 +344,13 @@ def _rotate_single(
     )
     new_bboxes = boolean_mask_fn(new_bboxes, included)
 
+    new_bboxes = concat_fn([
+        new_bboxes[:, :1] + orig_width // 2,
+        new_bboxes[:, 1:2] + orig_height // 2,
+        new_bboxes[:, 2:3],
+        new_bboxes[:, 3:]
+    ], 1)
+
     return new_image, new_bboxes
 
 
