@@ -238,12 +238,13 @@ def _rotate_single(
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
 
-    pad_offsets = convert_fn([1, 1, 1, 1])
-    image = squeeze_fn(pad_images_fn(expand_dim_fn(image, 0), pad_offsets), 0)
-
-    height, width = int(image_shape[0]) + 2, int(image_shape[1]) + 2
+    height, width = int(image_shape[0]), int(image_shape[1])
     height_mod = height % 2
     width_mod = width % 2
+
+    # Pad image to provide a zero-value pixel frame for clipping use below.
+    pad_offsets = convert_fn([1, 1, 1, 1])
+    image = squeeze_fn(pad_images_fn(expand_dim_fn(image, 0), pad_offsets), 0)
 
     # References:
     # https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
@@ -272,14 +273,15 @@ def _rotate_single(
     new_image_idxes = cast_to_int_fn(new_image_idxes)
     new_image_idxes = clip_fn(
         new_image_idxes,
-        convert_fn([-height // 2, -width // 2]),
-        convert_fn([height // 2 + height_mod, width // 2 + width_mod])
+        # Note the extra idx for the padded frame.
+        convert_fn([-height // 2 - 1, -width // 2 - 1]),
+        convert_fn([height // 2 + 1 + height_mod, width // 2 + 1 + width_mod])
     )
 
     # Assigning original pixel values to new positions.
     orig_image_idxes = concat_fn([
-        new_image_idxes[:1] + height // 2,
-        new_image_idxes[1:] + width // 2
+        new_image_idxes[:1] + height // 2 + 1,
+        new_image_idxes[1:] + width // 2 + 1
     ], 0)
     values = gather_fn(image, transpose_fn(orig_image_idxes))
     new_image = reshape_fn(values, (height, width, 3))
@@ -294,19 +296,18 @@ def _rotate_single(
     bottom_right_xs = copy_fn(top_right_xs)
     bottom_right_ys = copy_fn(top_right_ys + bboxes[:, 3:])
 
-    orig_height, orig_width = int(image_shape[0]), int(image_shape[1])
     xs = concat_fn(
-        [top_left_xs - orig_width // 2,
-         top_right_xs - orig_width // 2,
-         bottom_left_xs - orig_width // 2,
-         bottom_right_xs - orig_width // 2],
+        [top_left_xs - width // 2,
+         top_right_xs - width // 2,
+         bottom_left_xs - width // 2,
+         bottom_right_xs - width // 2],
         1
     )
     ys = concat_fn(
-        [top_left_ys - orig_height // 2,
-         top_right_ys - orig_height // 2,
-         bottom_left_ys - orig_height // 2,
-         bottom_right_ys - orig_height // 2],
+        [top_left_ys - height // 2,
+         top_right_ys - height // 2,
+         bottom_left_ys - height // 2,
+         bottom_right_ys - height // 2],
         1
     )
     bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
@@ -338,17 +339,17 @@ def _rotate_single(
     # Filter new bboxes.
     included = logical_and_fn(
         logical_and_fn(
-            min_xs >= -orig_width // 2, max_xs <= orig_width // 2 + width_mod
+            min_xs >= -width // 2, max_xs <= width // 2 + width_mod
         ),
         logical_and_fn(
-            min_ys >= -orig_height // 2, max_ys <= orig_height // 2 + height_mod
+            min_ys >= -height // 2, max_ys <= height // 2 + height_mod
         )
     )
     new_bboxes = boolean_mask_fn(new_bboxes, included)
 
     new_bboxes = concat_fn([
-        new_bboxes[:, :1] + orig_width // 2,
-        new_bboxes[:, 1:2] + orig_height // 2,
+        new_bboxes[:, :1] + width // 2,
+        new_bboxes[:, 1:2] + height // 2,
         new_bboxes[:, 2:3],
         new_bboxes[:, 3:]
     ], 1)
