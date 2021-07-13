@@ -213,16 +213,16 @@ def _rotate_single(
         squeeze_fn: Callable[[T, int], T],
         pad_images_fn: Callable[[T, T], T],
         range_fn: Callable[[int, int, int], T],
+        cast_to_int_fn: Callable[[T], T],
         repeat_fn: Callable[[T, T], T],
         tile_fn: Callable[[T, T], T],
         concat_fn: Callable[[List[T], int], T],
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T],
         matmul_fn: Callable[[T, T], T],
-        cast_to_int_fn: Callable[[T], T],
         clip_fn: Callable[[T, T, T], T],
         transpose_fn: Callable[[T], T],
-        gather_fn: Callable[[T, T], T],
+        gather_nd_fn: Callable[[T, T], T],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
         copy_fn: Callable[[T], T],
         stack_fn: Callable[[List[T], int], T],
@@ -251,11 +251,11 @@ def _rotate_single(
 
     # Destination indices.
     row_idxes = repeat_fn(  # Along y-axis, from top to bottom.
-        range_fn(-height // 2, height // 2 + height_mod, 1),
+        cast_to_int_fn(range_fn(-height // 2, height // 2 + height_mod, 1)),
         convert_fn([height])
     )
     col_idxes = tile_fn(  # Along x-axis, from left to right.
-        range_fn(-width // 2, width // 2 + width_mod, 1),
+        cast_to_int_fn(range_fn(-width // 2, width // 2 + width_mod, 1)),
         convert_fn([width])
     )
     image_idxes = concat_fn([row_idxes, col_idxes], 0)
@@ -283,7 +283,7 @@ def _rotate_single(
         new_image_idxes[:1] + height // 2 + 1,
         new_image_idxes[1:] + width // 2 + 1
     ], 0)
-    values = gather_fn(image, transpose_fn(orig_image_idxes))
+    values = gather_nd_fn(image, transpose_fn(orig_image_idxes))
     new_image = reshape_fn(values, (height, width, 3))
 
     # Transform bboxes.

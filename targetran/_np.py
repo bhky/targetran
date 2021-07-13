@@ -13,10 +13,12 @@ from ._functional import (
     _np_ragged_to_list,
     _np_list_to_ragged,
     _np_stack_bboxes,
+    _np_cast_to_int,
     _np_resize_image,
     _np_boolean_mask,
     _np_logical_and,
     _np_pad_images,
+    _np_gather_nd,
     _np_make_bboxes_ragged
 )
 
@@ -25,6 +27,7 @@ from ._transform import (
     _flip_up_down,
     _rotate_90,
     _rotate_90_and_pad,
+    _rotate_single,
     _crop_single,
     _resize_single,
     _translate_single,
@@ -107,6 +110,26 @@ def rotate_90_and_resize(
     height, width = int(np.shape(images)[1]), int(np.shape(images)[2])
     images, bboxes_ragged = _np_rotate_90_and_pad(images, bboxes_ragged)
     return resize(images, bboxes_ragged, (height, width))
+
+
+def rotate(
+        images: np.ndarray,
+        bboxes_ragged: np.ndarray,
+        angle_deg: float
+) -> Tuple[np.ndarray, np.ndarray]:
+    image_list = [image for image in images]
+    bboxes_list = _np_ragged_to_list(bboxes_ragged)
+    image_list, bboxes_list = _map_single(
+        _rotate_single, image_list, bboxes_list, None,
+        angle_deg, np.shape, _np_convert, np.expand_dims, np.squeeze,
+        _np_pad_images, np.arange, _np_cast_to_int, np.repeat, np.tile,
+        np.concatenate, np.cos, np.sin, np.matmul, np.clip, np.transpose,
+        _np_gather_nd, np.reshape, np.copy, np.stack,
+        np.max, np.min, _np_logical_and, _np_boolean_mask
+    )
+    images = _np_convert(image_list)
+    bboxes_ragged = _np_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
 
 
 def _np_get_random_crop_inputs(

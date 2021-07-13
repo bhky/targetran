@@ -59,6 +59,10 @@ def _np_stack_bboxes(bboxes_ragged: np.ndarray) -> np.ndarray:
     return all_bboxes
 
 
+def _np_cast_to_int(x: np.ndarray) -> np.ndarray:
+    return x.astype(dtype=np.int32)
+
+
 def _np_logical_and(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.logical_and(x, y)
 
@@ -98,6 +102,10 @@ def _np_boolean_mask(x: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return x[mask]
 
 
+def _np_gather_nd(x: np.ndarray, indices: np.ndarray) -> np.ndarray:
+    return x[indices]
+
+
 def _np_make_bboxes_ragged(
         all_bboxes: np.ndarray,
         bboxes_ragged: np.ndarray,
@@ -129,6 +137,10 @@ def _tf_stack_bboxes(bboxes_ragged: tf.Tensor) -> tf.Tensor:
     all_bboxes = tf.concat(bboxes_list, 0)
     assert np.shape(all_bboxes)[-1] == 4
     return all_bboxes
+
+
+def _tf_cast_to_int(x: tf.Tensor) -> tf.Tensor:
+    return tf.cast(x, dtype=tf.int32)
 
 
 def _tf_pad_images(

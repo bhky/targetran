@@ -12,6 +12,7 @@ from ._functional import (
     _tf_ragged_to_list,
     _tf_list_to_ragged,
     _tf_stack_bboxes,
+    _tf_cast_to_int,
     _tf_resize_image,
     _tf_pad_images,
     _tf_make_bboxes_ragged
@@ -23,6 +24,7 @@ from ._transform import (
     _flip_up_down,
     _rotate_90,
     _rotate_90_and_pad,
+    _rotate_single,
     _crop_single,
     _resize_single,
     _translate_single,
@@ -105,6 +107,26 @@ def tf_rotate_90_and_resize(
     height, width = int(tf.shape(images)[1]), int(tf.shape(images)[2])
     images, bboxes_ragged = _tf_rotate_90_and_pad(images, bboxes_ragged)
     return tf_resize(images, bboxes_ragged, (height, width))
+
+
+def tf_rotate(
+        images: tf.Tensor,
+        bboxes_ragged: tf.Tensor,
+        angle_deg: float
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    image_list = [image for image in images]
+    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
+    image_list, bboxes_list = _map_single(
+        _rotate_single, image_list, bboxes_list, None,
+        angle_deg, tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
+        _tf_pad_images, tf.range, _tf_cast_to_int, tf.repeat, tf.tile,
+        tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value, tf.transpose,
+        tf.gather_nd, tf.reshape, tf.identity, tf.stack,
+        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+    )
+    images = _tf_convert(image_list)
+    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
 
 
 def _tf_get_random_crop_inputs(
