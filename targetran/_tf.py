@@ -112,13 +112,14 @@ def tf_rotate_90_and_resize(
 def tf_rotate(
         images: tf.Tensor,
         bboxes_ragged: tf.Tensor,
-        angle_deg: float
+        angles_deg: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor]:
     image_list = [image for image in images]
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
-        _rotate_single, image_list, bboxes_list, None,
-        angle_deg, tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
+        _rotate_single, image_list, bboxes_list,
+        [angles_deg],
+        tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_images, tf.range, _tf_cast_to_int, tf.repeat, tf.tile,
         tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value, tf.transpose,
         tf.gather_nd, tf.reshape, tf.identity, tf.stack,
@@ -288,6 +289,35 @@ class TFRandomRotate90AndResize(TFRandomTransform):
             bboxes_ragged: tf.Tensor
     ) -> Tuple[tf.Tensor, tf.Tensor]:
         return super().call(images, bboxes_ragged)
+
+
+class TFRandomRotate(TFRandomTransform):
+
+    def __init__(
+            self,
+            angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(tf_rotate, probability, seed)
+        self.angle_deg_range = angle_deg_range
+
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_ragged: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+
+        images_shape = tf.shape(images)
+
+        def rand_fn() -> tf.Tensor:
+            return tf.random.uniform(images_shape[0], seed=self.seed)
+
+        angles_deg = \
+            _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
+            * rand_fn() + _tf_convert(self.angle_deg_range[0])
+
+        return super().call(images, bboxes_ragged, angles_deg)
 
 
 class TFRandomCropAndResize(TFRandomTransform):

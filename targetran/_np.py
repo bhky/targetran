@@ -115,13 +115,14 @@ def rotate_90_and_resize(
 def rotate(
         images: np.ndarray,
         bboxes_ragged: np.ndarray,
-        angle_deg: float
+        angles_deg: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
     image_list = [image for image in images]
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
-        _rotate_single, image_list, bboxes_list, None,
-        angle_deg, np.shape, _np_convert, np.expand_dims, np.squeeze,
+        _rotate_single, image_list, bboxes_list,
+        [angles_deg],
+        np.shape, _np_convert, np.expand_dims, np.squeeze,
         _np_pad_images, np.arange, _np_cast_to_int, np.repeat, np.tile,
         np.concatenate, np.cos, np.sin, np.matmul, np.clip, np.transpose,
         _np_gather_nd, np.reshape, np.copy, np.stack,
@@ -291,6 +292,35 @@ class RandomRotate90AndResize(RandomTransform):
             bboxes_ragged: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
         return super().call(images, bboxes_ragged)
+
+
+class RandomRotate(RandomTransform):
+
+    def __init__(
+            self,
+            angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(rotate, probability, seed)
+        self.angle_deg_range = angle_deg_range
+
+    def __call__(
+            self,
+            images: np.ndarray,
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+
+        images_shape = np.shape(images)
+
+        def rand_fn() -> np.ndarray:
+            return self.rng.random(images_shape[0])
+
+        angles_deg = \
+            self.angle_deg_range[1] - self.angle_deg_range[0] * rand_fn() \
+            + self.angle_deg_range[0]
+
+        return super().call(images, bboxes_ragged, angles_deg)
 
 
 class RandomCropAndResize(RandomTransform):
