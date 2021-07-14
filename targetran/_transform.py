@@ -222,8 +222,7 @@ def _rotate_single(
         sin_fn: Callable[[T], T],
         matmul_fn: Callable[[T, T], T],
         clip_fn: Callable[[T, T, T], T],
-        transpose_fn: Callable[[T], T],
-        gather_nd_fn: Callable[[T, T], T],
+        gather_image_fn: Callable[[T, T], T],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
         copy_fn: Callable[[T], T],
         max_fn: Callable[[T, int], T],
@@ -239,6 +238,7 @@ def _rotate_single(
     assert len(image_shape) == 3
 
     height, width = int(image_shape[0]), int(image_shape[1])
+    num_channels = int(image_shape[2])
     height_mod = height % 2
     width_mod = width % 2
 
@@ -288,8 +288,8 @@ def _rotate_single(
         new_image_idxes[1:] + width // 2 + 1
     ], 0)
     orig_image_idxes = cast_to_int_fn(orig_image_idxes)
-    values = gather_nd_fn(image, transpose_fn(orig_image_idxes))
-    new_image = reshape_fn(values, (height, width, 3))
+    values = gather_image_fn(image, orig_image_idxes)
+    new_image = reshape_fn(values, (height, width, num_channels))
 
     # Transform bboxes.
     top_left_xs = bboxes[:, :1]

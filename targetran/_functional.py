@@ -102,8 +102,11 @@ def _np_boolean_mask(x: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return x[mask]
 
 
-def _np_gather_nd(x: np.ndarray, indices: np.ndarray) -> np.ndarray:
-    return x[indices]
+def _np_gather_image(image: np.ndarray, indices: np.ndarray) -> np.ndarray:
+    """
+    indices: [[row_0, row_1, ...], [col_0, col_1, ...]]
+    """
+    return image[tuple(indices)]
 
 
 def _np_make_bboxes_ragged(
@@ -171,6 +174,13 @@ def _tf_resize_image(
     return tf.image.resize(
         image, size=dest_size, method=tf.image.ResizeMethod.AREA
     )
+
+
+def _tf_gather_image(image: tf.Tensor, indices: tf.Tensor) -> tf.Tensor:
+    """
+    indices: [[row_0, row_1, ...], [col_0, col_1, ...]]
+    """
+    return tf.gather_nd(image, tf.transpose(indices))
 
 
 def _tf_make_bboxes_ragged(

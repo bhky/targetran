@@ -18,7 +18,7 @@ from ._functional import (
     _np_boolean_mask,
     _np_logical_and,
     _np_pad_images,
-    _np_gather_nd,
+    _np_gather_image,
     _np_make_bboxes_ragged
 )
 
@@ -125,7 +125,7 @@ def rotate(
         np.shape, _np_convert, np.expand_dims, np.squeeze,
         _np_pad_images, np.arange, _np_cast_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
-        np.transpose, _np_gather_nd, np.reshape, np.copy,
+        _np_gather_image, np.reshape, np.copy,
         np.max, np.min, _np_logical_and, _np_boolean_mask
     )
     images = _np_convert(image_list)
