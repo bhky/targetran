@@ -336,8 +336,17 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        _, bboxes_ragged = rotate(
+        images, bboxes_ragged = rotate(
             original_images, original_bboxes_ragged, angles_deg
+        )
+
+        print("------------")
+        print(expected_images.tolist())
+        print(images.tolist())
+        print("------------")
+
+        self.assertTrue(
+            np.array_equal(expected_images, images)
         )
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
@@ -347,12 +356,16 @@ class TestTransform(unittest.TestCase):
         tf_original_images, tf_original_bboxes_ragged = _np_to_tf(
             original_images, original_bboxes_ragged
         )
-        _, tf_expected_bboxes_ragged = _np_to_tf(
+        tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
             expected_images, expected_bboxes_ragged
         )
-        _, tf_bboxes_ragged = tf_rotate(
+        tf_images, tf_bboxes_ragged = tf_rotate(
             tf_original_images, tf_original_bboxes_ragged,
             tf.convert_to_tensor(angles_deg)
+        )
+        self.assertTrue(
+            np.array_equal(tf_expected_images.numpy(),
+                           tf_images.numpy())
         )
         for expected_bboxes, bboxes in zip(tf_expected_bboxes_ragged,
                                            tf_bboxes_ragged):
