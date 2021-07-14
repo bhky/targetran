@@ -121,8 +121,8 @@ def tf_rotate(
         [angles_deg],
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_images, tf.range, _tf_cast_to_int, tf.repeat, tf.tile,
-        tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value, tf.transpose,
-        tf.gather_nd, tf.reshape, tf.identity, tf.stack,
+        tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
+        tf.transpose, tf.gather_nd, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
     images = _tf_convert(image_list)

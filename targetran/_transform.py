@@ -216,6 +216,7 @@ def _rotate_single(
         cast_to_int_fn: Callable[[T], T],
         repeat_fn: Callable[[T, T], T],
         tile_fn: Callable[[T, T], T],
+        stack_fn: Callable[[List[T], int], T],
         concat_fn: Callable[[List[T], int], T],
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T],
@@ -225,7 +226,6 @@ def _rotate_single(
         gather_nd_fn: Callable[[T, T], T],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
         copy_fn: Callable[[T], T],
-        stack_fn: Callable[[List[T], int], T],
         max_fn: Callable[[T, int], T],
         min_fn: Callable[[T, int], T],
         logical_and_fn: Callable[[T, T], T],
@@ -249,16 +249,16 @@ def _rotate_single(
     # References:
     # https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
 
-    # Destination indices.
+    # Destination indices. Note that (-foo // 2) != -(foo // 2).
     row_idxes = repeat_fn(  # Along y-axis, from top to bottom.
-        cast_to_int_fn(range_fn(-height // 2, height // 2 + height_mod, 1)),
-        convert_fn([height])
+        cast_to_int_fn(range_fn(-(height // 2), height // 2 + height_mod, 1)),
+        cast_to_int_fn(convert_fn([height]))
     )
     col_idxes = tile_fn(  # Along x-axis, from left to right.
-        cast_to_int_fn(range_fn(-width // 2, width // 2 + width_mod, 1)),
-        convert_fn([width])
+        cast_to_int_fn(range_fn(-(width // 2), width // 2 + width_mod, 1)),
+        cast_to_int_fn(convert_fn([width]))
     )
-    image_idxes = concat_fn([row_idxes, col_idxes], 0)
+    image_idxes = stack_fn([row_idxes, col_idxes], 0)
 
     # Rotation matrix. Clockwise for the indices, so the final image would
     # appear to be rotated anti-clockwise. Note that because of the
@@ -274,8 +274,12 @@ def _rotate_single(
     new_image_idxes = clip_fn(
         new_image_idxes,
         # Note the extra idx for the padded frame.
-        convert_fn([-height // 2 - 1, -width // 2 - 1]),
-        convert_fn([height // 2 + 1 + height_mod, width // 2 + 1 + width_mod])
+        convert_fn([
+            [-(height // 2) - 1], [-(width // 2) - 1]
+        ]),
+        convert_fn([
+            [height // 2 + 1 + height_mod], [width // 2 + 1 + width_mod]
+        ])
     )
 
     # Assigning original pixel values to new positions.
@@ -283,6 +287,7 @@ def _rotate_single(
         new_image_idxes[:1] + height // 2 + 1,
         new_image_idxes[1:] + width // 2 + 1
     ], 0)
+    orig_image_idxes = cast_to_int_fn(orig_image_idxes)
     values = gather_nd_fn(image, transpose_fn(orig_image_idxes))
     new_image = reshape_fn(values, (height, width, 3))
 
@@ -339,10 +344,10 @@ def _rotate_single(
     # Filter new bboxes.
     included = logical_and_fn(
         logical_and_fn(
-            min_xs >= -width // 2, max_xs <= width // 2 + width_mod
+            min_xs >= -(width // 2), max_xs <= width // 2 + width_mod
         ),
         logical_and_fn(
-            min_ys >= -height // 2, max_ys <= height // 2 + height_mod
+            min_ys >= -(height // 2), max_ys <= height // 2 + height_mod
         )
     )
     new_bboxes = boolean_mask_fn(new_bboxes, included)

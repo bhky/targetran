@@ -14,6 +14,7 @@ from ._np import (
     flip_up_down,
     rotate_90,
     _np_rotate_90_and_pad,
+    rotate,
     crop_and_resize,
     translate
 )
@@ -23,6 +24,7 @@ from ._tf import (
     tf_flip_up_down,
     tf_rotate_90,
     _tf_rotate_90_and_pad,
+    tf_rotate,
     tf_crop_and_resize,
     tf_translate
 )
@@ -296,6 +298,67 @@ class TestTransform(unittest.TestCase):
             np.array_equal(tf_expected_bboxes_ragged.to_list(),
                            tf_bboxes_ragged.to_list())
         )
+
+    def test_rotate(self) -> None:
+
+        original_images = np.array([
+            [[[1], [2], [3]],
+             [[4], [5], [6]],
+             [[7], [8], [9]]],
+            [[[10], [11], [12]],
+             [[13], [14], [15]],
+             [[16], [17], [18]]],
+        ])
+        original_bboxes_ragged = np.array([
+            np.array([
+                [1, 0, 2, 2],
+                [0, 1, 3, 2],
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
+        ], dtype=object)
+
+        angles_deg = np.array([90.0, 180.0])
+
+        expected_images = np.array([
+            [[[3], [6], [9]],
+             [[2], [5], [8]],
+             [[1], [4], [7]]],
+            [[[18], [17], [16]],
+             [[15], [14], [13]],
+             [[12], [11], [10]]],
+        ], dtype=np.float32)
+        expected_bboxes_ragged = np.array([
+            np.array([
+                [0, 0, 2, 2],
+                [1, 0, 2, 3],
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
+        ], dtype=object)
+
+        # Numpy.
+        _, bboxes_ragged = rotate(
+            original_images, original_bboxes_ragged, angles_deg
+        )
+        for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
+                                           bboxes_ragged):
+            self.assertTrue(np.allclose(expected_bboxes, bboxes))
+
+        # TF.
+        tf_original_images, tf_original_bboxes_ragged = _np_to_tf(
+            original_images, original_bboxes_ragged
+        )
+        _, tf_expected_bboxes_ragged = _np_to_tf(
+            expected_images, expected_bboxes_ragged
+        )
+        _, tf_bboxes_ragged = tf_rotate(
+            tf_original_images, tf_original_bboxes_ragged,
+            tf.convert_to_tensor(angles_deg)
+        )
+        for expected_bboxes, bboxes in zip(tf_expected_bboxes_ragged,
+                                           tf_bboxes_ragged):
+            self.assertTrue(
+                np.allclose(expected_bboxes.numpy(), bboxes.numpy())
+            )
 
     def test_crop_and_resize(self) -> None:
 
