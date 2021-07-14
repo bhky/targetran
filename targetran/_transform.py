@@ -213,7 +213,7 @@ def _rotate_single(
         squeeze_fn: Callable[[T, int], T],
         pad_images_fn: Callable[[T, T], T],
         range_fn: Callable[[int, int, int], T],
-        cast_to_int_fn: Callable[[T], T],
+        round_to_int_fn: Callable[[T], T],
         repeat_fn: Callable[[T, T], T],
         tile_fn: Callable[[T, T], T],
         stack_fn: Callable[[List[T], int], T],
@@ -239,8 +239,6 @@ def _rotate_single(
 
     height, width = int(image_shape[0]), int(image_shape[1])
     num_channels = int(image_shape[2])
-    height_mod = height % 2
-    width_mod = width % 2
 
     # Pad image to provide a zero-value pixel frame for clipping use below.
     pad_offsets = convert_fn([1, 1, 1, 1])
@@ -251,43 +249,41 @@ def _rotate_single(
 
     # Destination indices. Note that (-foo // 2) != -(foo // 2).
     row_idxes = repeat_fn(  # Along y-axis, from top to bottom.
-        cast_to_int_fn(range_fn(-(height // 2), height // 2 + height_mod, 1)),
-        cast_to_int_fn(convert_fn([height]))
+        round_to_int_fn(range_fn(-(height // 2), height // 2 + 1, 1)),
+        round_to_int_fn(convert_fn([height]))
     )
     col_idxes = tile_fn(  # Along x-axis, from left to right.
-        cast_to_int_fn(range_fn(-(width // 2), width // 2 + width_mod, 1)),
-        cast_to_int_fn(convert_fn([width]))
+        round_to_int_fn(range_fn(-(width // 2), width // 2 + 1, 1)),
+        round_to_int_fn(convert_fn([width]))
     )
-    image_idxes = stack_fn([row_idxes, col_idxes], 0)
+    # Note the (col, row) -> (x, y) swapping.
+    image_idxes = stack_fn([col_idxes, row_idxes], 0)
 
     # Rotation matrix. Clockwise for the indices, so the final image would
-    # appear to be rotated anti-clockwise. Note that because of the
-    # (row, col) -> (y, x) order swapping, the "clockwise" rotation matrix
-    # is transposed w.r.t the usual one.
+    # appear to be rotated anti-clockwise.
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     image_rot_mat = convert_fn([
         [cos_fn(ang_rad), -sin_fn(ang_rad)],
         [sin_fn(ang_rad), cos_fn(ang_rad)]
     ])
     new_image_idxes = matmul_fn(image_rot_mat, image_idxes)
-    new_image_idxes = cast_to_int_fn(new_image_idxes)
-    new_image_idxes = clip_fn(
+    clipped_new_image_idxes = clip_fn(
         new_image_idxes,
         # Note the extra idx for the padded frame.
         convert_fn([
-            [-(height // 2) - 1], [-(width // 2) - 1]
+            [-(width // 2) - 1], [-(height // 2) - 1]
         ]),
         convert_fn([
-            [height // 2 + 1 + height_mod], [width // 2 + 1 + width_mod]
+            [width // 2 + 2], [height // 2 + 2]
         ])
     )
 
     # Assigning original pixel values to new positions.
     orig_image_idxes = concat_fn([
-        new_image_idxes[:1] + height // 2 + 1,
-        new_image_idxes[1:] + width // 2 + 1
+        clipped_new_image_idxes[1:] + height // 2 + 1,  # Rows.
+        clipped_new_image_idxes[:1] + width // 2 + 1  # Columns.
     ], 0)
-    orig_image_idxes = cast_to_int_fn(orig_image_idxes)
+    orig_image_idxes = round_to_int_fn(orig_image_idxes)
     values = gather_image_fn(image, orig_image_idxes)
     new_image = reshape_fn(values, (height, width, num_channels))
 
@@ -317,7 +313,7 @@ def _rotate_single(
     )
     bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
 
-    bboxes_rot_mat = convert_fn([  # Anti-clockwise, usual (x, y) order.
+    bboxes_rot_mat = convert_fn([  # Anti-clockwise.
         [cos_fn(ang_rad), sin_fn(ang_rad)],
         [-sin_fn(ang_rad), cos_fn(ang_rad)]
     ])
@@ -344,10 +340,10 @@ def _rotate_single(
     # Filter new bboxes.
     included = logical_and_fn(
         logical_and_fn(
-            min_xs >= -(width // 2), max_xs <= width // 2 + width_mod
+            min_xs >= -(width // 2), max_xs <= width // 2 + 1
         ),
         logical_and_fn(
-            min_ys >= -(height // 2), max_ys <= height // 2 + height_mod
+            min_ys >= -(height // 2), max_ys <= height // 2 + 1
         )
     )
     new_bboxes = boolean_mask_fn(new_bboxes, included)
@@ -426,7 +422,7 @@ def _get_random_crop_inputs(
         width_fraction_range: Tuple[float, float],
         rand_fn: Callable[..., T],
         convert_fn: Callable[..., T],
-        rint_fn: Callable[[T], T]
+        round_to_int_fn: Callable[[T], T]
 ) -> Tuple[T, T, T, T]:
     """
     height_fraction_range, width_fraction_range: [0.0, 1.0)
@@ -446,8 +442,12 @@ def _get_random_crop_inputs(
     cropped_image_heights = image_height * height_fractions
     cropped_image_widths = image_height * width_fractions
 
-    offset_heights = rint_fn((image_height - cropped_image_heights) * rand_fn())
-    offset_widths = rint_fn((image_width - cropped_image_widths) * rand_fn())
+    offset_heights = round_to_int_fn(
+        (image_height - cropped_image_heights) * rand_fn()
+    )
+    offset_widths = round_to_int_fn(
+        (image_width - cropped_image_widths) * rand_fn()
+    )
 
     return (
         offset_heights, offset_widths,

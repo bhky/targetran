@@ -339,12 +339,6 @@ class TestTransform(unittest.TestCase):
         images, bboxes_ragged = rotate(
             original_images, original_bboxes_ragged, angles_deg
         )
-
-        print("------------")
-        print(expected_images.tolist())
-        print(images.tolist())
-        print("------------")
-
         self.assertTrue(
             np.array_equal(expected_images, images)
         )

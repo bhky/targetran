@@ -12,7 +12,7 @@ from ._functional import (
     _tf_ragged_to_list,
     _tf_list_to_ragged,
     _tf_stack_bboxes,
-    _tf_cast_to_int,
+    _tf_round_to_int,
     _tf_resize_image,
     _tf_pad_images,
     _tf_gather_image,
@@ -121,7 +121,7 @@ def tf_rotate(
         _rotate_single, image_list, bboxes_list,
         [angles_deg],
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
-        _tf_pad_images, tf.range, _tf_cast_to_int, tf.repeat, tf.tile,
+        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
         _tf_gather_image, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
@@ -140,7 +140,7 @@ def _tf_get_random_crop_inputs(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
     return _get_random_crop_inputs(
         image_height, image_width, height_fraction_range, width_fraction_range,
-        rand_fn, _tf_convert, tf.math.rint
+        rand_fn, _tf_convert, _tf_round_to_int
     )
 
 

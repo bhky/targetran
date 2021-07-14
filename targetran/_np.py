@@ -13,7 +13,7 @@ from ._functional import (
     _np_ragged_to_list,
     _np_list_to_ragged,
     _np_stack_bboxes,
-    _np_cast_to_int,
+    _np_round_to_int,
     _np_resize_image,
     _np_boolean_mask,
     _np_logical_and,
@@ -123,7 +123,7 @@ def rotate(
         _rotate_single, image_list, bboxes_list,
         [angles_deg],
         np.shape, _np_convert, np.expand_dims, np.squeeze,
-        _np_pad_images, np.arange, _np_cast_to_int, np.repeat, np.tile,
+        _np_pad_images, np.arange, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
         _np_gather_image, np.reshape, np.copy,
         np.max, np.min, _np_logical_and, _np_boolean_mask
@@ -142,7 +142,7 @@ def _np_get_random_crop_inputs(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     return _get_random_crop_inputs(
         image_height, image_width, height_fraction_range, width_fraction_range,
-        rand_fn, _np_convert, np.rint
+        rand_fn, _np_convert, _np_round_to_int
     )
 
 

@@ -59,8 +59,8 @@ def _np_stack_bboxes(bboxes_ragged: np.ndarray) -> np.ndarray:
     return all_bboxes
 
 
-def _np_cast_to_int(x: np.ndarray) -> np.ndarray:
-    return x.astype(dtype=np.int32)
+def _np_round_to_int(x: np.ndarray) -> np.ndarray:
+    return np.rint(x).astype(dtype=np.int32)
 
 
 def _np_logical_and(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -142,8 +142,8 @@ def _tf_stack_bboxes(bboxes_ragged: tf.Tensor) -> tf.Tensor:
     return all_bboxes
 
 
-def _tf_cast_to_int(x: tf.Tensor) -> tf.Tensor:
-    return tf.cast(x, dtype=tf.int32)
+def _tf_round_to_int(x: tf.Tensor) -> tf.Tensor:
+    return tf.cast(tf.math.rint(x), dtype=tf.int32)
 
 
 def _tf_pad_images(
