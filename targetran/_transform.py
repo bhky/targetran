@@ -290,12 +290,12 @@ def _rotate_single(
     # Transform bboxes.
     top_left_xs = bboxes[:, :1]
     top_left_ys = bboxes[:, 1:2]
-    top_right_xs = bboxes[:, :1] + bboxes[:, 2:3]
+    top_right_xs = bboxes[:, :1] + bboxes[:, 2:3] - 1
     top_right_ys = bboxes[:, 1:2]
     bottom_left_xs = copy_fn(top_left_xs)
-    bottom_left_ys = copy_fn(top_left_ys + bboxes[:, 3:])
+    bottom_left_ys = copy_fn(top_left_ys + bboxes[:, 3:] - 1)
     bottom_right_xs = copy_fn(top_right_xs)
-    bottom_right_ys = copy_fn(top_right_ys + bboxes[:, 3:])
+    bottom_right_ys = copy_fn(top_right_ys + bboxes[:, 3:] - 1)
 
     xs = concat_fn(
         [top_left_xs - width // 2,
@@ -331,10 +331,13 @@ def _rotate_single(
     new_top_left_ys = expand_dim_fn(min_ys, -1)
     new_bottom_right_xs = expand_dim_fn(max_xs, -1)
     new_bottom_right_ys = expand_dim_fn(max_ys, -1)
-    new_widths = new_bottom_right_xs - new_top_left_xs
-    new_heights = new_bottom_right_ys - new_top_left_ys
+    new_widths = new_bottom_right_xs - new_top_left_xs + 1
+    new_heights = new_bottom_right_ys - new_top_left_ys + 1
     new_bboxes = concat_fn([  # Shape: [num_bboxes, 4].
-        new_top_left_xs, new_top_left_ys, new_widths, new_heights
+        round_to_int_fn(new_top_left_xs),
+        round_to_int_fn(new_top_left_ys),
+        new_widths,
+        new_heights
     ], -1)
 
     # Filter new bboxes.
