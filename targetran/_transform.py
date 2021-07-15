@@ -249,11 +249,11 @@ def _rotate_single(
 
     # Destination indices. Note that (-foo // 2) != -(foo // 2).
     row_idxes = repeat_fn(  # Along y-axis, from top to bottom.
-        round_to_int_fn(range_fn(-(height // 2), height // 2 + 1, 1)),
+        range_fn(-(height // 2), height // 2 + 1, 1),
         round_to_int_fn(convert_fn([height]))
     )
     col_idxes = tile_fn(  # Along x-axis, from left to right.
-        round_to_int_fn(range_fn(-(width // 2), width // 2 + 1, 1)),
+        range_fn(-(width // 2), width // 2 + 1, 1),
         round_to_int_fn(convert_fn([width]))
     )
     # Note the (col, row) -> (x, y) swapping.
@@ -266,7 +266,7 @@ def _rotate_single(
         [cos_fn(ang_rad), -sin_fn(ang_rad)],
         [sin_fn(ang_rad), cos_fn(ang_rad)]
     ])
-    new_image_idxes = matmul_fn(image_rot_mat, image_idxes)
+    new_image_idxes = matmul_fn(image_rot_mat, convert_fn(image_idxes))
     clipped_new_image_idxes = clip_fn(
         new_image_idxes,
         # Note the extra idx for the padded frame.
@@ -336,8 +336,8 @@ def _rotate_single(
     new_bboxes = concat_fn([  # Shape: [num_bboxes, 4].
         round_to_int_fn(new_top_left_xs),
         round_to_int_fn(new_top_left_ys),
-        new_widths,
-        new_heights
+        round_to_int_fn(new_widths),
+        round_to_int_fn(new_heights)
     ], -1)
 
     # Filter new bboxes.
