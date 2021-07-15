@@ -238,6 +238,7 @@ def _rotate_single(
     assert len(image_shape) == 3
 
     height, width = int(image_shape[0]), int(image_shape[1])
+    h_mod, w_mod = height % 2, width % 2
     num_channels = int(image_shape[2])
 
     # Pad image to provide a zero-value pixel frame for clipping use below.
@@ -249,12 +250,12 @@ def _rotate_single(
 
     # Destination indices. Note that (-foo // 2) != -(foo // 2).
     row_idxes = repeat_fn(  # Along y-axis, from top to bottom.
-        range_fn(-(height // 2), height // 2 + 1, 1),
-        round_to_int_fn(convert_fn([height]))
+        range_fn(-(height // 2) + 1 - h_mod, height // 2 + 1, 1),
+        round_to_int_fn(convert_fn([width]))
     )
     col_idxes = tile_fn(  # Along x-axis, from left to right.
-        range_fn(-(width // 2), width // 2 + 1, 1),
-        round_to_int_fn(convert_fn([width]))
+        range_fn(-(width // 2) + 1 - w_mod, width // 2 + 1, 1),
+        round_to_int_fn(convert_fn([height]))
     )
     # Note the (col, row) -> (x, y) swapping.
     image_idxes = stack_fn([col_idxes, row_idxes], 0)
@@ -271,7 +272,7 @@ def _rotate_single(
         new_image_idxes,
         # Note the extra idx for the padded frame.
         convert_fn([
-            [-(width // 2) - 1], [-(height // 2) - 1]
+            [-(width // 2) - w_mod], [-(height // 2) - h_mod]
         ]),
         convert_fn([
             [width // 2 + 2], [height // 2 + 2]
@@ -280,8 +281,8 @@ def _rotate_single(
 
     # Assigning original pixel values to new positions.
     orig_image_idxes = concat_fn([
-        clipped_new_image_idxes[1:] + height // 2 + 1,  # Rows.
-        clipped_new_image_idxes[:1] + width // 2 + 1  # Columns.
+        clipped_new_image_idxes[1:] + height // 2 + h_mod,  # Rows.
+        clipped_new_image_idxes[:1] + width // 2 + w_mod  # Columns.
     ], 0)
     orig_image_idxes = round_to_int_fn(orig_image_idxes)
     values = gather_image_fn(image, orig_image_idxes)
@@ -298,17 +299,17 @@ def _rotate_single(
     bottom_right_ys = copy_fn(top_right_ys + bboxes[:, 3:] - 1)
 
     xs = concat_fn(
-        [top_left_xs - width // 2,
-         top_right_xs - width // 2,
-         bottom_left_xs - width // 2,
-         bottom_right_xs - width // 2],
+        [top_left_xs - width // 2 + 1 - w_mod,
+         top_right_xs - width // 2 + 1 - w_mod,
+         bottom_left_xs - width // 2 + 1 - w_mod,
+         bottom_right_xs - width // 2 + 1 - w_mod],
         1
     )
     ys = concat_fn(
-        [top_left_ys - height // 2,
-         top_right_ys - height // 2,
-         bottom_left_ys - height // 2,
-         bottom_right_ys - height // 2],
+        [top_left_ys - height // 2 + 1 - h_mod,
+         top_right_ys - height // 2 + 1 - h_mod,
+         bottom_left_ys - height // 2 + 1 - h_mod,
+         bottom_right_ys - height // 2 + 1 - h_mod],
         1
     )
     bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
@@ -317,46 +318,36 @@ def _rotate_single(
         [cos_fn(ang_rad), sin_fn(ang_rad)],
         [-sin_fn(ang_rad), cos_fn(ang_rad)]
     ])
-    new_bboxes_idxes = matmul_fn(bboxes_rot_mat, bboxes_idxes)
+    rot_bboxes_idxes = matmul_fn(bboxes_rot_mat, bboxes_idxes)
 
     # New bboxes, defined as the rectangle enclosing the transformed bboxes.
-    new_xs = new_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
-    new_ys = new_bboxes_idxes[:, 1, :]
-    max_xs = max_fn(new_xs, -1)  # Shape: [num_bboxes].
-    max_ys = max_fn(new_ys, -1)
-    min_xs = min_fn(new_xs, -1)
-    min_ys = min_fn(new_ys, -1)
+    rot_xs = rot_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
+    rot_ys = rot_bboxes_idxes[:, 1, :]
+    max_xs = max_fn(rot_xs, -1)  # Shape: [num_bboxes].
+    max_ys = max_fn(rot_ys, -1)
+    min_xs = min_fn(rot_xs, -1)
+    min_ys = min_fn(rot_ys, -1)
 
-    new_top_left_xs = expand_dim_fn(min_xs, -1)
-    new_top_left_ys = expand_dim_fn(min_ys, -1)
-    new_bottom_right_xs = expand_dim_fn(max_xs, -1)
-    new_bottom_right_ys = expand_dim_fn(max_ys, -1)
-    new_widths = new_bottom_right_xs - new_top_left_xs + 1
-    new_heights = new_bottom_right_ys - new_top_left_ys + 1
-    new_bboxes = concat_fn([  # Shape: [num_bboxes, 4].
-        round_to_int_fn(new_top_left_xs),
-        round_to_int_fn(new_top_left_ys),
-        round_to_int_fn(new_widths),
-        round_to_int_fn(new_heights)
+    rot_top_left_xs = round_to_int_fn(expand_dim_fn(min_xs, -1))
+    rot_top_left_ys = round_to_int_fn(expand_dim_fn(min_ys, -1))
+    rot_bottom_right_xs = round_to_int_fn(expand_dim_fn(max_xs, -1))
+    rot_bottom_right_ys = round_to_int_fn(expand_dim_fn(max_ys, -1))
+    new_widths = rot_bottom_right_xs - rot_top_left_xs + 1
+    new_heights = rot_bottom_right_ys - rot_top_left_ys + 1
+    rot_bboxes = concat_fn([  # Shape: [num_bboxes, 4].
+        rot_top_left_xs, rot_top_left_ys, new_widths, new_heights
     ], -1)
 
-    # Filter new bboxes.
-    included = logical_and_fn(
-        logical_and_fn(
-            min_xs >= -(width // 2), max_xs <= width // 2 + 1
-        ),
-        logical_and_fn(
-            min_ys >= -(height // 2), max_ys <= height // 2 + 1
-        )
-    )
-    new_bboxes = boolean_mask_fn(new_bboxes, included)
+    new_xs = rot_bboxes[:, :1] + width // 2 + w_mod - 1
+    new_ys = rot_bboxes[:, 1:2] + height // 2 + h_mod - 1
+    new_bboxes = concat_fn([new_xs, new_ys, new_widths, new_heights], 1)
 
-    new_bboxes = concat_fn([
-        new_bboxes[:, :1] + width // 2,
-        new_bboxes[:, 1:2] + height // 2,
-        new_bboxes[:, 2:3],
-        new_bboxes[:, 3:]
-    ], 1)
+    # Filter new bboxes.
+    included = squeeze_fn(logical_and_fn(
+        logical_and_fn(new_xs >= 0, new_xs + new_widths <= width),
+        logical_and_fn(new_ys >= 0, new_ys + new_heights <= height)
+    ), -1)
+    new_bboxes = boolean_mask_fn(new_bboxes, included)
 
     return new_image, new_bboxes
 
