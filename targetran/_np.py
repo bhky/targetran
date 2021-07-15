@@ -6,7 +6,6 @@ from typing import Any, Callable, Tuple
 
 import numpy as np  # type: ignore
 
-
 from ._functional import (
     _map_single,
     _np_convert,
