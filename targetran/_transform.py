@@ -310,28 +310,28 @@ def _affine_transform_single(
     )
     bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
 
-    rot_bboxes_idxes = matmul_fn(bboxes_tran_mat, bboxes_idxes)
+    tran_bboxes_idxes = matmul_fn(bboxes_tran_mat, bboxes_idxes)
 
     # New bboxes, defined as the rectangle enclosing the transformed bboxes.
-    rot_xs = rot_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
-    rot_ys = rot_bboxes_idxes[:, 1, :]
-    max_xs = max_fn(rot_xs, -1)  # Shape: [num_bboxes].
-    max_ys = max_fn(rot_ys, -1)
-    min_xs = min_fn(rot_xs, -1)
-    min_ys = min_fn(rot_ys, -1)
+    tran_xs = tran_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
+    tran_ys = tran_bboxes_idxes[:, 1, :]
+    max_xs = max_fn(tran_xs, -1)  # Shape: [num_bboxes].
+    max_ys = max_fn(tran_ys, -1)
+    min_xs = min_fn(tran_xs, -1)
+    min_ys = min_fn(tran_ys, -1)
 
-    rot_top_left_xs = round_to_int_fn(expand_dim_fn(min_xs, -1))
-    rot_top_left_ys = round_to_int_fn(expand_dim_fn(min_ys, -1))
-    rot_bottom_right_xs = round_to_int_fn(expand_dim_fn(max_xs, -1))
-    rot_bottom_right_ys = round_to_int_fn(expand_dim_fn(max_ys, -1))
-    new_widths = rot_bottom_right_xs - rot_top_left_xs + 1
-    new_heights = rot_bottom_right_ys - rot_top_left_ys + 1
-    rot_bboxes = concat_fn([  # Shape: [num_bboxes, 4].
-        rot_top_left_xs, rot_top_left_ys, new_widths, new_heights
+    tran_top_left_xs = round_to_int_fn(expand_dim_fn(min_xs, -1))
+    tran_top_left_ys = round_to_int_fn(expand_dim_fn(min_ys, -1))
+    tran_bottom_right_xs = round_to_int_fn(expand_dim_fn(max_xs, -1))
+    tran_bottom_right_ys = round_to_int_fn(expand_dim_fn(max_ys, -1))
+    new_widths = tran_bottom_right_xs - tran_top_left_xs + 1
+    new_heights = tran_bottom_right_ys - tran_top_left_ys + 1
+    tran_bboxes = concat_fn([  # Shape: [num_bboxes, 4].
+        tran_top_left_xs, tran_top_left_ys, new_widths, new_heights
     ], -1)
 
-    new_xs = rot_bboxes[:, :1] + width // 2 + w_mod - 1
-    new_ys = rot_bboxes[:, 1:2] + height // 2 + h_mod - 1
+    new_xs = tran_bboxes[:, :1] + width // 2 + w_mod - 1
+    new_ys = tran_bboxes[:, 1:2] + height // 2 + h_mod - 1
     new_bboxes = concat_fn([new_xs, new_ys, new_widths, new_heights], 1)
 
     # Filter new bboxes.
