@@ -367,6 +367,56 @@ class TestTransform(unittest.TestCase):
                 np.allclose(expected_bboxes.numpy(), bboxes.numpy())
             )
 
+    @unittest.skip
+    def test_shear(self) -> None:
+
+        dummy_images = np.random.rand(1, 32, 32, 3)
+        original_bboxes_ragged = np.array([
+            np.array([
+                [15, 15, 2, 2],
+                [15, 0, 2, 2],
+            ], dtype=np.float32),
+        ], dtype=object)
+
+        angles_deg = np.array([45.0])
+
+        expected_bboxes_ragged = np.array([
+            np.array([
+                # todo
+                [0, 0, 2, 2],
+                [1, 0, 2, 3],
+            ], dtype=np.float32),
+        ], dtype=object)
+
+        # Numpy.
+        _, bboxes_ragged = rotate(
+            dummy_images, original_bboxes_ragged, angles_deg
+        )
+        for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
+                                           bboxes_ragged):
+            print("---------------")
+            print(expected_bboxes)
+            print(bboxes)
+            print("---------------")
+            self.assertTrue(np.allclose(expected_bboxes, bboxes))
+
+        # TF.
+        tf_dummy_images, tf_original_bboxes_ragged = _np_to_tf(
+            dummy_images, original_bboxes_ragged
+        )
+        _, tf_expected_bboxes_ragged = _np_to_tf(
+            dummy_images, expected_bboxes_ragged
+        )
+        _, tf_bboxes_ragged = tf_rotate(
+            tf_dummy_images, tf_original_bboxes_ragged,
+            tf.convert_to_tensor(angles_deg)
+        )
+        for expected_bboxes, bboxes in zip(tf_expected_bboxes_ragged,
+                                           tf_bboxes_ragged):
+            self.assertTrue(
+                np.allclose(expected_bboxes.numpy(), bboxes.numpy())
+            )
+
     def test_crop_and_resize(self) -> None:
 
         dummy_images = np.random.rand(4, 128, 128, 3)
