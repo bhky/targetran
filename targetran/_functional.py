@@ -61,7 +61,7 @@ def _np_stack_bboxes(bboxes_ragged: np.ndarray) -> np.ndarray:
 
 
 def _np_round_to_int(x: np.ndarray) -> np.ndarray:
-    return np.rint(x).astype(dtype=np.int32)
+    return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)
 
 
 def _np_logical_and(x: np.ndarray, y: np.ndarray) -> np.ndarray:
