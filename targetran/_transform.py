@@ -271,7 +271,7 @@ def _affine_transform_single(
             [-(width // 2) - w_mod], [-(height // 2) - h_mod]
         ]),
         convert_fn([
-            [width // 2 + 2], [height // 2 + 2]
+            [width // 2 + 1], [height // 2 + 1]
         ])
     )
 
