@@ -203,10 +203,9 @@ def _rotate_90_and_pad(
     )
 
 
-def _rotate_single(
+def _affine_transform_single(
         image: T,
         bboxes: T,
-        angle_deg: float,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         expand_dim_fn: Callable[[T, int], T],
@@ -218,8 +217,8 @@ def _rotate_single(
         tile_fn: Callable[[T, T], T],
         stack_fn: Callable[[List[T], int], T],
         concat_fn: Callable[[List[T], int], T],
-        cos_fn: Callable[[T], T],
-        sin_fn: Callable[[T], T],
+        image_dest_tran_mat: T,
+        bboxes_tran_mat: T,
         matmul_fn: Callable[[T, T], T],
         clip_fn: Callable[[T, T, T], T],
         gather_image_fn: Callable[[T, T], T],
@@ -258,18 +257,14 @@ def _rotate_single(
         round_to_int_fn(convert_fn([height]))
     )
     # Note the (col, row) -> (x, y) swapping.
-    image_idxes = stack_fn([col_idxes, row_idxes], 0)
+    image_dest_idxes = stack_fn([col_idxes, row_idxes], 0)
 
-    # Rotation matrix. Clockwise for the indices, so the final image would
-    # appear to be rotated anti-clockwise.
-    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
-    image_rot_mat = convert_fn([
-        [cos_fn(ang_rad), -sin_fn(ang_rad)],
-        [sin_fn(ang_rad), cos_fn(ang_rad)]
-    ])
-    new_image_idxes = matmul_fn(image_rot_mat, convert_fn(image_idxes))
-    clipped_new_image_idxes = clip_fn(
-        new_image_idxes,
+    # Transform image.
+    new_image_dest_idxes = matmul_fn(
+        image_dest_tran_mat, convert_fn(image_dest_idxes)
+    )
+    clipped_new_image_dest_idxes = clip_fn(
+        new_image_dest_idxes,
         # Note the extra idx for the padded frame.
         convert_fn([
             [-(width // 2) - w_mod], [-(height // 2) - h_mod]
@@ -280,12 +275,12 @@ def _rotate_single(
     )
 
     # Assigning original pixel values to new positions.
-    orig_image_idxes = concat_fn([
-        clipped_new_image_idxes[1:] + height // 2 + h_mod,  # Rows.
-        clipped_new_image_idxes[:1] + width // 2 + w_mod  # Columns.
+    image_orig_idxes = concat_fn([
+        clipped_new_image_dest_idxes[1:] + height // 2 + h_mod,  # Rows.
+        clipped_new_image_dest_idxes[:1] + width // 2 + w_mod  # Columns.
     ], 0)
-    orig_image_idxes = round_to_int_fn(orig_image_idxes)
-    values = gather_image_fn(image, orig_image_idxes)
+    image_orig_idxes = round_to_int_fn(image_orig_idxes)
+    values = gather_image_fn(image, image_orig_idxes)
     new_image = reshape_fn(values, (height, width, num_channels))
 
     # Transform bboxes.
@@ -314,11 +309,7 @@ def _rotate_single(
     )
     bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
 
-    bboxes_rot_mat = convert_fn([  # Anti-clockwise.
-        [cos_fn(ang_rad), sin_fn(ang_rad)],
-        [-sin_fn(ang_rad), cos_fn(ang_rad)]
-    ])
-    rot_bboxes_idxes = matmul_fn(bboxes_rot_mat, bboxes_idxes)
+    rot_bboxes_idxes = matmul_fn(bboxes_tran_mat, bboxes_idxes)
 
     # New bboxes, defined as the rectangle enclosing the transformed bboxes.
     rot_xs = rot_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
@@ -350,6 +341,59 @@ def _rotate_single(
     new_bboxes = boolean_mask_fn(new_bboxes, included)
 
     return new_image, new_bboxes
+
+
+def _rotate_single(
+        image: T,
+        bboxes: T,
+        angle_deg: float,
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        convert_fn: Callable[..., T],
+        expand_dim_fn: Callable[[T, int], T],
+        squeeze_fn: Callable[[T, int], T],
+        pad_images_fn: Callable[[T, T], T],
+        range_fn: Callable[[int, int, int], T],
+        round_to_int_fn: Callable[[T], T],
+        repeat_fn: Callable[[T, T], T],
+        tile_fn: Callable[[T, T], T],
+        stack_fn: Callable[[List[T], int], T],
+        concat_fn: Callable[[List[T], int], T],
+        cos_fn: Callable[[T], T],
+        sin_fn: Callable[[T], T],
+        matmul_fn: Callable[[T, T], T],
+        clip_fn: Callable[[T, T, T], T],
+        gather_image_fn: Callable[[T, T], T],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        copy_fn: Callable[[T], T],
+        max_fn: Callable[[T, int], T],
+        min_fn: Callable[[T, int], T],
+        logical_and_fn: Callable[[T, T], T],
+        boolean_mask_fn: Callable[[T, T], T]
+) -> Tuple[T, T]:
+    """
+    image: [h, w, c]
+    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    """
+    # Image rotation matrix. Clockwise for the destination indices,
+    # so the final image would appear to be rotated anti-clockwise.
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
+    image_dest_rot_mat = convert_fn([
+        [cos_fn(ang_rad), -sin_fn(ang_rad)],
+        [sin_fn(ang_rad), cos_fn(ang_rad)]
+    ])
+
+    bboxes_rot_mat = convert_fn([  # Anti-clockwise.
+        [cos_fn(ang_rad), sin_fn(ang_rad)],
+        [-sin_fn(ang_rad), cos_fn(ang_rad)]
+    ])
+
+    return _affine_transform_single(
+        image, bboxes, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
+        pad_images_fn, range_fn, round_to_int_fn, repeat_fn, tile_fn,
+        stack_fn, concat_fn, image_dest_rot_mat, bboxes_rot_mat, matmul_fn,
+        clip_fn, gather_image_fn, reshape_fn, copy_fn, max_fn, min_fn,
+        logical_and_fn, boolean_mask_fn
+    )
 
 
 def _resize_single(
