@@ -412,7 +412,7 @@ class TFRandomCropAndResize(TFRandomTransform):
         )
 
 
-class RandomTranslate(TFRandomTransform):
+class TFRandomTranslate(TFRandomTransform):
 
     def __init__(
             self,
