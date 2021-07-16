@@ -12,6 +12,7 @@ import cv2  # type: ignore
 
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
+R = TypeVar("R", np.ndarray, tf.RaggedTensor)
 
 
 def _map_single(
@@ -125,17 +126,17 @@ def _tf_convert(x: Any) -> tf.Tensor:
     return tf.convert_to_tensor(np.array(x), dtype=tf.float32)
 
 
-def _tf_ragged_to_list(bboxes_ragged: tf.Tensor) -> List[tf.Tensor]:
+def _tf_ragged_to_list(bboxes_ragged: tf.RaggedTensor) -> List[tf.Tensor]:
     return [
         tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_ragged.to_list()
     ]
 
 
-def _tf_list_to_ragged(bboxes_list: List[tf.Tensor]) -> tf.Tensor:
+def _tf_list_to_ragged(bboxes_list: List[tf.Tensor]) -> tf.RaggedTensor:
     return tf.ragged.stack(bboxes_list)
 
 
-def _tf_stack_bboxes(bboxes_ragged: tf.Tensor) -> tf.Tensor:
+def _tf_stack_bboxes(bboxes_ragged: tf.RaggedTensor) -> tf.Tensor:
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     all_bboxes = tf.concat(bboxes_list, 0)
     assert np.shape(all_bboxes)[-1] == 4
@@ -185,7 +186,7 @@ def _tf_gather_image(image: tf.Tensor, indices: tf.Tensor) -> tf.Tensor:
 
 def _tf_make_bboxes_ragged(
         all_bboxes: tf.Tensor,
-        bboxes_ragged: tf.Tensor,
-) -> tf.Tensor:
+        bboxes_ragged: tf.RaggedTensor,
+) -> tf.RaggedTensor:
     bboxes_nums = [len(bboxes) for bboxes in bboxes_ragged.to_list()]
     return tf.RaggedTensor.from_row_lengths(all_bboxes, bboxes_nums)

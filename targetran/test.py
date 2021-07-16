@@ -60,7 +60,7 @@ ORIGINAL_BBOXES_RAGGED = np.array([
 def _np_to_tf(
         images: np.ndarray,
         bboxes_ragged: np.ndarray
-) -> Tuple[tf.Tensor, tf.Tensor]:
+) -> Tuple[tf.Tensor, tf.RaggedTensor]:
     """
     Convert Numpy arrays to TF tensors.
     """

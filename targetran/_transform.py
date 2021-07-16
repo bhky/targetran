@@ -9,17 +9,18 @@ import tensorflow as tf  # type: ignore
 
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
+R = TypeVar("R", np.ndarray, tf.RaggedTensor)
 
 
 def _flip_left_right(
         images: T,
-        bboxes_ragged: T,
+        bboxes_ragged: R,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
-        stack_bboxes_fn: Callable[[T], T],
+        stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
-        make_bboxes_ragged_fn: Callable[[T, T], T]
-) -> Tuple[T, T]:
+        make_bboxes_ragged_fn: Callable[[T, R], R]
+) -> Tuple[T, R]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
@@ -45,13 +46,13 @@ def _flip_left_right(
 
 def _flip_up_down(
         images: T,
-        bboxes_ragged: T,
+        bboxes_ragged: R,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
-        stack_bboxes_fn: Callable[[T], T],
+        stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
-        make_bboxes_ragged_fn: Callable[[T, T], T]
-) -> Tuple[T, T]:
+        make_bboxes_ragged_fn: Callable[[T, R], R]
+) -> Tuple[T, R]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
@@ -77,14 +78,14 @@ def _flip_up_down(
 
 def _rotate_90(
         images: T,
-        bboxes_ragged: T,
+        bboxes_ragged: R,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         transpose_fn: Callable[[T, Tuple[int, ...]], T],
-        stack_bboxes_fn: Callable[[T], T],
+        stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
-        make_bboxes_ragged_fn: Callable[[T, T], T]
-) -> Tuple[T, T]:
+        make_bboxes_ragged_fn: Callable[[T, R], R]
+) -> Tuple[T, R]:
     """
     Rotate 90 degrees anti-clockwise.
 
@@ -128,14 +129,14 @@ def _translate_bboxes(
 
 def _pad(
         images: T,
-        bboxes_ragged: T,
+        bboxes_ragged: R,
         pad_offsets: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         pad_images_fn: Callable[[T, T], T],
-        stack_bboxes_fn: Callable[[T], T],
+        stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
-        make_bboxes_ragged_fn: Callable[[T, T], T]
-) -> Tuple[T, T]:
+        make_bboxes_ragged_fn: Callable[[T, R], R]
+) -> Tuple[T, R]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
@@ -159,18 +160,18 @@ def _pad(
 
 def _rotate_90_and_pad(
         images: T,
-        bboxes_ragged: T,
+        bboxes_ragged: R,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         transpose_fn: Callable[[T, Tuple[int, ...]], T],
-        stack_bboxes_fn: Callable[[T], T],
+        stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
         where_fn: Callable[[T, T, T], T],
         ceil_fn: Callable[[T], T],
         floor_fn: Callable[[T], T],
         pad_images_fn: Callable[[T, T], T],
-        make_bboxes_ragged_fn: Callable[[T, T], T]
-) -> Tuple[T, T]:
+        make_bboxes_ragged_fn: Callable[[T, R], R]
+) -> Tuple[T, R]:
     """
     Rotate 90 degrees anti-clockwise and *try* to pad to the same aspect ratio.
 
