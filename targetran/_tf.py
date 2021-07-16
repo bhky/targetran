@@ -26,6 +26,7 @@ from ._transform import (
     _rotate_90,
     _rotate_90_and_pad,
     _rotate_single,
+    _shear_single,
     _crop_single,
     _resize_single,
     _translate_single,
@@ -123,6 +124,27 @@ def tf_rotate(
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
+        _tf_gather_image, tf.reshape, tf.identity,
+        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+    )
+    images = _tf_convert(image_list)
+    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
+
+
+def tf_shear(
+        images: tf.Tensor,
+        bboxes_ragged: tf.RaggedTensor,
+        angles_deg: tf.Tensor
+) -> Tuple[tf.Tensor, tf.RaggedTensor]:
+    image_list = [image for image in images]
+    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
+    image_list, bboxes_list = _map_single(
+        _shear_single, image_list, bboxes_list,
+        [angles_deg],
+        tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
+        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
         _tf_gather_image, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
@@ -301,6 +323,37 @@ class TFRandomRotate(TFRandomTransform):
             seed: int = 0
     ) -> None:
         super().__init__(tf_rotate, probability, seed)
+        assert angle_deg_range[0] < angle_deg_range[1]
+        self.angle_deg_range = angle_deg_range
+
+    def __call__(
+            self,
+            images: tf.Tensor,
+            bboxes_ragged: tf.RaggedTensor
+    ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
+
+        images_shape = tf.shape(images)
+
+        def rand_fn() -> tf.Tensor:
+            return tf.random.uniform(images_shape[0], seed=self.seed)
+
+        angles_deg = \
+            _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
+            * rand_fn() + _tf_convert(self.angle_deg_range[0])
+
+        return super().call(images, bboxes_ragged, angles_deg)
+
+
+class TFRandomShear(TFRandomTransform):
+
+    def __init__(
+            self,
+            angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(tf_shear, probability, seed)
+        assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
     def __call__(

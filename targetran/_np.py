@@ -27,6 +27,7 @@ from ._transform import (
     _rotate_90,
     _rotate_90_and_pad,
     _rotate_single,
+    _shear_single,
     _crop_single,
     _resize_single,
     _translate_single,
@@ -124,6 +125,27 @@ def rotate(
         np.shape, _np_convert, np.expand_dims, np.squeeze,
         _np_pad_images, np.arange, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
+        _np_gather_image, np.reshape, np.copy,
+        np.max, np.min, _np_logical_and, _np_boolean_mask
+    )
+    images = _np_convert(image_list)
+    bboxes_ragged = _np_list_to_ragged(bboxes_list)
+    return images, bboxes_ragged
+
+
+def shear(
+        images: np.ndarray,
+        bboxes_ragged: np.ndarray,
+        angles_deg: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray]:
+    image_list = [image for image in images]
+    bboxes_list = _np_ragged_to_list(bboxes_ragged)
+    image_list, bboxes_list = _map_single(
+        _shear_single, image_list, bboxes_list,
+        [angles_deg],
+        np.shape, _np_convert, np.expand_dims, np.squeeze,
+        _np_pad_images, np.arange, _np_round_to_int, np.repeat, np.tile,
+        np.stack, np.concatenate, np.tan, np.matmul, np.clip,
         _np_gather_image, np.reshape, np.copy,
         np.max, np.min, _np_logical_and, _np_boolean_mask
     )
@@ -302,6 +324,37 @@ class RandomRotate(RandomTransform):
             seed: int = 0
     ) -> None:
         super().__init__(rotate, probability, seed)
+        assert angle_deg_range[0] < angle_deg_range[1]
+        self.angle_deg_range = angle_deg_range
+
+    def __call__(
+            self,
+            images: np.ndarray,
+            bboxes_ragged: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+
+        images_shape = np.shape(images)
+
+        def rand_fn() -> np.ndarray:
+            return self.rng.random(images_shape[0])
+
+        angles_deg = \
+            self.angle_deg_range[1] - self.angle_deg_range[0] * rand_fn() \
+            + self.angle_deg_range[0]
+
+        return super().call(images, bboxes_ragged, angles_deg)
+
+
+class RandomShear(RandomTransform):
+
+    def __init__(
+            self,
+            angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(shear, probability, seed)
+        assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
     def __call__(

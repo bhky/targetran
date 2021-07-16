@@ -374,10 +374,12 @@ def _rotate_single(
     """
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    angle_deg: goes anti-clockwise.
     """
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
+
     # Image rotation matrix. Clockwise for the destination indices,
     # so the final image would appear to be rotated anti-clockwise.
-    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     image_dest_rot_mat = convert_fn([
         [cos_fn(ang_rad), -sin_fn(ang_rad)],
         [sin_fn(ang_rad), cos_fn(ang_rad)]
@@ -392,6 +394,62 @@ def _rotate_single(
         image, bboxes, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
         pad_images_fn, range_fn, round_to_int_fn, repeat_fn, tile_fn,
         stack_fn, concat_fn, image_dest_rot_mat, bboxes_rot_mat, matmul_fn,
+        clip_fn, gather_image_fn, reshape_fn, copy_fn, max_fn, min_fn,
+        logical_and_fn, boolean_mask_fn
+    )
+
+
+def _shear_single(
+        image: T,
+        bboxes: T,
+        angle_deg: float,
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        convert_fn: Callable[..., T],
+        expand_dim_fn: Callable[[T, int], T],
+        squeeze_fn: Callable[[T, int], T],
+        pad_images_fn: Callable[[T, T], T],
+        range_fn: Callable[[int, int, int], T],
+        round_to_int_fn: Callable[[T], T],
+        repeat_fn: Callable[[T, T], T],
+        tile_fn: Callable[[T, T], T],
+        stack_fn: Callable[[List[T], int], T],
+        concat_fn: Callable[[List[T], int], T],
+        tan_fn: Callable[[T], T],
+        matmul_fn: Callable[[T, T], T],
+        clip_fn: Callable[[T, T, T], T],
+        gather_image_fn: Callable[[T, T], T],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        copy_fn: Callable[[T], T],
+        max_fn: Callable[[T, int], T],
+        min_fn: Callable[[T, int], T],
+        logical_and_fn: Callable[[T, T], T],
+        boolean_mask_fn: Callable[[T, T], T]
+) -> Tuple[T, T]:
+    """
+    image: [h, w, c]
+    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    angle_deg: goes anti-clockwise, where abs(angle_deg) < 90.
+    """
+    assert abs(angle_deg) < 90.0
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
+    factor = tan_fn(ang_rad)
+
+    # Image shear matrix. Clockwise for the destination indices,
+    # so the final image would appear to be sheared anti-clockwise.
+    image_dest_shear_mat = convert_fn([
+        [convert_fn(1), -factor],
+        [convert_fn(0), convert_fn(1)]
+    ])
+
+    bboxes_shear_mat = convert_fn([  # Anti-clockwise.
+        [convert_fn(1), factor],
+        [convert_fn(0), convert_fn(1)]
+    ])
+
+    return _affine_transform_single(
+        image, bboxes, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
+        pad_images_fn, range_fn, round_to_int_fn, repeat_fn, tile_fn,
+        stack_fn, concat_fn, image_dest_shear_mat, bboxes_shear_mat, matmul_fn,
         clip_fn, gather_image_fn, reshape_fn, copy_fn, max_fn, min_fn,
         logical_and_fn, boolean_mask_fn
     )
