@@ -5,3 +5,4 @@ __pycache__
 *.csv
 data/
 tmp/
+dist/
