@@ -16,7 +16,8 @@ from ._np import (
     _np_rotate_90_and_pad,
     rotate,
     crop_and_resize,
-    translate
+    translate,
+    shear
 )
 
 from ._tf import (
@@ -26,7 +27,8 @@ from ._tf import (
     _tf_rotate_90_and_pad,
     tf_rotate,
     tf_crop_and_resize,
-    tf_translate
+    tf_translate,
+    tf_shear
 )
 
 
@@ -389,7 +391,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=object)
 
         # Numpy.
-        _, bboxes_ragged = rotate(
+        _, bboxes_ragged = shear(
             dummy_images, original_bboxes_ragged, angles_deg
         )
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
@@ -407,7 +409,7 @@ class TestTransform(unittest.TestCase):
         _, tf_expected_bboxes_ragged = _np_to_tf(
             dummy_images, expected_bboxes_ragged
         )
-        _, tf_bboxes_ragged = tf_rotate(
+        _, tf_bboxes_ragged = tf_shear(
             tf_dummy_images, tf_original_bboxes_ragged,
             tf.convert_to_tensor(angles_deg)
         )
