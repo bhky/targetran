@@ -68,7 +68,7 @@ def _np_to_tf(
     """
     return (
         tf.convert_to_tensor(images, dtype=tf.float32),
-        tf.ragged.constant([bboxes.tolist() for bboxes in bboxes_ragged])
+        tf.ragged.constant(bboxes_ragged)
     )
 
 
@@ -369,7 +369,7 @@ class TestTransform(unittest.TestCase):
                 np.allclose(expected_bboxes.numpy(), bboxes.numpy())
             )
 
-    @unittest.skip
+    @unittest.skip("to be fixed or maybe removed if found redundant.")
     def test_shear(self) -> None:
 
         dummy_images = np.random.rand(1, 32, 32, 3)

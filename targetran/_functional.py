@@ -133,13 +133,15 @@ def _tf_convert(x: Any) -> tf.Tensor:
 
 
 def _tf_ragged_to_list(bboxes_ragged: tf.RaggedTensor) -> List[tf.Tensor]:
-    return [
-        tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_ragged.to_list()
-    ]
+    bboxes_list: List[tf.Tensor] = []
+    for bboxes in bboxes_ragged:
+        bboxes_list.append(tf.reshape(bboxes.to_tensor(), (-1, 4)))
+    return bboxes_list
 
 
 def _tf_unstack(x: tf.Tensor, axis: int) -> List[tf.Tensor]:
-    return tf.unstack(x, axis=axis)
+    tensor_list: List[tf.Tensor] = tf.unstack(x, axis=axis)
+    return tensor_list
 
 
 def _tf_list_to_ragged(bboxes_list: List[tf.Tensor]) -> tf.RaggedTensor:

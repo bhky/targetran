@@ -232,12 +232,15 @@ class TFRandomTransform:
     def __init__(
             self,
             tf_fn: Callable[..., Tuple[tf.Tensor, tf.RaggedTensor]],
+            batch_size: int,
             probability: float,
             seed: int,
     ) -> None:
         self._tf_fn = tf_fn
         self.probability = probability
         self.seed = seed
+        self._batch_rand_fn: Callable[..., tf.Tensor] = \
+            lambda: tf.random.uniform(shape=[batch_size], seed=seed)
 
     def call(
             self,
@@ -251,8 +254,7 @@ class TFRandomTransform:
             images, bboxes_ragged, *args, **kwargs
         )
 
-        rand = tf.random.uniform(shape=tf.shape(images)[0], seed=self.seed)
-        is_used = rand < self.probability
+        is_used = self._batch_rand_fn() < self.probability
 
         final_images = tf.where(is_used, transformed_images, images)
         final_bboxes_ragged_list = [
@@ -265,8 +267,13 @@ class TFRandomTransform:
 
 class TFRandomFlipLeftRight(TFRandomTransform):
 
-    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(tf_flip_left_right, probability, seed)
+    def __init__(
+            self,
+            batch_size: int,
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(tf_flip_left_right, batch_size, probability, seed)
 
     def __call__(
             self,
@@ -278,8 +285,13 @@ class TFRandomFlipLeftRight(TFRandomTransform):
 
 class TFRandomFlipUpDown(TFRandomTransform):
 
-    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(tf_flip_up_down, probability, seed)
+    def __init__(
+            self,
+            batch_size: int,
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(tf_flip_up_down, batch_size, probability, seed)
 
     def __call__(
             self,
@@ -291,8 +303,13 @@ class TFRandomFlipUpDown(TFRandomTransform):
 
 class TFRandomRotate90(TFRandomTransform):
 
-    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(tf_rotate_90, probability, seed)
+    def __init__(
+            self,
+            batch_size: int,
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(tf_rotate_90, batch_size, probability, seed)
 
     def __call__(
             self,
@@ -304,8 +321,13 @@ class TFRandomRotate90(TFRandomTransform):
 
 class TFRandomRotate90AndResize(TFRandomTransform):
 
-    def __init__(self, probability: float = 0.5, seed: int = 0) -> None:
-        super().__init__(tf_rotate_90_and_resize, probability, seed)
+    def __init__(
+            self,
+            batch_size: int,
+            probability: float = 0.5,
+            seed: int = 0
+    ) -> None:
+        super().__init__(tf_rotate_90_and_resize, batch_size, probability, seed)
 
     def __call__(
             self,
@@ -319,11 +341,12 @@ class TFRandomRotate(TFRandomTransform):
 
     def __init__(
             self,
+            batch_size: int,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(tf_rotate, probability, seed)
+        super().__init__(tf_rotate, batch_size, probability, seed)
         assert angle_deg_range[0] < angle_deg_range[1]
         self.angle_deg_range = angle_deg_range
 
@@ -333,14 +356,9 @@ class TFRandomRotate(TFRandomTransform):
             bboxes_ragged: tf.RaggedTensor
     ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
-        images_shape = tf.shape(images)
-
-        def rand_fn() -> tf.Tensor:
-            return tf.random.uniform(images_shape[0], seed=self.seed)
-
         angles_deg = \
             _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
-            * rand_fn() + _tf_convert(self.angle_deg_range[0])
+            * self._batch_rand_fn() + _tf_convert(self.angle_deg_range[0])
 
         return super().call(images, bboxes_ragged, angles_deg)
 
@@ -349,11 +367,12 @@ class TFRandomShear(TFRandomTransform):
 
     def __init__(
             self,
+            batch_size: int,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(tf_shear, probability, seed)
+        super().__init__(tf_shear, batch_size, probability, seed)
         assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
@@ -363,14 +382,9 @@ class TFRandomShear(TFRandomTransform):
             bboxes_ragged: tf.RaggedTensor
     ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
-        images_shape = tf.shape(images)
-
-        def rand_fn() -> tf.Tensor:
-            return tf.random.uniform(images_shape[0], seed=self.seed)
-
         angles_deg = \
             _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
-            * rand_fn() + _tf_convert(self.angle_deg_range[0])
+            * self._batch_rand_fn() + _tf_convert(self.angle_deg_range[0])
 
         return super().call(images, bboxes_ragged, angles_deg)
 
@@ -379,12 +393,13 @@ class TFRandomCropAndResize(TFRandomTransform):
 
     def __init__(
             self,
+            batch_size: int,
             crop_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
             crop_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(tf_crop_and_resize, probability, seed)
+        super().__init__(tf_crop_and_resize, batch_size, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 
@@ -394,17 +409,12 @@ class TFRandomCropAndResize(TFRandomTransform):
             bboxes_ragged: tf.RaggedTensor
     ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
-        images_shape = tf.shape(images)
-
-        def rand_fn() -> tf.Tensor:
-            return tf.random.uniform(images_shape[0], seed=self.seed)
-
         offset_heights, offset_widths, cropped_heights, cropped_widths = \
             _tf_get_random_crop_inputs(
-                images_shape[1], images_shape[2],
+                tf.shape(images)[1], tf.shape(images)[2],
                 self.crop_height_fraction_range,
                 self.crop_width_fraction_range,
-                rand_fn
+                self._batch_rand_fn
             )
 
         return super().call(
@@ -417,12 +427,13 @@ class TFRandomTranslate(TFRandomTransform):
 
     def __init__(
             self,
+            batch_size: int,
             translate_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
             translate_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(tf_translate, probability, seed)
+        super().__init__(tf_translate, batch_size, probability, seed)
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
 
@@ -432,19 +443,14 @@ class TFRandomTranslate(TFRandomTransform):
             bboxes_ragged: tf.RaggedTensor
     ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
-        images_shape = tf.shape(images)
-
-        def rand_fn() -> tf.Tensor:
-            return tf.random.uniform(images_shape[0], seed=self.seed)
-
         height_fractions, width_fractions = _get_random_size_fractions(
             self.translate_height_fraction_range,
             self.translate_width_fraction_range,
-            rand_fn, _tf_convert
+            self._batch_rand_fn, _tf_convert
         )
 
-        translate_heights = images_shape[1] * height_fractions
-        translate_widths = images_shape[2] * width_fractions
+        translate_heights = tf.shape(images)[1] * height_fractions
+        translate_widths = tf.shape(images)[2] * width_fractions
 
         return super().call(
             images, bboxes_ragged, translate_heights, translate_widths
