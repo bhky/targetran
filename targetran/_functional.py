@@ -135,7 +135,8 @@ def _tf_convert(x: Any) -> tf.Tensor:
 def _tf_ragged_to_list(bboxes_ragged: tf.RaggedTensor) -> List[tf.Tensor]:
     bboxes_list: List[tf.Tensor] = []
     for bboxes in bboxes_ragged:
-        bboxes_list.append(tf.reshape(bboxes.to_tensor(), (-1, 4)))
+        t = bboxes if isinstance(bboxes, tf.Tensor) else bboxes.to_tensor()
+        bboxes_list.append(tf.reshape(t, (-1, 4)))
     return bboxes_list
 
 
