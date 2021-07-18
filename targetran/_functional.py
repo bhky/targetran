@@ -134,7 +134,7 @@ def _tf_convert(x: Any) -> tf.Tensor:
 
 def _tf_ragged_to_list(bboxes_ragged: tf.RaggedTensor) -> List[tf.Tensor]:
     return [
-        tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_ragged.values.to_list()
+        tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_ragged.to_list()
     ]
 
 
