@@ -17,11 +17,9 @@ bboxes_ragged = np.array([
         [14, 23, 10, 11],
         [45, 30, 21, 9],
     ]),
+    np.array([]),
     np.array([
-        [38, 31, 12, 12],
-    ]),
-    np.array([
-        [4, 51, 22, 10]
+        [4, 51, 22, 10],
     ]),
 ], dtype=object)
 
@@ -36,4 +34,4 @@ ds = tf.data.Dataset.zip((
 batch_size = 2
 ds = ds\
     .batch(batch_size, drop_remainder=True)\
-    .map(tt.TFRandomRotate(batch_size))
+    .map(tt.TFRandomFlipUpDown(batch_size))
