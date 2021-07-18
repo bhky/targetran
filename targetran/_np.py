@@ -122,7 +122,7 @@ def rotate(
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _rotate_single, image_list, bboxes_list,
-        [angles_deg],
+        [list(angles_deg)],
         np.shape, _np_convert, np.expand_dims, np.squeeze,
         _np_pad_images, np.arange, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
@@ -143,7 +143,7 @@ def shear(
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _shear_single, image_list, bboxes_list,
-        [angles_deg],
+        [list(angles_deg)],
         np.shape, _np_convert, np.expand_dims, np.squeeze,
         _np_pad_images, np.arange, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.tan, np.matmul, np.clip,
@@ -180,8 +180,8 @@ def crop_and_resize(
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _crop_single, image_list, bboxes_list,
-        [offset_heights, offset_widths,
-         cropped_image_heights, cropped_image_widths],
+        [list(offset_heights), list(offset_widths),
+         list(cropped_image_heights), list(cropped_image_widths)],
         np.shape, np.reshape, _np_convert, np.concatenate,
         _np_logical_and, np.squeeze, _np_boolean_mask
     )
@@ -205,7 +205,7 @@ def translate(
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _translate_single, image_list, bboxes_list,
-        [translate_heights, translate_widths],
+        [list(translate_heights), list(translate_widths)],
         np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
         _np_logical_and, np.expand_dims, np.squeeze, _np_boolean_mask,
         _np_pad_images

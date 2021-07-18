@@ -121,7 +121,7 @@ def tf_rotate(
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _rotate_single, image_list, bboxes_list,
-        [angles_deg],
+        [list(angles_deg)],
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
@@ -142,7 +142,7 @@ def tf_shear(
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _shear_single, image_list, bboxes_list,
-        [angles_deg],
+        [list(angles_deg)],
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
@@ -179,8 +179,8 @@ def tf_crop_and_resize(
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _crop_single, image_list, bboxes_list,
-        [offset_heights, offset_widths,
-         cropped_image_heights, cropped_image_widths],
+        [list(offset_heights), list(offset_widths),
+         list(cropped_image_heights), list(cropped_image_widths)],
         tf.shape, tf.reshape, _tf_convert, tf.concat,
         tf.logical_and, tf.squeeze, tf.boolean_mask
     )
@@ -204,7 +204,7 @@ def tf_translate(
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _translate_single, image_list, bboxes_list,
-        [translate_heights, translate_widths],
+        [list(translate_heights), list(translate_widths)],
         tf.shape, tf.reshape, _tf_convert, tf.where, tf.abs, tf.concat,
         tf.logical_and, tf.expand_dims, tf.squeeze, tf.boolean_mask,
         _tf_pad_images
