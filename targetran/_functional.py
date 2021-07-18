@@ -129,7 +129,9 @@ def _np_make_bboxes_ragged(
 # TF.
 
 def _tf_convert(x: Any) -> tf.Tensor:
-    return tf.convert_to_tensor(np.array(x), dtype=tf.float32)
+    if isinstance(x, tf.Tensor):
+        return tf.cast(x, dtype=tf.float32)
+    return tf.convert_to_tensor(x, dtype=tf.float32)
 
 
 def _tf_ragged_to_list(bboxes_ragged: tf.RaggedTensor) -> List[tf.Tensor]:
@@ -201,5 +203,6 @@ def _tf_make_bboxes_ragged(
         all_bboxes: tf.Tensor,
         bboxes_ragged: tf.RaggedTensor,
 ) -> tf.RaggedTensor:
-    bboxes_nums = [len(bboxes) for bboxes in bboxes_ragged.to_list()]
-    return tf.RaggedTensor.from_row_lengths(all_bboxes, bboxes_nums)
+    return tf.RaggedTensor.from_row_lengths(
+        all_bboxes, bboxes_ragged.row_lengths()
+    )
