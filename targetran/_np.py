@@ -11,6 +11,7 @@ from ._functional import (
     _np_convert,
     _np_ragged_to_list,
     _np_list_to_ragged,
+    _np_unstack,
     _np_stack_bboxes,
     _np_round_to_int,
     _np_resize_image,
@@ -63,7 +64,7 @@ def resize(
         bboxes_ragged: np.ndarray,
         dest_size: Tuple[int, int]
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = [image for image in images]
+    image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _resize_single, image_list, bboxes_list, None,
@@ -117,7 +118,7 @@ def rotate(
         bboxes_ragged: np.ndarray,
         angles_deg: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = [image for image in images]
+    image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _rotate_single, image_list, bboxes_list,
@@ -138,7 +139,7 @@ def shear(
         bboxes_ragged: np.ndarray,
         angles_deg: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = [image for image in images]
+    image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _shear_single, image_list, bboxes_list,
@@ -175,7 +176,7 @@ def crop_and_resize(
         cropped_image_heights: np.ndarray,
         cropped_image_widths: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = [image for image in images]
+    image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _crop_single, image_list, bboxes_list,
@@ -200,7 +201,7 @@ def translate(
         translate_heights: np.ndarray,
         translate_widths: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = [image for image in images]
+    image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _translate_single, image_list, bboxes_list,

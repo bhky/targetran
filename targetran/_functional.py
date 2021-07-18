@@ -53,6 +53,12 @@ def _np_list_to_ragged(bboxes_list: List[np.ndarray]) -> np.ndarray:
     )
 
 
+def _np_unstack(x: np.ndarray, axis: int) -> List[np.ndarray]:
+    return [
+        np.squeeze(s, axis) for s in np.split(x, np.shape(x)[axis], axis=axis)
+    ]
+
+
 def _np_stack_bboxes(bboxes_ragged: np.ndarray) -> np.ndarray:
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
     all_bboxes = np.concatenate(bboxes_list, 0)
@@ -128,8 +134,12 @@ def _tf_convert(x: Any) -> tf.Tensor:
 
 def _tf_ragged_to_list(bboxes_ragged: tf.RaggedTensor) -> List[tf.Tensor]:
     return [
-        tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_ragged.to_list()
+        tf.reshape(bboxes, (-1, 4)) for bboxes in bboxes_ragged.values.to_list()
     ]
+
+
+def _tf_unstack(x: tf.Tensor, axis: int) -> List[tf.Tensor]:
+    return tf.unstack(x, axis=axis)
 
 
 def _tf_list_to_ragged(bboxes_list: List[tf.Tensor]) -> tf.RaggedTensor:

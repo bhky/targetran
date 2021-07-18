@@ -11,6 +11,7 @@ from ._functional import (
     _tf_convert,
     _tf_ragged_to_list,
     _tf_list_to_ragged,
+    _tf_unstack,
     _tf_stack_bboxes,
     _tf_round_to_int,
     _tf_resize_image,
@@ -62,7 +63,7 @@ def tf_resize(
         bboxes_ragged: tf.RaggedTensor,
         dest_size: Tuple[int, int]
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = [image for image in images]
+    image_list = _tf_unstack(images, 0)
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_ragged = _map_single(
         _resize_single, image_list, bboxes_list, None,
@@ -116,7 +117,7 @@ def tf_rotate(
         bboxes_ragged: tf.RaggedTensor,
         angles_deg: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = [image for image in images]
+    image_list = _tf_unstack(images, 0)
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _rotate_single, image_list, bboxes_list,
@@ -137,7 +138,7 @@ def tf_shear(
         bboxes_ragged: tf.RaggedTensor,
         angles_deg: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = [image for image in images]
+    image_list = _tf_unstack(images, 0)
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _shear_single, image_list, bboxes_list,
@@ -174,7 +175,7 @@ def tf_crop_and_resize(
         cropped_image_heights: tf.Tensor,
         cropped_image_widths: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = [image for image in images]
+    image_list = _tf_unstack(images, 0)
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _crop_single, image_list, bboxes_list,
@@ -199,7 +200,7 @@ def tf_translate(
         translate_heights: tf.Tensor,
         translate_widths: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = [image for image in images]
+    image_list = _tf_unstack(images, 0)
     bboxes_list = _tf_ragged_to_list(bboxes_ragged)
     image_list, bboxes_list = _map_single(
         _translate_single, image_list, bboxes_list,
