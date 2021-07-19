@@ -255,13 +255,14 @@ class RandomTransform:
         rand = self.rng.random(size=np.shape(images)[0])
         is_used = rand < self.probability
 
-        final_images = np.where(is_used, transformed_images, images)
-        final_bboxes_ragged_list = [
-            transformed_bboxes_ragged[i] if is_used[i] else bboxes_ragged[i]
-            for i in range(len(bboxes_ragged))
-        ]
+        final_images = np.where(
+            is_used, transformed_images, images
+        )
+        final_bboxes_ragged = np.where(
+            is_used, transformed_bboxes_ragged, bboxes_ragged
+        )
 
-        return final_images, np.array(final_bboxes_ragged_list, dtype=object)
+        return final_images, final_bboxes_ragged
 
 
 class RandomFlipLeftRight(RandomTransform):
