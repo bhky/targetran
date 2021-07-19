@@ -152,10 +152,10 @@ def _tf_list_to_ragged(bboxes_list: List[tf.Tensor]) -> tf.RaggedTensor:
 
 
 def _tf_stack_bboxes(bboxes_ragged: tf.RaggedTensor) -> tf.Tensor:
-    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
-    all_bboxes = tf.concat(bboxes_list, 0)
-    assert np.shape(all_bboxes)[-1] == 4
-    return all_bboxes
+    bboxes_ragged = tf.cast(bboxes_ragged, dtype=tf.float32)
+    return tf.reshape(
+        bboxes_ragged.to_tensor(default_value=np.nan), (-1, 4)
+    )
 
 
 def _tf_round_to_int(x: tf.Tensor) -> tf.Tensor:
@@ -203,6 +203,9 @@ def _tf_make_bboxes_ragged(
         all_bboxes: tf.Tensor,
         bboxes_ragged: tf.RaggedTensor,
 ) -> tf.RaggedTensor:
-    return tf.RaggedTensor.from_row_lengths(
-        all_bboxes, bboxes_ragged.row_lengths()
+    row_lengths = bboxes_ragged.row_lengths()
+    batch_size = len(row_lengths)
+    return tf.RaggedTensor.from_tensor(
+        tf.reshape(all_bboxes, (batch_size, -1, 4)),
+        lengths=row_lengths
     )
