@@ -256,13 +256,16 @@ class TFRandomTransform:
 
         is_used = self._batch_rand_fn() < self.probability
 
-        final_images = tf.where(is_used, transformed_images, images)
-        final_bboxes_ragged_list = [
-            transformed_bboxes_ragged[i] if is_used[i] else bboxes_ragged[i]
-            for i in range(len(images))
-        ]
+        final_images = tf.where(
+            is_used[:, tf.newaxis, tf.newaxis, tf.newaxis],
+            transformed_images, images
+        )
+        final_bboxes_ragged = tf.where(
+            is_used[:, tf.newaxis, tf.newaxis, tf.newaxis],
+            transformed_bboxes_ragged, bboxes_ragged
+        )
 
-        return final_images, tf.ragged.stack(final_bboxes_ragged_list)
+        return final_images, final_bboxes_ragged
 
 
 class TFRandomFlipLeftRight(TFRandomTransform):
