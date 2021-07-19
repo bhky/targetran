@@ -16,11 +16,11 @@ bboxes_ragged = np.array([
     np.array([
         [14, 23, 10, 11],
         [45, 30, 21, 9],
-    ]),
-    np.array([]),
+    ], dtype=np.float32),
+    np.array([], dtype=np.float32),
     np.array([
         [4, 51, 22, 10],
-    ]),
+    ], dtype=np.float32),
 ], dtype=object)
 
 tf_images = tf.convert_to_tensor(images)
