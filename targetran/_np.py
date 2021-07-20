@@ -7,7 +7,7 @@ from typing import Any, Callable, Tuple
 import numpy as np  # type: ignore
 
 from ._functional import (
-    _map_single,
+    _np_map_single,
     _np_convert,
     _np_ragged_to_list,
     _np_list_to_ragged,
@@ -66,7 +66,7 @@ def resize(
 ) -> Tuple[np.ndarray, np.ndarray]:
     image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
+    image_list, bboxes_list = _np_map_single(
         _resize_single, image_list, bboxes_list, None,
         dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
     )
@@ -120,7 +120,7 @@ def rotate(
 ) -> Tuple[np.ndarray, np.ndarray]:
     image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
+    image_list, bboxes_list = _np_map_single(
         _rotate_single, image_list, bboxes_list,
         [list(angles_deg)],
         np.shape, _np_convert, np.expand_dims, np.squeeze,
@@ -141,7 +141,7 @@ def shear(
 ) -> Tuple[np.ndarray, np.ndarray]:
     image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
+    image_list, bboxes_list = _np_map_single(
         _shear_single, image_list, bboxes_list,
         [list(angles_deg)],
         np.shape, _np_convert, np.expand_dims, np.squeeze,
@@ -178,14 +178,14 @@ def crop_and_resize(
 ) -> Tuple[np.ndarray, np.ndarray]:
     image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
+    image_list, bboxes_list = _np_map_single(
         _crop_single, image_list, bboxes_list,
         [list(offset_heights), list(offset_widths),
          list(cropped_image_heights), list(cropped_image_widths)],
         np.shape, np.reshape, _np_convert, np.concatenate,
         _np_logical_and, np.squeeze, _np_boolean_mask
     )
-    image_list, bboxes_list = _map_single(
+    image_list, bboxes_list = _np_map_single(
         _resize_single, image_list, bboxes_list, None,
         np.shape(images)[1:3], np.shape, _np_resize_image,
         _np_convert, np.concatenate
@@ -203,7 +203,7 @@ def translate(
 ) -> Tuple[np.ndarray, np.ndarray]:
     image_list = _np_unstack(images, 0)
     bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
+    image_list, bboxes_list = _np_map_single(
         _translate_single, image_list, bboxes_list,
         [list(translate_heights), list(translate_widths)],
         np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,

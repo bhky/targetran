@@ -7,11 +7,8 @@ from typing import Any, Callable, Tuple
 import tensorflow as tf  # type: ignore
 
 from ._functional import (
-    _map_single,
+    _tf_map_single,
     _tf_convert,
-    _tf_ragged_to_list,
-    _tf_list_to_ragged,
-    _tf_unstack,
     _tf_stack_bboxes,
     _tf_round_to_int,
     _tf_resize_image,
@@ -63,15 +60,10 @@ def tf_resize(
         bboxes_ragged: tf.RaggedTensor,
         dest_size: Tuple[int, int]
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = _tf_unstack(images, 0)
-    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_ragged = _map_single(
-        _resize_single, image_list, bboxes_list, None,
+    return _tf_map_single(
+        _resize_single, images, bboxes_ragged, None,
         dest_size, tf.shape, _tf_resize_image, _tf_convert, tf.concat
     )
-    images = _tf_convert(image_list)
-    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
 
 
 def tf_rotate_90(
@@ -117,10 +109,8 @@ def tf_rotate(
         bboxes_ragged: tf.RaggedTensor,
         angles_deg: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = _tf_unstack(images, 0)
-    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
-        _rotate_single, image_list, bboxes_list,
+    return _tf_map_single(
+        _rotate_single, images, bboxes_ragged,
         [list(angles_deg)],
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
@@ -128,9 +118,6 @@ def tf_rotate(
         _tf_gather_image, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
-    images = _tf_convert(image_list)
-    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
 
 
 def tf_shear(
@@ -138,10 +125,8 @@ def tf_shear(
         bboxes_ragged: tf.RaggedTensor,
         angles_deg: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = _tf_unstack(images, 0)
-    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
-        _shear_single, image_list, bboxes_list,
+    return _tf_map_single(
+        _shear_single, images, bboxes_ragged,
         [list(angles_deg)],
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
@@ -149,9 +134,6 @@ def tf_shear(
         _tf_gather_image, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
-    images = _tf_convert(image_list)
-    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
 
 
 def _tf_get_random_crop_inputs(
@@ -175,22 +157,18 @@ def tf_crop_and_resize(
         cropped_image_heights: tf.Tensor,
         cropped_image_widths: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = _tf_unstack(images, 0)
-    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
-        _crop_single, image_list, bboxes_list,
+    images, bboxes_ragged = _tf_map_single(
+        _crop_single, images, bboxes_ragged,
         [list(offset_heights), list(offset_widths),
          list(cropped_image_heights), list(cropped_image_widths)],
         tf.shape, tf.reshape, _tf_convert, tf.concat,
         tf.logical_and, tf.squeeze, tf.boolean_mask
     )
-    image_list, bboxes_list = _map_single(
-        _resize_single, image_list, bboxes_list, None,
+    images, bboxes_ragged = _tf_map_single(
+        _resize_single, images, bboxes_ragged, None,
         tf.shape(images)[1:3], tf.shape, _tf_resize_image,
         _tf_convert, tf.concat
     )
-    images = _tf_convert(image_list)
-    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
     return images, bboxes_ragged
 
 
@@ -200,18 +178,13 @@ def tf_translate(
         translate_heights: tf.Tensor,
         translate_widths: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    image_list = _tf_unstack(images, 0)
-    bboxes_list = _tf_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _map_single(
-        _translate_single, image_list, bboxes_list,
+    return _tf_map_single(
+        _translate_single, images, bboxes_ragged,
         [list(translate_heights), list(translate_widths)],
         tf.shape, tf.reshape, _tf_convert, tf.where, tf.abs, tf.concat,
         tf.logical_and, tf.expand_dims, tf.squeeze, tf.boolean_mask,
         _tf_pad_images
     )
-    images = _tf_convert(image_list)
-    bboxes_ragged = _tf_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
 
 
 class TFResize:

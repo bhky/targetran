@@ -34,4 +34,4 @@ ds = tf.data.Dataset.zip((
 batch_size = 2
 ds = ds\
     .batch(batch_size, drop_remainder=True)\
-    .map(tt.TFRandomFlipUpDown(batch_size))
+    .map(tt.TFRandomRotate(batch_size))

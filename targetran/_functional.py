@@ -2,40 +2,33 @@
 Functional helper utilities.
 """
 
-from typing import (
-    Any, Callable, Iterable, List, Optional, Tuple, TypeVar
-)
+from typing import Any, Callable, Iterable, List, Optional, Tuple
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 import cv2  # type: ignore
 
 
-T = TypeVar("T", np.ndarray, tf.Tensor)
-R = TypeVar("R", np.ndarray, tf.RaggedTensor)
+# Numpy.
 
-
-def _map_single(
-        fn: Callable[..., Tuple[T, T]],
-        image_list: List[T],
-        bboxes_list: List[T],
+def _np_map_single(
+        fn: Callable[..., Tuple[np.ndarray, np.ndarray]],
+        image_list: List[np.ndarray],
+        bboxes_list: List[np.ndarray],
         iterable_args: Optional[List[Iterable[Any]]],
         *args: Any,
         **kwargs: Any
-) -> Tuple[List[T], List[T]]:
+) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     """
-    Map each image and bboxes array/tensor from the lists, to the fn which
-    takes as input a single image and bboxes, together with other arguments.
+    Map each image and bboxes array to the fn, together with other arguments.
     Set iterable_args to None if not available.
     """
     iters = [image_list, bboxes_list, *iterable_args] if iterable_args \
         else [image_list, bboxes_list]
     pairs = [fn(*iterables, *args, **kwargs) for iterables in zip(*iters)]
-    image_list, bboxes_list = zip(*pairs)
-    return image_list, bboxes_list
+    new_image_list, new_bboxes_list = zip(*pairs)
+    return new_image_list, new_bboxes_list
 
-
-# Numpy.
 
 def _np_convert(x: Any) -> np.ndarray:
     return np.array(x, dtype=np.float32)
@@ -128,27 +121,35 @@ def _np_make_bboxes_ragged(
 
 # TF.
 
+def _tf_map_single(
+        fn: Callable[..., Tuple[tf.Tensor, tf.RaggedTensor]],
+        images: tf.Tensor,
+        bboxes_ragged: tf.RaggedTensor,
+        iterable_args: Optional[List[Iterable[Any]]],
+        *args: Any,
+        **kwargs: Any
+) -> Tuple[tf.Tensor, tf.RaggedTensor]:
+    """
+    Map each image and bboxes tensor to the fn, together with other arguments.
+    Set iterable_args to None if not available.
+    """
+    iters = [images, bboxes_ragged, *iterable_args] if iterable_args \
+        else [images, bboxes_ragged]
+    new_images, new_bboxes_ragged = tf.map_fn(
+        lambda iterables: fn(*iterables, *args, **kwargs),
+        zip(*iters),
+        fn_output_signature=(
+            tf.TensorSpec(None, tf.float32),
+            tf.RaggedTensorSpec(None, tf.float32)
+        )
+    )
+    return new_images, new_bboxes_ragged
+
+
 def _tf_convert(x: Any) -> tf.Tensor:
     if isinstance(x, tf.Tensor):
         return tf.cast(x, dtype=tf.float32)
     return tf.convert_to_tensor(x, dtype=tf.float32)
-
-
-def _tf_ragged_to_list(bboxes_ragged: tf.RaggedTensor) -> List[tf.Tensor]:
-    bboxes_list: List[tf.Tensor] = []
-    for bboxes in bboxes_ragged:
-        t = bboxes if isinstance(bboxes, tf.Tensor) else bboxes.to_tensor()
-        bboxes_list.append(tf.reshape(t, (-1, 4)))
-    return bboxes_list
-
-
-def _tf_unstack(x: tf.Tensor, axis: int) -> List[tf.Tensor]:
-    tensor_list: List[tf.Tensor] = tf.unstack(x, axis=axis)
-    return tensor_list
-
-
-def _tf_list_to_ragged(bboxes_list: List[tf.Tensor]) -> tf.RaggedTensor:
-    return tf.ragged.stack(bboxes_list)
 
 
 def _tf_stack_bboxes(bboxes_ragged: tf.RaggedTensor) -> tf.Tensor:
