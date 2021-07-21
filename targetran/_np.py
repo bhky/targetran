@@ -7,11 +7,9 @@ from typing import Any, Callable, Tuple
 import numpy as np  # type: ignore
 
 from ._functional import (
-    _np_map_single_fn,
+    _np_map_idx_fn,
     _np_convert,
-    _np_ragged_to_list,
-    _np_list_to_ragged,
-    _np_unstack,
+    _np_range,
     _np_stack_bboxes,
     _np_round_to_int,
     _np_resize_image,
@@ -64,15 +62,15 @@ def resize(
         bboxes_ragged: np.ndarray,
         dest_size: Tuple[int, int]
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = _np_unstack(images, 0)
-    bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _np_map_single_fn(
-        _resize_single, image_list, bboxes_list, None,
-        dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
-    )
-    images = _np_convert(image_list)
-    bboxes_ragged = _np_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
+
+    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        return _resize_single(
+            images[idx],
+            bboxes_ragged[idx],
+            dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
+        )
+
+    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
 
 
 def rotate_90(
@@ -118,20 +116,20 @@ def rotate(
         bboxes_ragged: np.ndarray,
         angles_deg: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = _np_unstack(images, 0)
-    bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _np_map_single_fn(
-        _rotate_single, image_list, bboxes_list,
-        [list(angles_deg)],
-        np.shape, _np_convert, np.expand_dims, np.squeeze,
-        _np_pad_images, np.arange, _np_round_to_int, np.repeat, np.tile,
-        np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
-        _np_gather_image, np.reshape, np.copy,
-        np.max, np.min, _np_logical_and, _np_boolean_mask
-    )
-    images = _np_convert(image_list)
-    bboxes_ragged = _np_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
+
+    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        return _rotate_single(
+            images[idx],
+            bboxes_ragged[idx],
+            angles_deg[idx],
+            np.shape, _np_convert, np.expand_dims, np.squeeze,
+            _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
+            np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
+            _np_gather_image, np.reshape, np.copy,
+            np.max, np.min, _np_logical_and, _np_boolean_mask
+        )
+
+    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
 
 
 def shear(
@@ -139,20 +137,20 @@ def shear(
         bboxes_ragged: np.ndarray,
         angles_deg: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = _np_unstack(images, 0)
-    bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _np_map_single_fn(
-        _shear_single, image_list, bboxes_list,
-        [list(angles_deg)],
-        np.shape, _np_convert, np.expand_dims, np.squeeze,
-        _np_pad_images, np.arange, _np_round_to_int, np.repeat, np.tile,
-        np.stack, np.concatenate, np.tan, np.matmul, np.clip,
-        _np_gather_image, np.reshape, np.copy,
-        np.max, np.min, _np_logical_and, _np_boolean_mask
-    )
-    images = _np_convert(image_list)
-    bboxes_ragged = _np_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
+
+    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        return _shear_single(
+            images[idx],
+            bboxes_ragged[idx],
+            angles_deg[idx],
+            np.shape, _np_convert, np.expand_dims, np.squeeze,
+            _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
+            np.stack, np.concatenate, np.tan, np.matmul, np.clip,
+            _np_gather_image, np.reshape, np.copy,
+            np.max, np.min, _np_logical_and, _np_boolean_mask
+        )
+
+    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
 
 
 def _np_get_random_crop_inputs(
@@ -176,23 +174,22 @@ def crop_and_resize(
         cropped_image_heights: np.ndarray,
         cropped_image_widths: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = _np_unstack(images, 0)
-    bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _np_map_single_fn(
-        _crop_single, image_list, bboxes_list,
-        [list(offset_heights), list(offset_widths),
-         list(cropped_image_heights), list(cropped_image_widths)],
-        np.shape, np.reshape, _np_convert, np.concatenate,
-        _np_logical_and, np.squeeze, _np_boolean_mask
-    )
-    image_list, bboxes_list = _np_map_single_fn(
-        _resize_single, image_list, bboxes_list, None,
-        np.shape(images)[1:3], np.shape, _np_resize_image,
-        _np_convert, np.concatenate
-    )
-    images = _np_convert(image_list)
-    bboxes_ragged = _np_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
+
+    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        image, bboxes = _crop_single(
+            images[idx],
+            bboxes_ragged[idx],
+            offset_heights[idx], offset_widths[idx],
+            cropped_image_heights[idx], cropped_image_widths[idx],
+            np.shape, np.reshape, _np_convert, np.concatenate,
+            _np_logical_and, np.squeeze, _np_boolean_mask
+        )
+        return _resize_single(
+            image, bboxes, np.shape(images)[1:3],
+            np.shape, _np_resize_image, _np_convert, np.concatenate
+        )
+
+    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
 
 
 def translate(
@@ -201,18 +198,18 @@ def translate(
         translate_heights: np.ndarray,
         translate_widths: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
-    image_list = _np_unstack(images, 0)
-    bboxes_list = _np_ragged_to_list(bboxes_ragged)
-    image_list, bboxes_list = _np_map_single_fn(
-        _translate_single, image_list, bboxes_list,
-        [list(translate_heights), list(translate_widths)],
-        np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
-        _np_logical_and, np.expand_dims, np.squeeze, _np_boolean_mask,
-        _np_pad_images
-    )
-    images = _np_convert(image_list)
-    bboxes_ragged = _np_list_to_ragged(bboxes_list)
-    return images, bboxes_ragged
+
+    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        return _translate_single(
+            images[idx],
+            bboxes_ragged[idx],
+            translate_heights[idx], translate_widths[idx],
+            np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
+            _np_logical_and, np.expand_dims, np.squeeze, _np_boolean_mask,
+            _np_pad_images
+        )
+
+    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
 
 
 class Resize:

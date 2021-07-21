@@ -2,7 +2,7 @@
 Functional helper utilities.
 """
 
-from typing import Any, Callable, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Tuple
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
@@ -11,49 +11,30 @@ import cv2  # type: ignore
 
 # Numpy.
 
-def _np_map_single_fn(
-        fn: Callable[..., Tuple[np.ndarray, np.ndarray]],
-        image_list: List[np.ndarray],
-        bboxes_list: List[np.ndarray],
-        iterable_args: Optional[List[Iterable[Any]]],
-        *args: Any,
-        **kwargs: Any
-) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+def _np_map_idx_fn(
+        fn: Callable[[int], Tuple[np.ndarray, np.ndarray]],
+        batch_size: int
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Map each image and bboxes array to the fn, together with other arguments.
-    Set iterable_args to None if not available.
+    The fn here should take an idx as the only input.
     """
-    iters = [image_list, bboxes_list, *iterable_args] if iterable_args \
-        else [image_list, bboxes_list]
-    pairs = [fn(*iterables, *args, **kwargs) for iterables in zip(*iters)]
-    new_image_list, new_bboxes_list = zip(*pairs)
-    return new_image_list, new_bboxes_list
+    tuples = [fn(idx) for idx in range(batch_size)]
+    images_seq, bboxes_seq = list(zip(*tuples))
+    return np.array(images_seq), np.array(bboxes_seq)
 
 
 def _np_convert(x: Any) -> np.ndarray:
     return np.array(x, dtype=np.float32)
 
 
-def _np_ragged_to_list(bboxes_ragged: np.ndarray) -> List[np.ndarray]:
-    return [
-        np.reshape(np.array(bboxes), (-1, 4)) for bboxes in bboxes_ragged
-    ]
-
-
-def _np_list_to_ragged(bboxes_list: List[np.ndarray]) -> np.ndarray:
-    return np.array(
-        [np.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list], dtype=object
-    )
-
-
-def _np_unstack(x: np.ndarray, axis: int) -> List[np.ndarray]:
-    return [
-        np.squeeze(s, axis) for s in np.split(x, np.shape(x)[axis], axis=axis)
-    ]
+def _np_range(start: int, end: int, step: int) -> np.ndarray:
+    return np.arange(start, end, step)
 
 
 def _np_stack_bboxes(bboxes_ragged: np.ndarray) -> np.ndarray:
-    bboxes_list = _np_ragged_to_list(bboxes_ragged)
+    bboxes_list = [
+        np.reshape(np.array(bboxes), (-1, 4)) for bboxes in bboxes_ragged
+    ]
     all_bboxes = np.concatenate(bboxes_list, 0)
     assert np.shape(all_bboxes)[-1] == 4
     return all_bboxes
@@ -116,7 +97,9 @@ def _np_make_bboxes_ragged(
     bboxes_nums = [len(bboxes) for bboxes in bboxes_ragged]
     indices = np.cumsum(bboxes_nums)[:-1]
     bboxes_list = np.split(all_bboxes, indices, 0)
-    return _np_list_to_ragged(bboxes_list)
+    return np.array(
+        [np.reshape(bboxes, (-1, 4)) for bboxes in bboxes_list], dtype=object
+    )
 
 
 # TF.
