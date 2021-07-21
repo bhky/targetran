@@ -115,8 +115,8 @@ def _rotate_90(
 
 def _translate_bboxes(
         bboxes: T,
-        top_offset: int,
-        left_offset: int,
+        top_offset: T,
+        left_offset: T,
         concat_fn: Callable[[List[T], int], T]
 ) -> T:
     return concat_fn([
@@ -150,7 +150,7 @@ def _pad(
     all_bboxes = stack_bboxes_fn(bboxes_ragged)
 
     all_bboxes = _translate_bboxes(
-        all_bboxes, int(pad_offsets[0]), int(pad_offsets[2]), concat_fn
+        all_bboxes, pad_offsets[0], pad_offsets[2], concat_fn
     )
 
     bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
@@ -668,6 +668,6 @@ def _translate_single(
         convert_fn([pad_top, pad_bottom, pad_left, pad_right])
     ), 0)
 
-    bboxes = _translate_bboxes(bboxes, int(pad_top), int(pad_left), concat_fn)
+    bboxes = _translate_bboxes(bboxes, pad_top, pad_left, concat_fn)
 
     return image, bboxes

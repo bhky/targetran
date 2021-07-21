@@ -11,7 +11,7 @@ import cv2  # type: ignore
 
 # Numpy.
 
-def _np_map_single(
+def _np_map_single_fn(
         fn: Callable[..., Tuple[np.ndarray, np.ndarray]],
         image_list: List[np.ndarray],
         bboxes_list: List[np.ndarray],
@@ -121,29 +121,20 @@ def _np_make_bboxes_ragged(
 
 # TF.
 
-def _tf_map_single(
-        fn: Callable[..., Tuple[tf.Tensor, tf.RaggedTensor]],
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        iterable_args: Optional[List[Iterable[Any]]],
-        *args: Any,
-        **kwargs: Any
+def _tf_map_idx_fn(
+        fn: Callable[[tf.Tensor], Tuple[tf.Tensor, tf.RaggedTensor]],
+        batch_size: int
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
     """
-    Map each image and bboxes tensor to the fn, together with other arguments.
-    Set iterable_args to None if not available.
+    The fn here should take an idx tensor as the only input.
     """
-    iters = [images, bboxes_ragged, *iterable_args] if iterable_args \
-        else [images, bboxes_ragged]
-    new_images, new_bboxes_ragged = tf.map_fn(
-        lambda iterables: fn(*iterables, *args, **kwargs),
-        zip(*iters),
+    return tf.map_fn(
+        fn, tf.range(batch_size),
         fn_output_signature=(
             tf.TensorSpec(None, tf.float32),
-            tf.RaggedTensorSpec(None, tf.float32)
+            tf.RaggedTensorSpec((None, 4), tf.float32, ragged_rank=1)
         )
     )
-    return new_images, new_bboxes_ragged
 
 
 def _tf_convert(x: Any) -> tf.Tensor:
