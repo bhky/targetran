@@ -11,7 +11,7 @@ import targetran as tt
 from scipy import misc
 
 
-images = np.array([misc.face() for _ in range(3)])
+images = np.array([misc.face() for _ in range(3)], dtype=np.float32)
 bboxes_ragged = np.array([
     np.array([
         [14, 23, 10, 11],

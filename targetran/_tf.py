@@ -109,15 +109,28 @@ def tf_rotate(
         bboxes_ragged: tf.RaggedTensor,
         angles_deg: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-    return _tf_map_single(
-        _rotate_single, images, bboxes_ragged,
-        [list(angles_deg)],
-        tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
-        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.reshape, tf.identity,
-        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+
+    def fn(idx: tf.Tensor) -> Tuple[tf.Tensor, tf.RaggedTensor]:
+        image, bboxes = _rotate_single(
+            images[idx],
+            bboxes_ragged[idx].to_tensor(),
+            angles_deg[idx],
+            tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
+            _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+            tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
+            _tf_gather_image, tf.reshape, tf.identity,
+            tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+        )
+        return image, tf.RaggedTensor.from_tensor(bboxes)
+
+    new_images, new_bboxes_ragged = tf.map_fn(
+        fn, tf.range(tf.shape(images)[0]),
+        fn_output_signature=(
+            tf.TensorSpec(None, tf.float32),
+            tf.RaggedTensorSpec((None, 4), tf.float32, ragged_rank=1)
+        )
     )
+    return new_images, new_bboxes_ragged
 
 
 def tf_shear(

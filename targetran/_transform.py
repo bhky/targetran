@@ -277,8 +277,10 @@ def _affine_transform_single(
 
     # Assigning original pixel values to new positions.
     image_orig_idxes = concat_fn([
-        clipped_new_image_dest_idxes[1:] + height // 2 + h_mod,  # Rows.
-        clipped_new_image_dest_idxes[:1] + width // 2 + w_mod  # Columns.
+        # Rows.
+        clipped_new_image_dest_idxes[1:] + convert_fn(height // 2 + h_mod),
+        # Columns.
+        clipped_new_image_dest_idxes[:1] + convert_fn(width // 2 + w_mod)
     ], 0)
     image_orig_idxes = round_to_int_fn(image_orig_idxes)
     values = gather_image_fn(image, image_orig_idxes)
@@ -295,17 +297,17 @@ def _affine_transform_single(
     bottom_right_ys = copy_fn(top_right_ys + bboxes[:, 3:] - 1)
 
     xs = concat_fn(
-        [top_left_xs - width // 2 + 1 - w_mod,
-         top_right_xs - width // 2 + 1 - w_mod,
-         bottom_left_xs - width // 2 + 1 - w_mod,
-         bottom_right_xs - width // 2 + 1 - w_mod],
+        [top_left_xs - convert_fn(width // 2 - 1 + w_mod),
+         top_right_xs - convert_fn(width // 2 - 1 + w_mod),
+         bottom_left_xs - convert_fn(width // 2 - 1 + w_mod),
+         bottom_right_xs - convert_fn(width // 2 - 1 + w_mod)],
         1
     )
     ys = concat_fn(
-        [top_left_ys - height // 2 + 1 - h_mod,
-         top_right_ys - height // 2 + 1 - h_mod,
-         bottom_left_ys - height // 2 + 1 - h_mod,
-         bottom_right_ys - height // 2 + 1 - h_mod],
+        [top_left_ys - convert_fn(height // 2 - 1 + h_mod),
+         top_right_ys - convert_fn(height // 2 - 1 + h_mod),
+         bottom_left_ys - convert_fn(height // 2 - 1 + h_mod),
+         bottom_right_ys - convert_fn(height // 2 - 1 + h_mod)],
         1
     )
     bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
@@ -339,7 +341,7 @@ def _affine_transform_single(
         logical_and_fn(new_xs >= 0, new_xs + new_widths <= width),
         logical_and_fn(new_ys >= 0, new_ys + new_heights <= height)
     ), -1)
-    new_bboxes = boolean_mask_fn(new_bboxes, included)
+    new_bboxes = convert_fn(boolean_mask_fn(new_bboxes, included))
 
     return new_image, new_bboxes
 
