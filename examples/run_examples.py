@@ -17,7 +17,7 @@ bboxes_ragged = np.array([
         [14, 23, 10, 11],
         [45, 30, 21, 9],
     ], dtype=np.float32),
-    np.array([], dtype=np.float32),
+    np.array([], dtype=np.float32).reshape(-1, 4),
     np.array([
         [4, 51, 22, 10],
     ], dtype=np.float32),
@@ -35,3 +35,5 @@ batch_size = 2
 ds = ds\
     .batch(batch_size, drop_remainder=True)\
     .map(tt.TFRandomRotate(batch_size))
+
+print(list(ds.as_numpy_iterator()))
