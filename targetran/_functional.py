@@ -111,7 +111,7 @@ def _tf_map_idx_fn(
     """
     The fn here should take an idx tensor as the only input.
     """
-    return tf.map_fn(
+    return tf.map_fn(  # type: ignore
         fn, tf.range(batch_size),
         fn_output_signature=(
             tf.TensorSpec(None, tf.float32),
