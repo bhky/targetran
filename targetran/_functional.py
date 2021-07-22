@@ -105,17 +105,17 @@ def _np_make_bboxes_ragged(
 # TF.
 
 def _tf_map_idx_fn(
-        fn: Callable[[tf.Tensor], Tuple[tf.Tensor, tf.RaggedTensor]],
-        batch_size: int
+        fn: Callable[[tf.Tensor], Tuple[tf.Tensor, tf.Tensor]],
+        images_shape: tf.TensorShape
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
     """
     The fn here should take an idx tensor as the only input.
     """
     return tf.map_fn(  # type: ignore
-        fn, tf.range(batch_size),
+        fn, tf.range(images_shape[0]),
         fn_output_signature=(
-            tf.TensorSpec(None, tf.float32),
-            tf.RaggedTensorSpec((None, 4), tf.float32, ragged_rank=1)
+            tf.TensorSpec(images_shape[1:], tf.float32),
+            tf.RaggedTensorSpec((None, 4), tf.float32, ragged_rank=0)
         )
     )
 
