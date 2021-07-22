@@ -69,7 +69,7 @@ def tf_resize(
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
-    return _tf_map_idx_fn(fn, images.get_shape())
+    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
 
 
 def tf_rotate_90(
@@ -116,19 +116,10 @@ def tf_rotate(
         angles_deg: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
-    print("-------------")
-    print(f"images shape: {images.get_shape()}")
-    print(f"bboxes_ragged shape: {bboxes_ragged.get_shape()}")
-    print("-------------")
-
-    def fn(idx: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
-        print("============")
-        print(f"image shape: {images[idx].get_shape()}")
-        print(f"bboxes shape: {bboxes_ragged[idx].get_shape()}")
-        print("============")
+    def fn(idx: tf.Tensor) -> Tuple[tf.Tensor, tf.RaggedTensor]:
         image, bboxes = _rotate_single(
             images[idx],
-            bboxes_ragged[idx],
+            bboxes_ragged[idx].to_tensor(),
             angles_deg[idx],
             tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
             _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
@@ -136,9 +127,9 @@ def tf_rotate(
             _tf_gather_image, tf.reshape, tf.identity,
             tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
         )
-        return image, bboxes
+        return image, tf.RaggedTensor.from_tensor(bboxes)
 
-    return _tf_map_idx_fn(fn, images.get_shape())
+    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
 
 
 def tf_shear(
@@ -160,7 +151,7 @@ def tf_shear(
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
-    return _tf_map_idx_fn(fn, images.get_shape())
+    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
 
 
 def _tf_get_random_crop_inputs(
@@ -200,7 +191,7 @@ def tf_crop_and_resize(
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
-    return _tf_map_idx_fn(fn, images.get_shape())
+    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
 
 
 def tf_translate(
@@ -221,7 +212,7 @@ def tf_translate(
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
-    return _tf_map_idx_fn(fn, images.get_shape())
+    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
 
 
 class TFResize:
