@@ -23,6 +23,22 @@ def _np_map_idx_fn(
     return np.array(images_seq), np.array(bboxes_seq)
 
 
+def _np_to_single_fn(
+        fn: Callable[..., Tuple[np.ndarray, np.ndarray]]
+) -> Callable[[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+
+    def single_fn(
+            image: np.ndarray,
+            bboxes: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        new_images, new_bboxes_ragged = fn(
+            np.array([image]), np.array([bboxes])
+        )
+        return new_images[0], new_bboxes_ragged[0]
+
+    return single_fn
+
+
 def _np_convert(x: Any) -> np.ndarray:
     return np.array(x, dtype=np.float32)
 
@@ -118,6 +134,22 @@ def _tf_map_idx_fn(
             tf.RaggedTensorSpec((None, 4), tf.float32, ragged_rank=1)
         )
     )
+
+
+def _tf_to_single_fn(
+        fn: Callable[..., Tuple[tf.Tensor, tf.RaggedTensor]]
+) -> Callable[[tf.Tensor, tf.Tensor], Tuple[tf.Tensor, tf.Tensor]]:
+
+    def single_fn(
+            image: tf.Tensor,
+            bboxes: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+        new_images, new_bboxes_ragged = fn(
+            tf.expand_dims(image, 0), tf.RaggedTensor.from_tensor([bboxes])
+        )
+        return new_images[0], new_bboxes_ragged[0]
+
+    return single_fn
 
 
 def _tf_convert(x: Any) -> tf.Tensor:

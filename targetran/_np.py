@@ -8,6 +8,7 @@ import numpy as np  # type: ignore
 
 from ._functional import (
     _np_map_idx_fn,
+    _np_to_single_fn,
     _np_convert,
     _np_range,
     _np_stack_bboxes,
@@ -189,7 +190,7 @@ def _np_get_random_crop_inputs(
     )
 
 
-def _np_crop_single(
+def _np_crop_and_resize_single(
         image: np.ndarray,
         bboxes: np.ndarray,
         offset_height: int,
@@ -197,12 +198,15 @@ def _np_crop_single(
         cropped_image_height: int,
         cropped_image_width: int
 ) -> Tuple[np.ndarray, np.ndarray]:
-    return _crop_single(
+    cropped_image, cropped_bboxes = _crop_single(
         image, bboxes,
         offset_height, offset_width,
         cropped_image_height, cropped_image_width,
         np.shape, np.reshape, _np_convert, np.concatenate,
         _np_logical_and, np.squeeze, _np_boolean_mask
+    )
+    return _np_resize_single(
+        cropped_image, cropped_bboxes, np.shape(image)[0:2]
     )
 
 
@@ -216,14 +220,11 @@ def crop_and_resize(
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        image, bboxes = _np_crop_single(
+        return _np_crop_and_resize_single(
             images[idx],
             bboxes_ragged[idx],
             offset_heights[idx], offset_widths[idx],
             cropped_image_heights[idx], cropped_image_widths[idx]
-        )
-        return _np_resize_single(
-            image, bboxes, np.shape(images)[1:3]
         )
 
     return _np_map_idx_fn(fn, int(np.shape(images)[0]))
@@ -267,206 +268,196 @@ class Resize:
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        return resize(images, bboxes_ragged, self.dest_size)
+        return _np_resize_single(image, bboxes, self.dest_size)
 
 
 class RandomTransform:
 
     def __init__(
             self,
-            np_fn: Callable[..., Tuple[np.ndarray, np.ndarray]],
-            batch_size: int,
+            np_single_fn: Callable[..., Tuple[np.ndarray, np.ndarray]],
             probability: float,
             seed: int,
     ) -> None:
-        self._np_fn = np_fn
+        self._np_single_fn = np_single_fn
         self.probability = probability
         self._rng = np.random.default_rng(seed=seed)
-        self._batch_rand_fn: Callable[..., np.ndarray] = \
-            lambda: self._rng.random(batch_size)
+        self._rand_fn: Callable[..., np.ndarray] = lambda: self._rng.random(1)
 
     def call(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray,
+            image: np.ndarray,
+            bboxes: np.ndarray,
             *args: Any,
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray]:
 
-        transformed_images, transformed_bboxes_ragged = self._np_fn(
-            images, bboxes_ragged, *args, **kwargs
+        if self._rand_fn() < self.probability:
+            return image, bboxes
+        return self._np_single_fn(
+            image, bboxes, *args, **kwargs
         )
-
-        is_used = self._batch_rand_fn() < self.probability
-
-        final_images = np.where(
-            is_used, transformed_images, images
-        )
-        final_bboxes_ragged = np.where(
-            is_used, transformed_bboxes_ragged, bboxes_ragged
-        )
-
-        return final_images, final_bboxes_ragged
 
 
 class RandomFlipLeftRight(RandomTransform):
 
     def __init__(
             self,
-            batch_size: int,
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(flip_left_right, batch_size, probability, seed)
+        super().__init__(
+            _np_to_single_fn(flip_left_right), probability, seed
+        )
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        return super().call(images, bboxes_ragged)
+        return super().call(image, bboxes)
 
 
 class RandomFlipUpDown(RandomTransform):
 
     def __init__(
             self,
-            batch_size: int,
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(flip_up_down, batch_size, probability, seed)
+        super().__init__(
+            _np_to_single_fn(flip_up_down), probability, seed
+        )
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        return super().call(images, bboxes_ragged)
+        return super().call(image, bboxes)
 
 
 class RandomRotate90(RandomTransform):
 
     def __init__(
             self,
-            batch_size: int,
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(rotate_90, batch_size, probability, seed)
+        super().__init__(
+            _np_to_single_fn(rotate_90), probability, seed
+        )
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        return super().call(images, bboxes_ragged)
+        return super().call(image, bboxes)
 
 
 class RandomRotate90AndResize(RandomTransform):
 
     def __init__(
             self,
-            batch_size: int,
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(rotate_90_and_resize, batch_size, probability, seed)
+        super().__init__(
+            _np_to_single_fn(rotate_90_and_resize), probability, seed
+        )
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        return super().call(images, bboxes_ragged)
+        return super().call(image, bboxes)
 
 
 class RandomRotate(RandomTransform):
 
     def __init__(
             self,
-            batch_size: int,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(rotate, batch_size, probability, seed)
+        super().__init__(_np_rotate_single, probability, seed)
         assert angle_deg_range[0] < angle_deg_range[1]
         self.angle_deg_range = angle_deg_range
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
 
-        angles_deg = \
+        angle_deg = \
             self.angle_deg_range[1] - self.angle_deg_range[0] \
-            * self._batch_rand_fn() + self.angle_deg_range[0]
+            * self._rand_fn() + self.angle_deg_range[0]
 
-        return super().call(images, bboxes_ragged, angles_deg)
+        return super().call(image, bboxes, angle_deg)
 
 
 class RandomShear(RandomTransform):
 
     def __init__(
             self,
-            batch_size: int,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(shear, batch_size, probability, seed)
+        super().__init__(_np_shear_single, probability, seed)
         assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
 
-        angles_deg = \
+        angle_deg = \
             self.angle_deg_range[1] - self.angle_deg_range[0] \
-            * self._batch_rand_fn() + self.angle_deg_range[0]
+            * self._rand_fn() + self.angle_deg_range[0]
 
-        return super().call(images, bboxes_ragged, angles_deg)
+        return super().call(image, bboxes, angle_deg)
 
 
 class RandomCropAndResize(RandomTransform):
 
     def __init__(
             self,
-            batch_size: int,
             crop_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
             crop_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(crop_and_resize, batch_size, probability, seed)
+        super().__init__(_np_crop_and_resize_single, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
 
-        offset_heights, offset_widths, cropped_heights, cropped_widths = \
+        offset_height, offset_width, cropped_height, cropped_width = \
             _np_get_random_crop_inputs(
-                np.shape(images)[1], np.shape(images)[2],
+                np.shape(image)[0], np.shape(image)[1],
                 self.crop_height_fraction_range,
                 self.crop_width_fraction_range,
-                self._batch_rand_fn
+                self._rand_fn
             )
 
         return super().call(
-            images, bboxes_ragged,
-            offset_heights, offset_widths, cropped_heights, cropped_widths
+            image, bboxes,
+            offset_height, offset_width, cropped_height, cropped_width
         )
 
 
@@ -474,31 +465,30 @@ class RandomTranslate(RandomTransform):
 
     def __init__(
             self,
-            batch_size: int,
             translate_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
             translate_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(translate, batch_size, probability, seed)
+        super().__init__(translate, probability, seed)
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
 
     def __call__(
             self,
-            images: np.ndarray,
-            bboxes_ragged: np.ndarray
+            image: np.ndarray,
+            bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
 
-        height_fractions, width_fractions = _get_random_size_fractions(
+        height_fraction, width_fraction = _get_random_size_fractions(
             self.translate_height_fraction_range,
             self.translate_width_fraction_range,
-            self._batch_rand_fn, _np_convert
+            self._rand_fn, _np_convert
         )
 
-        translate_heights = np.shape(images)[1] * height_fractions
-        translate_widths = np.shape(images)[2] * width_fractions
+        translate_height = np.shape(image)[0] * height_fraction
+        translate_width = np.shape(image)[1] * width_fraction
 
         return super().call(
-            images, bboxes_ragged, translate_heights, translate_widths
+            image, bboxes, translate_height, translate_width
         )

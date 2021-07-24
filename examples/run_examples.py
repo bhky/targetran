@@ -31,16 +31,9 @@ ds = tf.data.Dataset.zip((
     tf.data.Dataset.from_tensor_slices(tf_bboxes_ragged)
 ))
 
-batch_size = 2
-ds = ds.batch(batch_size, drop_remainder=True)\
-
 for d in ds:
     i, b = d
-    print(f"image batch shape: {i.get_shape()}")
-    print(f"bboxes-ragged batch shape: {b.get_shape()}")
+    print(f"image shape: {i.get_shape()}")
+    print(f"bboxes shape: {b.get_shape()}")
 
 print("--------")
-
-ds = ds.map(tt.TFRandomRotate(batch_size))
-
-print(list(ds.as_numpy_iterator()))
