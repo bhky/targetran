@@ -14,12 +14,12 @@ from scipy import misc
 images = np.array([misc.face() for _ in range(3)], dtype=np.float32)
 bboxes_ragged = np.array([
     np.array([
-        [14, 23, 10, 11],
-        [45, 30, 21, 9],
+        [214, 223, 10, 11],
+        [345, 230, 21, 9],
     ], dtype=np.float32),
     np.array([], dtype=np.float32).reshape(-1, 4),
     np.array([
-        [4, 51, 22, 10],
+        [104, 151, 22, 10],
     ], dtype=np.float32),
 ], dtype=object)
 
@@ -38,7 +38,7 @@ for d in ds:
 
 print("--------")
 
-ds = ds.map(tt.TFRandomShear(probability=1.0))
+ds = ds.map(tt.TFRandomRotate(probability=1.0))
 
 for d in ds:
     i, b = d
