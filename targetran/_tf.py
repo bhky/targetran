@@ -308,11 +308,11 @@ class TFRandomTransform:
         for consistency, and later batching.
         """
         if self._rand_fn() < self.probability:
-            return image, tf.RaggedTensor.from_tensor(bboxes)
-        new_image, new_bboxes = self._tf_single_fn(
-            image, bboxes, *args, **kwargs
-        )
-        return new_image, tf.RaggedTensor.from_tensor(new_bboxes)
+            new_image, new_bboxes = self._tf_single_fn(
+                image, bboxes, *args, **kwargs
+            )
+            return new_image, tf.RaggedTensor.from_tensor(new_bboxes)
+        return image, tf.RaggedTensor.from_tensor(bboxes)
 
 
 class TFRandomFlipLeftRight(TFRandomTransform):

@@ -296,10 +296,10 @@ class RandomTransform:
     ) -> Tuple[np.ndarray, np.ndarray]:
 
         if self._rand_fn() < self.probability:
-            return image, bboxes
-        return self._np_single_fn(
-            image, bboxes, *args, **kwargs
-        )
+            return self._np_single_fn(
+                image, bboxes, *args, **kwargs
+            )
+        return image, bboxes
 
 
 class RandomFlipLeftRight(RandomTransform):
