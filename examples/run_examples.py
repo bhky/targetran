@@ -38,10 +38,20 @@ for d in ds:
 
 print("--------")
 
-ds = ds.map(tt.TFRandomRotate(probability=1.0))
+ds = ds.map(tt.TFRandomShear(probability=1.0))
 
 for d in ds:
     i, b = d
     print(f"transformed image shape: {i.get_shape()}")
     print(f"transformed bboxes shape: {b.get_shape()}")
     print(f"transformed bboxes: {b}")
+
+print("--------")
+
+ds = ds.batch(2)
+
+for batch in ds:
+    i, b = batch
+    print(f"transformed image batch shape: {i.get_shape()}")
+    print(f"transformed bboxes batch shape: {b.get_shape()}")
+    print(f"transformed bboxes batch: {b}")
