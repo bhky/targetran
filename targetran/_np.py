@@ -285,7 +285,7 @@ class RandomTransform:
         self._np_single_fn = np_single_fn
         self.probability = probability
         self._rng = np.random.default_rng(seed=seed)
-        self._rand_fn: Callable[..., np.ndarray] = lambda: self._rng.random(1)
+        self._rand_fn: Callable[..., np.ndarray] = lambda: self._rng.random()
 
     def call(
             self,
