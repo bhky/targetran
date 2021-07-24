@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TF test examples.
+TF test.
 """
 
 import numpy as np
