@@ -394,10 +394,6 @@ class TestTransform(unittest.TestCase):
         )
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
-            print("---------------")
-            print(expected_bboxes)
-            print(bboxes)
-            print("---------------")
             self.assertTrue(np.array_equal(expected_bboxes, bboxes))
 
         # TF.
