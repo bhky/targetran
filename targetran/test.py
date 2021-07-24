@@ -369,7 +369,6 @@ class TestTransform(unittest.TestCase):
                 np.allclose(expected_bboxes.numpy(), bboxes.numpy())
             )
 
-    @unittest.skip("to be fixed or maybe removed if found redundant.")
     def test_shear(self) -> None:
 
         dummy_images = np.random.rand(1, 32, 32, 3)
@@ -384,9 +383,8 @@ class TestTransform(unittest.TestCase):
 
         expected_bboxes_ragged = np.array([
             np.array([
-                # todo
-                [0, 0, 2, 2],
-                [1, 0, 2, 3],
+                [15, 15, 3, 2],
+                [0, 0, 3, 2],
             ], dtype=np.float32),
         ], dtype=object)
 
@@ -400,7 +398,7 @@ class TestTransform(unittest.TestCase):
             print(expected_bboxes)
             print(bboxes)
             print("---------------")
-            self.assertTrue(np.allclose(expected_bboxes, bboxes))
+            self.assertTrue(np.array_equal(expected_bboxes, bboxes))
 
         # TF.
         tf_dummy_images, tf_original_bboxes_ragged = _np_to_tf(
