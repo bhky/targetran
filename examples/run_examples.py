@@ -37,3 +37,11 @@ for d in ds:
     print(f"bboxes shape: {b.get_shape()}")
 
 print("--------")
+
+ds = ds.map(tt.TFRandomRotate(probability=1.0))
+
+for d in ds:
+    i, b = d
+    print(f"transformed image shape: {i.get_shape()}")
+    print(f"transformed bboxes shape: {b.get_shape()}")
+    print(f"transformed bboxes: {b}")

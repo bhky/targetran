@@ -32,7 +32,7 @@ def _np_to_single_fn(
             bboxes: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
         new_images, new_bboxes_ragged = fn(
-            np.array([image]), np.array([bboxes])
+            np.expand_dims(image, 0), np.expand_dims(bboxes, 0)
         )
         return new_images[0], new_bboxes_ragged[0]
 
