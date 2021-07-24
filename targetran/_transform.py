@@ -432,7 +432,6 @@ def _shear_single(
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
     angle_deg: goes anti-clockwise, where abs(angle_deg) < 90.
     """
-    assert abs(angle_deg) < 90.0
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     factor = tan_fn(ang_rad)
 
