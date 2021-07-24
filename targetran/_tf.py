@@ -302,10 +302,10 @@ class TFRandomTransform:
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
         """
-        Note: when looping a Dataset (without batching), each row of the
+        Note: when looping a dataset (without batching), each row of the
         tf.RaggedTensor (bboxes_ragged) is a bboxes (tf.Tensor). However,
-        we still want to make the single output a tf.RaggedTensor
-        for consistency, and later batching.
+        we still want to make the output new_bboxes a tf.RaggedTensor,
+        for consistency and for able to do batching in the dataset after.
         """
         if self._rand_fn() < self.probability:
             new_image, new_bboxes = self._tf_single_fn(
