@@ -57,6 +57,17 @@ def flip_up_down(
     )
 
 
+def _np_resize_single(
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        dest_size: Tuple[int, int]
+) -> Tuple[np.ndarray, np.ndarray]:
+    return _resize_single(
+        image, bboxes,
+        dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
+    )
+
+
 def resize(
         images: np.ndarray,
         bboxes_ragged: np.ndarray,
@@ -64,11 +75,7 @@ def resize(
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        return _resize_single(
-            images[idx],
-            bboxes_ragged[idx],
-            dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
-        )
+        return _np_resize_single(images[idx], bboxes_ragged[idx], dest_size)
 
     return _np_map_idx_fn(fn, int(np.shape(images)[0]))
 
@@ -111,6 +118,21 @@ def rotate_90_and_resize(
     return resize(images, bboxes_ragged, (height, width))
 
 
+def _np_rotate_single(
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        angle_deg: float
+) -> Tuple[np.ndarray, np.ndarray]:
+    return _rotate_single(
+        image, bboxes, angle_deg,
+        np.shape, _np_convert, np.expand_dims, np.squeeze,
+        _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
+        np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
+        _np_gather_image, np.reshape, np.copy,
+        np.max, np.min, _np_logical_and, _np_boolean_mask
+    )
+
+
 def rotate(
         images: np.ndarray,
         bboxes_ragged: np.ndarray,
@@ -118,18 +140,26 @@ def rotate(
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        return _rotate_single(
-            images[idx],
-            bboxes_ragged[idx],
-            angles_deg[idx],
-            np.shape, _np_convert, np.expand_dims, np.squeeze,
-            _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
-            np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
-            _np_gather_image, np.reshape, np.copy,
-            np.max, np.min, _np_logical_and, _np_boolean_mask
+        return _np_rotate_single(
+            images[idx], bboxes_ragged[idx], angles_deg[idx]
         )
 
     return _np_map_idx_fn(fn, int(np.shape(images)[0]))
+
+
+def _np_shear_single(
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        angle_deg: float
+) -> Tuple[np.ndarray, np.ndarray]:
+    return _shear_single(
+        image, bboxes, angle_deg,
+        np.shape, _np_convert, np.expand_dims, np.squeeze,
+        _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
+        np.stack, np.concatenate, np.tan, np.matmul, np.clip,
+        _np_gather_image, np.reshape, np.copy,
+        np.max, np.min, _np_logical_and, _np_boolean_mask
+    )
 
 
 def shear(
@@ -139,15 +169,8 @@ def shear(
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        return _shear_single(
-            images[idx],
-            bboxes_ragged[idx],
-            angles_deg[idx],
-            np.shape, _np_convert, np.expand_dims, np.squeeze,
-            _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
-            np.stack, np.concatenate, np.tan, np.matmul, np.clip,
-            _np_gather_image, np.reshape, np.copy,
-            np.max, np.min, _np_logical_and, _np_boolean_mask
+        return _np_shear_single(
+            images[idx], bboxes_ragged[idx], angles_deg[idx],
         )
 
     return _np_map_idx_fn(fn, int(np.shape(images)[0]))
@@ -166,6 +189,23 @@ def _np_get_random_crop_inputs(
     )
 
 
+def _np_crop_single(
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        offset_height: int,
+        offset_width: int,
+        cropped_image_height: int,
+        cropped_image_width: int
+) -> Tuple[np.ndarray, np.ndarray]:
+    return _crop_single(
+        image, bboxes,
+        offset_height, offset_width,
+        cropped_image_height, cropped_image_width,
+        np.shape, np.reshape, _np_convert, np.concatenate,
+        _np_logical_and, np.squeeze, _np_boolean_mask
+    )
+
+
 def crop_and_resize(
         images: np.ndarray,
         bboxes_ragged: np.ndarray,
@@ -176,20 +216,32 @@ def crop_and_resize(
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        image, bboxes = _crop_single(
+        image, bboxes = _np_crop_single(
             images[idx],
             bboxes_ragged[idx],
             offset_heights[idx], offset_widths[idx],
-            cropped_image_heights[idx], cropped_image_widths[idx],
-            np.shape, np.reshape, _np_convert, np.concatenate,
-            _np_logical_and, np.squeeze, _np_boolean_mask
+            cropped_image_heights[idx], cropped_image_widths[idx]
         )
-        return _resize_single(
-            image, bboxes, np.shape(images)[1:3],
-            np.shape, _np_resize_image, _np_convert, np.concatenate
+        return _np_resize_single(
+            image, bboxes, np.shape(images)[1:3]
         )
 
     return _np_map_idx_fn(fn, int(np.shape(images)[0]))
+
+
+def _np_translate_single(
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        translate_height: int,
+        translate_width: int
+) -> Tuple[np.ndarray, np.ndarray]:
+    return _translate_single(
+        image, bboxes,
+        translate_height, translate_width,
+        np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
+        _np_logical_and, np.expand_dims, np.squeeze, _np_boolean_mask,
+        _np_pad_images
+    )
 
 
 def translate(
@@ -200,13 +252,9 @@ def translate(
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     def fn(idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        return _translate_single(
-            images[idx],
-            bboxes_ragged[idx],
-            translate_heights[idx], translate_widths[idx],
-            np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
-            _np_logical_and, np.expand_dims, np.squeeze, _np_boolean_mask,
-            _np_pad_images
+        return _np_translate_single(
+            images[idx], bboxes_ragged[idx],
+            translate_heights[idx], translate_widths[idx]
         )
 
     return _np_map_idx_fn(fn, int(np.shape(images)[0]))

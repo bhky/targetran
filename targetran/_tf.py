@@ -55,6 +55,17 @@ def tf_flip_up_down(
     )
 
 
+def _tf_resize_single(
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        dest_size: Tuple[int, int]
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    return _resize_single(
+        image, bboxes,
+        dest_size, tf.shape, _tf_resize_image, _tf_convert, tf.concat
+    )
+
+
 def tf_resize(
         images: tf.Tensor,
         bboxes_ragged: tf.RaggedTensor,
@@ -62,10 +73,8 @@ def tf_resize(
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
     def fn(idx: tf.Tensor) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-        image, bboxes = _resize_single(
-            images[idx],
-            bboxes_ragged[idx].to_tensor(),
-            dest_size, tf.shape, _tf_resize_image, _tf_convert, tf.concat
+        image, bboxes = _tf_resize_single(
+            images[idx], bboxes_ragged[idx].to_tensor(), dest_size
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
@@ -110,6 +119,21 @@ def tf_rotate_90_and_resize(
     return tf_resize(images, bboxes_ragged, (height, width))
 
 
+def _tf_rotate_single(
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        angle_deg: float
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    return _rotate_single(
+        image, bboxes, angle_deg,
+        tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
+        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
+        _tf_gather_image, tf.reshape, tf.identity,
+        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+    )
+
+
 def tf_rotate(
         images: tf.Tensor,
         bboxes_ragged: tf.RaggedTensor,
@@ -117,19 +141,27 @@ def tf_rotate(
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
     def fn(idx: tf.Tensor) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-        image, bboxes = _rotate_single(
-            images[idx],
-            bboxes_ragged[idx].to_tensor(),
-            angles_deg[idx],
-            tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
-            _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-            tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
-            _tf_gather_image, tf.reshape, tf.identity,
-            tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+        image, bboxes = _tf_rotate_single(
+            images[idx], bboxes_ragged[idx].to_tensor(), angles_deg[idx]
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
     return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
+
+
+def _tf_shear_single(
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        angle_deg: float
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    return _shear_single(
+        image, bboxes, angle_deg,
+        tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
+        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
+        _tf_gather_image, tf.reshape, tf.identity,
+        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+    )
 
 
 def tf_shear(
@@ -139,15 +171,8 @@ def tf_shear(
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
     def fn(idx: tf.Tensor) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-        image, bboxes = _shear_single(
-            images[idx],
-            bboxes_ragged[idx].to_tensor(),
-            angles_deg[idx],
-            tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
-            _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-            tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
-            _tf_gather_image, tf.reshape, tf.identity,
-            tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+        image, bboxes = _tf_shear_single(
+            images[idx], bboxes_ragged[idx].to_tensor(), angles_deg[idx],
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
@@ -167,6 +192,23 @@ def _tf_get_random_crop_inputs(
     )
 
 
+def _tf_crop_single(
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        offset_height: int,
+        offset_width: int,
+        cropped_image_height: int,
+        cropped_image_width: int
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    return _crop_single(
+        image, bboxes,
+        offset_height, offset_width,
+        cropped_image_height, cropped_image_width,
+        tf.shape, tf.reshape, _tf_convert, tf.concat,
+        tf.logical_and, tf.squeeze, tf.boolean_mask
+    )
+
+
 def tf_crop_and_resize(
         images: tf.Tensor,
         bboxes_ragged: tf.RaggedTensor,
@@ -177,21 +219,33 @@ def tf_crop_and_resize(
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
     def fn(idx: tf.Tensor) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-        image, bboxes = _crop_single(
+        image, bboxes = _tf_crop_single(
             images[idx],
             bboxes_ragged[idx].to_tensor(),
             offset_heights[idx], offset_widths[idx],
-            cropped_image_heights[idx], cropped_image_widths[idx],
-            tf.shape, tf.reshape, _tf_convert, tf.concat,
-            tf.logical_and, tf.squeeze, tf.boolean_mask
+            cropped_image_heights[idx], cropped_image_widths[idx]
         )
-        image, bboxes = _resize_single(
-            image, bboxes, tf.shape(images)[1:3],
-            tf.shape, _tf_resize_image, _tf_convert, tf.concat
+        image, bboxes = _tf_resize_single(
+            image, bboxes, tf.shape(images)[1:3]
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
     return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
+
+
+def _tf_translate_single(
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        translate_height: int,
+        translate_width: int
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    return _translate_single(
+        image, bboxes,
+        translate_height, translate_width,
+        tf.shape, tf.reshape, _tf_convert, tf.where, tf.abs, tf.concat,
+        tf.logical_and, tf.expand_dims, tf.squeeze, tf.boolean_mask,
+        _tf_pad_images
+    )
 
 
 def tf_translate(
@@ -202,13 +256,10 @@ def tf_translate(
 ) -> Tuple[tf.Tensor, tf.RaggedTensor]:
 
     def fn(idx: tf.Tensor) -> Tuple[tf.Tensor, tf.RaggedTensor]:
-        image, bboxes = _translate_single(
+        image, bboxes = _tf_translate_single(
             images[idx],
             bboxes_ragged[idx].to_tensor(),
-            translate_heights[idx], translate_widths[idx],
-            tf.shape, tf.reshape, _tf_convert, tf.where, tf.abs, tf.concat,
-            tf.logical_and, tf.expand_dims, tf.squeeze, tf.boolean_mask,
-            _tf_pad_images
+            translate_heights[idx], translate_widths[idx]
         )
         return image, tf.RaggedTensor.from_tensor(bboxes)
 
