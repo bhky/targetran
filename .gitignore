@@ -5,6 +5,5 @@ __pycache__
 *.csv
 data/
 tmp/
-examples/tests/
 dist/
 targetran.egg-info/
