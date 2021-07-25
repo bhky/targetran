@@ -15,15 +15,19 @@ R = TypeVar("R", np.ndarray, tf.RaggedTensor)
 def _flip_left_right(
         images: T,
         bboxes_ragged: R,
+        labels_ragged: R,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
         make_bboxes_ragged_fn: Callable[[T, R], R]
-) -> Tuple[T, R]:
+) -> Tuple[T, R, R]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
+
+    The ragged-bboxes/labels would have bs number of rows.
     """
     images_shape = shape_fn(images)
     assert len(images_shape) == 4
@@ -41,21 +45,25 @@ def _flip_left_right(
 
     bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
-    return images, bboxes_ragged
+    return images, bboxes_ragged, labels_ragged
 
 
 def _flip_up_down(
         images: T,
         bboxes_ragged: R,
+        labels_ragged: R,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
         make_bboxes_ragged_fn: Callable[[T, R], R]
-) -> Tuple[T, R]:
+) -> Tuple[T, R, R]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
+
+    The ragged-bboxes/labels would have bs number of rows.
     """
     images_shape = shape_fn(images)
     assert len(images_shape) == 4
@@ -73,24 +81,28 @@ def _flip_up_down(
 
     bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
-    return images, bboxes_ragged
+    return images, bboxes_ragged, labels_ragged
 
 
 def _rotate_90(
         images: T,
         bboxes_ragged: R,
+        labels_ragged: R,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         transpose_fn: Callable[[T, Tuple[int, ...]], T],
         stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
         make_bboxes_ragged_fn: Callable[[T, R], R]
-) -> Tuple[T, R]:
+) -> Tuple[T, R, R]:
     """
     Rotate 90 degrees anti-clockwise.
 
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
+
+    The ragged-bboxes/labels would have bs number of rows.
     """
     images_shape = shape_fn(images)
     assert len(images_shape) == 4
@@ -110,7 +122,7 @@ def _rotate_90(
 
     bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
-    return images, bboxes_ragged
+    return images, bboxes_ragged, labels_ragged
 
 
 def _translate_bboxes(
@@ -130,17 +142,21 @@ def _translate_bboxes(
 def _pad(
         images: T,
         bboxes_ragged: R,
+        labels_ragged: R,
         pad_offsets: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         pad_images_fn: Callable[[T, T], T],
         stack_bboxes_fn: Callable[[R], T],
         concat_fn: Callable[[List[T], int], T],
         make_bboxes_ragged_fn: Callable[[T, R], R]
-) -> Tuple[T, R]:
+) -> Tuple[T, R, R]:
     """
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
     pad_offsets: (top, bottom, left, right)
+
+    The ragged-bboxes/labels would have bs number of rows.
     """
     images_shape = shape_fn(images)
     assert len(images_shape) == 4
@@ -155,12 +171,13 @@ def _pad(
 
     bboxes_ragged = make_bboxes_ragged_fn(all_bboxes, bboxes_ragged)
 
-    return images, bboxes_ragged
+    return images, bboxes_ragged, labels_ragged
 
 
 def _rotate_90_and_pad(
         images: T,
         bboxes_ragged: R,
+        labels_ragged: R,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         transpose_fn: Callable[[T, Tuple[int, ...]], T],
@@ -171,15 +188,18 @@ def _rotate_90_and_pad(
         floor_fn: Callable[[T], T],
         pad_images_fn: Callable[[T, T], T],
         make_bboxes_ragged_fn: Callable[[T, R], R]
-) -> Tuple[T, R]:
+) -> Tuple[T, R, R]:
     """
     Rotate 90 degrees anti-clockwise and *try* to pad to the same aspect ratio.
 
     images: [bs, h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
+
+    The ragged-bboxes/labels would have bs number of rows.
     """
-    images, bboxes_ragged = _rotate_90(
-        images, bboxes_ragged,
+    images, bboxes_ragged, labels_ragged = _rotate_90(
+        images, bboxes_ragged, labels_ragged,
         shape_fn, convert_fn, transpose_fn, stack_bboxes_fn, concat_fn,
         make_bboxes_ragged_fn
     )
@@ -199,14 +219,16 @@ def _rotate_90_and_pad(
         convert_fn((pad_major, pad_minor, 0, 0))
     )
     return _pad(
-        images, bboxes_ragged, pad_offsets, shape_fn, pad_images_fn,
-        stack_bboxes_fn, concat_fn, make_bboxes_ragged_fn
+        images, bboxes_ragged, labels_ragged,
+        pad_offsets, shape_fn, pad_images_fn, stack_bboxes_fn,
+        concat_fn, make_bboxes_ragged_fn
     )
 
 
 def _affine_transform_single(
         image: T,
         bboxes: T,
+        labels: T,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
         expand_dim_fn: Callable[[T, int], T],
@@ -229,10 +251,11 @@ def _affine_transform_single(
         min_fn: Callable[[T, int], T],
         logical_and_fn: Callable[[T, T], T],
         boolean_mask_fn: Callable[[T, T], T]
-) -> Tuple[T, T]:
+) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
     """
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
@@ -343,12 +366,16 @@ def _affine_transform_single(
     ), -1)
     new_bboxes = convert_fn(boolean_mask_fn(new_bboxes, included))
 
-    return new_image, new_bboxes
+    # Filter labels.
+    new_labels = boolean_mask_fn(labels, included)
+
+    return new_image, new_bboxes, new_labels
 
 
 def _rotate_single(
         image: T,
         bboxes: T,
+        labels: T,
         angle_deg: float,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
@@ -372,10 +399,11 @@ def _rotate_single(
         min_fn: Callable[[T, int], T],
         logical_and_fn: Callable[[T, T], T],
         boolean_mask_fn: Callable[[T, T], T]
-) -> Tuple[T, T]:
+) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
     angle_deg: goes anti-clockwise.
     """
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
@@ -393,7 +421,7 @@ def _rotate_single(
     ])
 
     return _affine_transform_single(
-        image, bboxes, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
+        image, bboxes, labels, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
         pad_images_fn, range_fn, round_to_int_fn, repeat_fn, tile_fn,
         stack_fn, concat_fn, image_dest_rot_mat, bboxes_rot_mat, matmul_fn,
         clip_fn, gather_image_fn, reshape_fn, copy_fn, max_fn, min_fn,
@@ -404,6 +432,7 @@ def _rotate_single(
 def _shear_single(
         image: T,
         bboxes: T,
+        labels: T,
         angle_deg: float,
         shape_fn: Callable[[T], Tuple[int, ...]],
         convert_fn: Callable[..., T],
@@ -426,10 +455,11 @@ def _shear_single(
         min_fn: Callable[[T, int], T],
         logical_and_fn: Callable[[T, T], T],
         boolean_mask_fn: Callable[[T, T], T]
-) -> Tuple[T, T]:
+) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
     angle_deg: goes anti-clockwise, where abs(angle_deg) < 90.
     """
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
@@ -448,7 +478,7 @@ def _shear_single(
     ])
 
     return _affine_transform_single(
-        image, bboxes, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
+        image, bboxes, labels, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
         pad_images_fn, range_fn, round_to_int_fn, repeat_fn, tile_fn,
         stack_fn, concat_fn, image_dest_shear_mat, bboxes_shear_mat, matmul_fn,
         clip_fn, gather_image_fn, reshape_fn, copy_fn, max_fn, min_fn,
@@ -459,15 +489,17 @@ def _shear_single(
 def _resize_single(
         image: T,
         bboxes: T,
+        labels: T,
         dest_size: Tuple[int, int],
         shape_fn: Callable[[T], Tuple[int, ...]],
         resize_image_fn: Callable[[T, Tuple[int, int]], T],
         convert_fn: Callable[..., T],
         concat_fn: Callable[[List[T], int], T],
-) -> Tuple[T, T]:
+) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
     dest_size: (height, width)
     """
     image_shape = shape_fn(image)
@@ -484,7 +516,7 @@ def _resize_single(
     heights = bboxes[:, 3:] * h
     bboxes = concat_fn([xs, ys, widths, heights], 1)
 
-    return image, bboxes
+    return image, bboxes, labels
 
 
 def _get_random_size_fractions(
@@ -556,6 +588,7 @@ def _get_random_crop_inputs(
 def _crop_single(
         image: T,
         bboxes: T,
+        labels: T,
         offset_height: int,
         offset_width: int,
         cropped_image_height: int,
@@ -567,10 +600,11 @@ def _crop_single(
         logical_and_fn: Callable[[T, T], T],
         squeeze_fn: Callable[[T, int], T],
         boolean_mask_fn: Callable[[T, T], T],
-) -> Tuple[T, T]:
+) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
     offset_height: [0, image_height - 1]
     offset_width: [0, image_width - 1]
     """
@@ -607,12 +641,16 @@ def _crop_single(
     ), -1)  # Squeeze along the last axis.
     bboxes = boolean_mask_fn(bboxes, included)
 
-    return image, bboxes
+    # Filter labels.
+    labels = boolean_mask_fn(labels, included)
+
+    return image, bboxes, labels
 
 
 def _translate_single(
         image: T,
         bboxes: T,
+        labels: T,
         translate_height: int,
         translate_width: int,
         shape_fn: Callable[[T], Tuple[int, ...]],
@@ -626,12 +664,13 @@ def _translate_single(
         squeeze_fn: Callable[[T, int], T],
         boolean_mask_fn: Callable[[T, T], T],
         pad_images_fn: Callable[[T, T], T],
-) -> Tuple[T, T]:
+) -> Tuple[T, T, T]:
     """
     Making use of cropping and padding to perform translation.
 
     image: [h, w, c]
     bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
+    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
     translate_height: [-image_height + 1: image_height - 1]
     translate_width: [-image_width + 1: image_width - 1]
     """
@@ -655,8 +694,8 @@ def _translate_single(
     cropped_height = convert_fn(image_shape[0]) - abs_fn(translate_height)
     cropped_width = convert_fn(image_shape[1]) - abs_fn(translate_width)
 
-    image, bboxes = _crop_single(
-        image, bboxes,
+    image, bboxes, labels = _crop_single(
+        image, bboxes, labels,
         offset_height, offset_width, cropped_height, cropped_width,
         shape_fn, reshape_fn, convert_fn, concat_fn, logical_and_fn,
         squeeze_fn, boolean_mask_fn
@@ -669,4 +708,4 @@ def _translate_single(
 
     bboxes = _translate_bboxes(bboxes, pad_top, pad_left, concat_fn)
 
-    return image, bboxes
+    return image, bboxes, labels

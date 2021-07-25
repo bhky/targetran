@@ -12,29 +12,33 @@ import cv2  # type: ignore
 # Numpy.
 
 def _np_map_idx_fn(
-        fn: Callable[[int], Tuple[np.ndarray, np.ndarray]],
+        fn: Callable[[int], Tuple[np.ndarray, np.ndarray, np.ndarray]],
         batch_size: int
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     The fn here should take an idx as the only input.
     """
     tuples = [fn(idx) for idx in range(batch_size)]
-    images_seq, bboxes_seq = list(zip(*tuples))
-    return np.array(images_seq), np.array(bboxes_seq)
+    images_seq, bboxes_seq, labels_seq = list(zip(*tuples))
+    return np.array(images_seq), np.array(bboxes_seq), np.array(labels_seq)
 
 
 def _np_to_single_fn(
-        fn: Callable[..., Tuple[np.ndarray, np.ndarray]]
-) -> Callable[[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+        fn: Callable[..., Tuple[np.ndarray, np.ndarray, np.ndarray]]
+) -> Callable[[np.ndarray, np.ndarray, np.ndarray],
+              Tuple[np.ndarray, np.ndarray, np.ndarray]]:
 
     def single_fn(
             image: np.ndarray,
-            bboxes: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        new_images, new_bboxes_ragged = fn(
-            np.expand_dims(image, 0), np.expand_dims(bboxes, 0)
+            bboxes: np.ndarray,
+            labels: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        new_images, new_bboxes_ragged, new_labels_ragged = fn(
+            np.expand_dims(image, 0),
+            np.expand_dims(bboxes, 0),
+            np.expand_dims(labels, 0)
         )
-        return new_images[0], new_bboxes_ragged[0]
+        return new_images[0], new_bboxes_ragged[0], new_labels_ragged[0]
 
     return single_fn
 
@@ -121,9 +125,10 @@ def _np_make_bboxes_ragged(
 # TF.
 
 def _tf_map_idx_fn(
-        fn: Callable[[tf.Tensor], Tuple[tf.Tensor, tf.RaggedTensor]],
+        fn: Callable[[tf.Tensor],
+                     Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]],
         batch_size: int
-) -> Tuple[tf.Tensor, tf.RaggedTensor]:
+) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
     """
     The fn here should take an idx tensor as the only input.
     """
@@ -131,23 +136,28 @@ def _tf_map_idx_fn(
         fn, tf.range(batch_size),
         fn_output_signature=(
             tf.TensorSpec(None, tf.float32),
-            tf.RaggedTensorSpec((None, 4), tf.float32, ragged_rank=1)
+            tf.RaggedTensorSpec(None, tf.float32, ragged_rank=1),
+            tf.RaggedTensorSpec(None, tf.float32, ragged_rank=1)
         )
     )
 
 
 def _tf_to_single_fn(
-        fn: Callable[..., Tuple[tf.Tensor, tf.RaggedTensor]]
-) -> Callable[[tf.Tensor, tf.Tensor], Tuple[tf.Tensor, tf.Tensor]]:
+        fn: Callable[..., Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]]
+) -> Callable[[tf.Tensor, tf.Tensor, tf.Tensor],
+              Tuple[tf.Tensor, tf.Tensor, tf.Tensor]]:
 
     def single_fn(
             image: tf.Tensor,
-            bboxes: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.Tensor]:
-        new_images, new_bboxes_ragged = fn(
-            tf.expand_dims(image, 0), tf.RaggedTensor.from_tensor([bboxes])
+            bboxes: tf.Tensor,
+            labels: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+        new_images, new_bboxes_ragged, new_labels_ragged = fn(
+            tf.expand_dims(image, 0),
+            tf.RaggedTensor.from_tensor([bboxes]),
+            tf.RaggedTensor.from_tensor([labels])
         )
-        return new_images[0], new_bboxes_ragged[0]
+        return new_images[0], new_bboxes_ragged[0], new_labels_ragged[0]
 
     return single_fn
 

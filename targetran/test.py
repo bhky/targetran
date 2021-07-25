@@ -58,22 +58,32 @@ ORIGINAL_BBOXES_RAGGED = np.array([
     np.array([], dtype=np.float32).reshape(-1, 4),
 ], dtype=object)
 
+ORIGINAL_LABELS_RAGGED = np.array([
+    np.array([[0], [1]], dtype=np.float32),
+    np.array([[2]], dtype=np.float32),
+    np.array([], dtype=np.float32),
+], dtype=object)
+
 
 def _np_to_tf(
         images: np.ndarray,
-        bboxes_ragged: np.ndarray
-) -> Tuple[tf.Tensor, tf.RaggedTensor]:
+        bboxes_ragged: np.ndarray,
+        labels_ragged: np.ndarray
+) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
     """
     Convert Numpy arrays to TF tensors.
     """
     return (
         tf.convert_to_tensor(images, dtype=tf.float32),
-        tf.ragged.constant(bboxes_ragged)
+        tf.ragged.constant(bboxes_ragged),
+        tf.ragged.constant(labels_ragged)
     )
 
 
-TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED = _np_to_tf(
-    ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
+(
+    TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED, TF_ORIGINAL_LABELS_RAGGED
+) = _np_to_tf(
+    ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED, ORIGINAL_LABELS_RAGGED
 )
 
 
@@ -105,10 +115,11 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        expected_labels_ragged = ORIGINAL_LABELS_RAGGED
 
         # Numpy.
-        images, bboxes_ragged = flip_left_right(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
+        images, bboxes_ragged, labels_ragged = flip_left_right(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED, ORIGINAL_LABELS_RAGGED
         )
         self.assertTrue(
             np.array_equal(expected_images, images)
@@ -116,13 +127,22 @@ class TestTransform(unittest.TestCase):
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
             self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+        for expected_labels, labels in zip(expected_labels_ragged,
+                                           labels_ragged):
+            self.assertTrue(np.array_equal(expected_labels, labels))
 
         # TF.
-        tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
-            expected_images, expected_bboxes_ragged
+        (
+            tf_expected_images,
+            tf_expected_bboxes_ragged,
+            tf_expected_labels_ragged
+        ) = _np_to_tf(
+            expected_images, expected_bboxes_ragged, expected_labels_ragged
         )
-        tf_images, tf_bboxes_ragged = tf_flip_left_right(
-            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
+        tf_images, tf_bboxes_ragged, tf_labels_ragged = tf_flip_left_right(
+            TF_ORIGINAL_IMAGES,
+            TF_ORIGINAL_BBOXES_RAGGED,
+            TF_ORIGINAL_LABELS_RAGGED
         )
 
         self.assertTrue(
@@ -132,6 +152,10 @@ class TestTransform(unittest.TestCase):
         self.assertTrue(
             np.array_equal(tf_expected_bboxes_ragged.to_list(),
                            tf_bboxes_ragged.to_list())
+        )
+        self.assertTrue(
+            np.array_equal(tf_expected_labels_ragged.to_list(),
+                           tf_labels_ragged.to_list())
         )
 
     def test_flip_up_down(self) -> None:
@@ -160,23 +184,34 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        expected_labels_ragged = ORIGINAL_LABELS_RAGGED
 
         # Numpy.
-        images, bboxes_ragged = flip_up_down(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
+        images, bboxes_ragged, labels_ragged = flip_up_down(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED, ORIGINAL_LABELS_RAGGED
         )
-
-        self.assertTrue(np.array_equal(expected_images, images))
+        self.assertTrue(
+            np.array_equal(expected_images, images)
+        )
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
             self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+        for expected_labels, labels in zip(expected_labels_ragged,
+                                           labels_ragged):
+            self.assertTrue(np.array_equal(expected_labels, labels))
 
         # TF.
-        tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
-            expected_images, expected_bboxes_ragged
+        (
+            tf_expected_images,
+            tf_expected_bboxes_ragged,
+            tf_expected_labels_ragged
+        ) = _np_to_tf(
+            expected_images, expected_bboxes_ragged, expected_labels_ragged
         )
-        tf_images, tf_bboxes_ragged = tf_flip_up_down(
-            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
+        tf_images, tf_bboxes_ragged, tf_labels_ragged = tf_flip_up_down(
+            TF_ORIGINAL_IMAGES,
+            TF_ORIGINAL_BBOXES_RAGGED,
+            TF_ORIGINAL_LABELS_RAGGED
         )
 
         self.assertTrue(
@@ -186,6 +221,10 @@ class TestTransform(unittest.TestCase):
         self.assertTrue(
             np.array_equal(tf_expected_bboxes_ragged.to_list(),
                            tf_bboxes_ragged.to_list())
+        )
+        self.assertTrue(
+            np.array_equal(tf_expected_labels_ragged.to_list(),
+                           tf_labels_ragged.to_list())
         )
 
     def test_rotate_90(self) -> None:
@@ -211,10 +250,11 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        expected_labels_ragged = ORIGINAL_LABELS_RAGGED
 
         # Numpy.
-        images, bboxes_ragged = rotate_90(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
+        images, bboxes_ragged, labels_ragged = rotate_90(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED, ORIGINAL_LABELS_RAGGED
         )
         self.assertTrue(
             np.array_equal(expected_images, images)
@@ -222,13 +262,22 @@ class TestTransform(unittest.TestCase):
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
             self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+        for expected_labels, labels in zip(expected_labels_ragged,
+                                           labels_ragged):
+            self.assertTrue(np.array_equal(expected_labels, labels))
 
         # TF.
-        tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
-            expected_images, expected_bboxes_ragged
+        (
+            tf_expected_images,
+            tf_expected_bboxes_ragged,
+            tf_expected_labels_ragged
+        ) = _np_to_tf(
+            expected_images, expected_bboxes_ragged, expected_labels_ragged
         )
-        tf_images, tf_bboxes_ragged = tf_rotate_90(
-            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
+        tf_images, tf_bboxes_ragged, tf_labels_ragged = tf_rotate_90(
+            TF_ORIGINAL_IMAGES,
+            TF_ORIGINAL_BBOXES_RAGGED,
+            TF_ORIGINAL_LABELS_RAGGED
         )
 
         self.assertTrue(
@@ -238,6 +287,10 @@ class TestTransform(unittest.TestCase):
         self.assertTrue(
             np.array_equal(tf_expected_bboxes_ragged.to_list(),
                            tf_bboxes_ragged.to_list())
+        )
+        self.assertTrue(
+            np.array_equal(tf_expected_labels_ragged.to_list(),
+                           tf_labels_ragged.to_list())
         )
 
     def test_rotate_90_and_pad(self) -> None:
@@ -272,10 +325,11 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        expected_labels_ragged = ORIGINAL_LABELS_RAGGED
 
         # Numpy.
-        images, bboxes_ragged = _np_rotate_90_and_pad(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED
+        images, bboxes_ragged, labels_ragged = _np_rotate_90_and_pad(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED, ORIGINAL_LABELS_RAGGED
         )
         self.assertTrue(
             np.array_equal(expected_images, images)
@@ -283,13 +337,22 @@ class TestTransform(unittest.TestCase):
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
             self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+        for expected_labels, labels in zip(expected_labels_ragged,
+                                           labels_ragged):
+            self.assertTrue(np.array_equal(expected_labels, labels))
 
         # TF.
-        tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
-            expected_images, expected_bboxes_ragged
+        (
+            tf_expected_images,
+            tf_expected_bboxes_ragged,
+            tf_expected_labels_ragged
+        ) = _np_to_tf(
+            expected_images, expected_bboxes_ragged, expected_labels_ragged
         )
-        tf_images, tf_bboxes_ragged = _tf_rotate_90_and_pad(
-            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED
+        tf_images, tf_bboxes_ragged, tf_labels_ragged = _tf_rotate_90_and_pad(
+            TF_ORIGINAL_IMAGES,
+            TF_ORIGINAL_BBOXES_RAGGED,
+            TF_ORIGINAL_LABELS_RAGGED
         )
 
         self.assertTrue(
@@ -299,6 +362,10 @@ class TestTransform(unittest.TestCase):
         self.assertTrue(
             np.array_equal(tf_expected_bboxes_ragged.to_list(),
                            tf_bboxes_ragged.to_list())
+        )
+        self.assertTrue(
+            np.array_equal(tf_expected_labels_ragged.to_list(),
+                           tf_labels_ragged.to_list())
         )
 
     def test_rotate(self) -> None:
@@ -318,6 +385,10 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        original_labels_ragged = np.array([
+            np.array([[1], [2]], dtype=np.float32),
+            np.array([], dtype=np.float32),
+        ])
 
         angles_deg = np.array([90.0, 180.0])
 
@@ -336,10 +407,12 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        expected_labels_ragged = original_labels_ragged
 
         # Numpy.
-        images, bboxes_ragged = rotate(
-            original_images, original_bboxes_ragged, angles_deg
+        images, bboxes_ragged, labels_ragged = rotate(
+            original_images, original_bboxes_ragged, original_labels_ragged,
+            angles_deg
         )
         self.assertTrue(
             np.array_equal(expected_images, images)
@@ -347,16 +420,29 @@ class TestTransform(unittest.TestCase):
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
             self.assertTrue(np.allclose(expected_bboxes, bboxes))
+        for expected_labels, labels in zip(expected_labels_ragged,
+                                           labels_ragged):
+            self.assertTrue(np.allclose(expected_labels, labels))
 
         # TF.
-        tf_original_images, tf_original_bboxes_ragged = _np_to_tf(
-            original_images, original_bboxes_ragged
+        (
+            tf_original_images,
+            tf_original_bboxes_ragged,
+            tf_original_labels_ragged
+        ) = _np_to_tf(
+            original_images, original_bboxes_ragged, original_labels_ragged
         )
-        tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
-            expected_images, expected_bboxes_ragged
+        (
+            tf_expected_images,
+            tf_expected_bboxes_ragged,
+            tf_expected_labels_ragged
+        ) = _np_to_tf(
+            expected_images, expected_bboxes_ragged, expected_labels_ragged
         )
-        tf_images, tf_bboxes_ragged = tf_rotate(
-            tf_original_images, tf_original_bboxes_ragged,
+        tf_images, tf_bboxes_ragged, tf_labels_ragged = tf_rotate(
+            tf_original_images,
+            tf_original_bboxes_ragged,
+            tf_original_labels_ragged,
             tf.convert_to_tensor(angles_deg)
         )
         self.assertTrue(
@@ -368,6 +454,11 @@ class TestTransform(unittest.TestCase):
             self.assertTrue(
                 np.allclose(expected_bboxes.numpy(), bboxes.numpy())
             )
+        for expected_labels, labels in zip(tf_expected_labels_ragged,
+                                           tf_labels_ragged):
+            self.assertTrue(
+                np.allclose(expected_labels.numpy(), labels.numpy())
+            )
 
     def test_shear(self) -> None:
 
@@ -378,6 +469,9 @@ class TestTransform(unittest.TestCase):
                 [15, 0, 2, 2],
             ], dtype=np.float32),
         ], dtype=object)
+        original_labels_ragged = np.array([
+            np.array([[0], [1]], dtype=np.float32)
+        ])
 
         angles_deg = np.array([45.0])
 
@@ -387,30 +481,46 @@ class TestTransform(unittest.TestCase):
                 [0, 0, 3, 2],
             ], dtype=np.float32),
         ], dtype=object)
+        expected_labels_ragged = original_labels_ragged
 
         # Numpy.
-        _, bboxes_ragged = shear(
-            dummy_images, original_bboxes_ragged, angles_deg
+        _, bboxes_ragged, labels_ragged = shear(
+            dummy_images, original_bboxes_ragged, original_labels_ragged,
+            angles_deg
         )
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
             self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+        for expected_labels, labels in zip(expected_labels_ragged,
+                                           labels_ragged):
+            self.assertTrue(np.array_equal(expected_labels, labels))
 
         # TF.
-        tf_dummy_images, tf_original_bboxes_ragged = _np_to_tf(
-            dummy_images, original_bboxes_ragged
+        (
+            tf_dummy_images,
+            tf_original_bboxes_ragged,
+            tf_original_labels_ragged
+        ) = _np_to_tf(
+            dummy_images, original_bboxes_ragged, original_labels_ragged
         )
-        _, tf_expected_bboxes_ragged = _np_to_tf(
-            dummy_images, expected_bboxes_ragged
+        _, tf_expected_bboxes_ragged, tf_expected_labels_ragged = _np_to_tf(
+            dummy_images, expected_bboxes_ragged, expected_labels_ragged
         )
-        _, tf_bboxes_ragged = tf_shear(
-            tf_dummy_images, tf_original_bboxes_ragged,
+        _, tf_bboxes_ragged, tf_labels_ragged = tf_shear(
+            tf_dummy_images,
+            tf_original_bboxes_ragged,
+            tf_original_labels_ragged,
             tf.convert_to_tensor(angles_deg)
         )
         for expected_bboxes, bboxes in zip(tf_expected_bboxes_ragged,
                                            tf_bboxes_ragged):
             self.assertTrue(
                 np.allclose(expected_bboxes.numpy(), bboxes.numpy())
+            )
+        for expected_labels, labels in zip(tf_expected_labels_ragged,
+                                           tf_labels_ragged):
+            self.assertTrue(
+                np.allclose(expected_labels.numpy(), labels.numpy())
             )
 
     def test_crop_and_resize(self) -> None:
@@ -430,6 +540,12 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        original_labels_ragged = np.array([
+            np.array([[0], [1]], dtype=np.float32),
+            np.array([[2], [1]], dtype=np.float32),
+            np.array([[0]], dtype=np.float32),
+            np.array([], dtype=np.float32),
+        ])
 
         offset_heights = np.array([128 * 0.25, 0.0, 0.0, 99.0])
         offset_widths = np.array([128 * 0.25, 0.0, 0.0, 59.0])
@@ -448,26 +564,41 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        expected_labels_ragged = np.array([
+            np.array([[0], [1]], dtype=np.float32),
+            np.array([[2]], dtype=np.float32),
+            np.array([], dtype=np.float32),
+            np.array([], dtype=np.float32),
+        ])
 
         # Numpy.
-        _, bboxes_ragged = crop_and_resize(
-            dummy_images, original_bboxes_ragged,
+        _, bboxes_ragged, labels_ragged = crop_and_resize(
+            dummy_images, original_bboxes_ragged, original_labels_ragged,
             offset_heights, offset_widths,
             cropped_image_heights, cropped_image_widths
         )
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
             self.assertTrue(np.allclose(expected_bboxes, bboxes))
+        for expected_labels, labels in zip(expected_labels_ragged,
+                                           labels_ragged):
+            self.assertTrue(np.allclose(expected_labels, labels))
 
         # TF.
-        tf_dummy_images, tf_original_bboxes_ragged = _np_to_tf(
-            dummy_images, original_bboxes_ragged
+        (
+            tf_dummy_images,
+            tf_original_bboxes_ragged,
+            tf_original_labels_ragged
+        ) = _np_to_tf(
+            dummy_images, original_bboxes_ragged, original_labels_ragged
         )
-        _, tf_expected_bboxes_ragged = _np_to_tf(
-            dummy_images, expected_bboxes_ragged
+        _, tf_expected_bboxes_ragged, tf_expected_labels_ragged = _np_to_tf(
+            dummy_images, expected_bboxes_ragged, expected_labels_ragged
         )
-        _, tf_bboxes_ragged = tf_crop_and_resize(
-            tf_dummy_images, tf_original_bboxes_ragged,
+        _, tf_bboxes_ragged, tf_labels_ragged = tf_crop_and_resize(
+            tf_dummy_images,
+            tf_original_bboxes_ragged,
+            tf_original_labels_ragged,
             tf.convert_to_tensor(offset_heights),
             tf.convert_to_tensor(offset_widths),
             tf.convert_to_tensor(cropped_image_heights),
@@ -477,6 +608,11 @@ class TestTransform(unittest.TestCase):
                                            tf_bboxes_ragged):
             self.assertTrue(
                 np.allclose(expected_bboxes.numpy(), bboxes.numpy())
+            )
+        for expected_labels, labels in zip(tf_expected_labels_ragged,
+                                           tf_labels_ragged):
+            self.assertTrue(
+                np.allclose(expected_labels.numpy(), labels.numpy())
             )
 
     def test_translate(self) -> None:
@@ -507,10 +643,15 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ], dtype=object)
+        expected_labels_ragged = np.array([
+            np.array([[1]], dtype=np.float32),
+            np.array([[2]], dtype=np.float32),
+            np.array([], dtype=np.float32),
+        ])
 
         # Numpy.
-        images, bboxes_ragged = translate(
-            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED,
+        images, bboxes_ragged, labels_ragged = translate(
+            ORIGINAL_IMAGES, ORIGINAL_BBOXES_RAGGED, ORIGINAL_LABELS_RAGGED,
             translate_heights, translate_widths
         )
 
@@ -518,13 +659,22 @@ class TestTransform(unittest.TestCase):
         for expected_bboxes, bboxes in zip(expected_bboxes_ragged,
                                            bboxes_ragged):
             self.assertTrue(np.array_equal(expected_bboxes, bboxes))
+        for expected_labels, labels in zip(expected_labels_ragged,
+                                           labels_ragged):
+            self.assertTrue(np.array_equal(expected_labels, labels))
 
         # TF.
-        tf_expected_images, tf_expected_bboxes_ragged = _np_to_tf(
-            expected_images, expected_bboxes_ragged
+        (
+            tf_expected_images,
+            tf_expected_bboxes_ragged,
+            tf_expected_labels_ragged
+        ) = _np_to_tf(
+            expected_images, expected_bboxes_ragged, expected_labels_ragged
         )
-        tf_images, tf_bboxes_ragged = tf_translate(
-            TF_ORIGINAL_IMAGES, TF_ORIGINAL_BBOXES_RAGGED,
+        tf_images, tf_bboxes_ragged, tf_labels_ragged = tf_translate(
+            TF_ORIGINAL_IMAGES,
+            TF_ORIGINAL_BBOXES_RAGGED,
+            TF_ORIGINAL_LABELS_RAGGED,
             tf.convert_to_tensor(translate_heights),
             tf.convert_to_tensor(translate_widths)
         )
@@ -536,6 +686,10 @@ class TestTransform(unittest.TestCase):
         self.assertTrue(
             np.array_equal(tf_expected_bboxes_ragged.to_list(),
                            tf_bboxes_ragged.to_list())
+        )
+        self.assertTrue(
+            np.array_equal(tf_expected_labels_ragged.to_list(),
+                           tf_labels_ragged.to_list())
         )
 
 
