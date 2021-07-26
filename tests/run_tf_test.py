@@ -3,17 +3,19 @@
 TF test.
 """
 
+from typing import Tuple
+
 import numpy as np
 import tensorflow as tf
+from scipy import misc
 
 import targetran as tt
 
-from scipy import misc
 
-
-def main() -> None:
+def make_np_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
     images = np.array([misc.face() for _ in range(3)], dtype=np.float32)
+
     bboxes_ragged = np.array([
         np.array([
             [214, 223, 10, 11],
@@ -24,11 +26,19 @@ def main() -> None:
             [104, 151, 22, 10],
         ], dtype=np.float32),
     ], dtype=object)
+
     labels_ragged = np.array([
         np.array([[0], [1]], dtype=np.float32),
         np.array([], dtype=np.float32),
         np.array([[2]], dtype=np.float32),
     ])
+
+    return images, bboxes_ragged, labels_ragged
+
+
+def main() -> None:
+
+    images, bboxes_ragged, labels_ragged = make_np_data()
 
     tf_images = tf.convert_to_tensor(images)
     tf_bboxes_ragged = tf.ragged.constant(
@@ -44,13 +54,15 @@ def main() -> None:
         tf.data.Dataset.from_tensor_slices(tf_labels_ragged)
     ))
 
+    print("-------- Raw data --------")
+
     for sample in ds:
         image, bboxes, labels = sample
         print(f"image shape: {image.get_shape()}")
         print(f"bboxes shape: {bboxes.get_shape()}")
         print(f"labels shape: {labels.get_shape()}")
 
-    print("--------")
+    print("-------- Random transform --------")
 
     ds = ds.map(tt.TFRandomRotate(probability=1.0))
 
@@ -62,7 +74,7 @@ def main() -> None:
         print(f"transformed labels shape: {labels.get_shape()}")
         print(f"transformed labels: {labels}")
 
-    print("--------")
+    print("-------- Batching --------")
 
     ds = ds.batch(2)
 
