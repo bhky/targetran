@@ -7,18 +7,14 @@ from typing import Any, Callable, Tuple
 import numpy as np  # type: ignore
 
 from ._functional import (
-    _np_map_idx_fn,
-    _np_to_single_fn,
     _np_convert,
     _np_range,
-    _np_stack_bboxes,
     _np_round_to_int,
     _np_resize_image,
     _np_boolean_mask,
     _np_logical_and,
-    _np_pad_images,
-    _np_gather_image,
-    _np_make_bboxes_ragged
+    _np_pad_image,
+    _np_gather_image
 )
 
 from ._transform import (
@@ -26,170 +22,119 @@ from ._transform import (
     _flip_up_down,
     _rotate_90,
     _rotate_90_and_pad,
-    _rotate_single,
-    _shear_single,
-    _crop_single,
-    _resize_single,
-    _translate_single,
+    _rotate,
+    _shear,
+    _crop,
+    _resize,
+    _translate,
     _get_random_crop_inputs,
     _get_random_size_fractions
 )
 
 
 def flip_left_right(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_left_right(
-        images, bboxes_ragged, labels_ragged,
-        np.shape, _np_convert, _np_stack_bboxes, np.concatenate,
-        _np_make_bboxes_ragged
+        image, bboxes, labels,
+        np.shape, _np_convert, np.concatenate
     )
 
 
 def flip_up_down(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_up_down(
-        images, bboxes_ragged, labels_ragged,
-        np.shape, _np_convert, _np_stack_bboxes, np.concatenate,
-        _np_make_bboxes_ragged
+        image, bboxes, labels,
+        np.shape, _np_convert, np.concatenate
     )
 
 
-def _np_resize_single(
+def resize(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
         dest_size: Tuple[int, int]
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _resize_single(
+    return _resize(
         image, bboxes, labels,
         dest_size, np.shape, _np_resize_image, _np_convert, np.concatenate
     )
 
 
-def resize(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray,
-        dest_size: Tuple[int, int]
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
-    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return _np_resize_single(
-            images[idx], bboxes_ragged[idx], labels_ragged[idx], dest_size
-        )
-
-    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
-
-
 def rotate_90(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _rotate_90(
-        images, bboxes_ragged, labels_ragged,
-        np.shape, _np_convert, np.transpose, _np_stack_bboxes, np.concatenate,
-        _np_make_bboxes_ragged
+        image, bboxes, labels,
+        np.shape, _np_convert, np.transpose, np.concatenate
     )
 
 
 def _np_rotate_90_and_pad(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Middle-step function for easy testing.
     """
     return _rotate_90_and_pad(
-        images, bboxes_ragged, labels_ragged,
-        np.shape, _np_convert, np.transpose, _np_stack_bboxes, np.concatenate,
-        np.where, np.ceil, np.floor, _np_pad_images,
-        _np_make_bboxes_ragged
+        image, bboxes, labels,
+        np.shape, _np_convert, np.transpose, np.concatenate,
+        np.where, np.ceil, np.floor, _np_pad_image
     )
 
 
 def rotate_90_and_resize(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Could be rotate_90_and_pad_and_resize, but thought it is too clumsy.
     """
-    height, width = int(np.shape(images)[1]), int(np.shape(images)[2])
-    images, bboxes_ragged, labels_ragged = _np_rotate_90_and_pad(
-        images, bboxes_ragged, labels_ragged
-    )
-    return resize(images, bboxes_ragged, labels_ragged, (height, width))
+    height, width = int(np.shape(image)[0]), int(np.shape(image)[1])
+    image, bboxes, labels = _np_rotate_90_and_pad(image, bboxes, labels)
+    return resize(image, bboxes, labels, (height, width))
 
 
-def _np_rotate_single(
+def rotate(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
         angle_deg: float
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _rotate_single(
+    return _rotate(
         image, bboxes, labels, angle_deg,
         np.shape, _np_convert, np.expand_dims, np.squeeze,
-        _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
+        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
         _np_gather_image, np.reshape, np.copy,
         np.max, np.min, _np_logical_and, _np_boolean_mask
     )
 
 
-def rotate(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray,
-        angles_deg: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
-    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return _np_rotate_single(
-            images[idx], bboxes_ragged[idx], labels_ragged[idx], angles_deg[idx]
-        )
-
-    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
-
-
-def _np_shear_single(
+def shear(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
         angle_deg: float
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _shear_single(
+    return _shear(
         image, bboxes, labels, angle_deg,
         np.shape, _np_convert, np.expand_dims, np.squeeze,
-        _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
+        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.tan, np.matmul, np.clip,
         _np_gather_image, np.reshape, np.copy,
         np.max, np.min, _np_logical_and, _np_boolean_mask
     )
-
-
-def shear(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray,
-        angles_deg: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
-    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return _np_shear_single(
-            images[idx], bboxes_ragged[idx], labels_ragged[idx], angles_deg[idx]
-        )
-
-    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
 
 
 def _np_get_random_crop_inputs(
@@ -205,7 +150,7 @@ def _np_get_random_crop_inputs(
     )
 
 
-def _np_crop_and_resize_single(
+def crop_and_resize(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
@@ -214,69 +159,31 @@ def _np_crop_and_resize_single(
         cropped_image_height: int,
         cropped_image_width: int
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    cropped_image, cropped_bboxes, cropped_labels = _crop_single(
+    cropped_image, cropped_bboxes, cropped_labels = _crop(
         image, bboxes, labels,
         offset_height, offset_width,
         cropped_image_height, cropped_image_width,
         np.shape, np.reshape, _np_convert, np.concatenate,
         _np_logical_and, np.squeeze, _np_boolean_mask
     )
-    return _np_resize_single(
+    return resize(
         cropped_image, cropped_bboxes, cropped_labels, np.shape(image)[0:2]
     )
 
 
-def crop_and_resize(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray,
-        offset_heights: np.ndarray,
-        offset_widths: np.ndarray,
-        cropped_image_heights: np.ndarray,
-        cropped_image_widths: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
-    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return _np_crop_and_resize_single(
-            images[idx], bboxes_ragged[idx], labels_ragged[idx],
-            offset_heights[idx], offset_widths[idx],
-            cropped_image_heights[idx], cropped_image_widths[idx]
-        )
-
-    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
-
-
-def _np_translate_single(
+def translate(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
         translate_height: int,
         translate_width: int
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _translate_single(
+    return _translate(
         image, bboxes, labels,
         translate_height, translate_width,
         np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
-        _np_logical_and, np.expand_dims, np.squeeze, _np_boolean_mask,
-        _np_pad_images
+        _np_logical_and, np.squeeze, _np_boolean_mask, _np_pad_image
     )
-
-
-def translate(
-        images: np.ndarray,
-        bboxes_ragged: np.ndarray,
-        labels_ragged: np.ndarray,
-        translate_heights: np.ndarray,
-        translate_widths: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
-    def fn(idx: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return _np_translate_single(
-            images[idx], bboxes_ragged[idx], labels_ragged[idx],
-            translate_heights[idx], translate_widths[idx]
-        )
-
-    return _np_map_idx_fn(fn, int(np.shape(images)[0]))
 
 
 class Resize:
@@ -290,20 +197,18 @@ class Resize:
             bboxes: np.ndarray,
             labels: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return _np_resize_single(image, bboxes, labels, self.dest_size)
+        return resize(image, bboxes, labels, self.dest_size)
 
 
 class RandomTransform:
 
     def __init__(
             self,
-            np_single_fn: Callable[
-                ..., Tuple[np.ndarray, np.ndarray, np.ndarray]
-            ],
+            np_fn: Callable[..., Tuple[np.ndarray, np.ndarray, np.ndarray]],
             probability: float,
             seed: int,
     ) -> None:
-        self._np_single_fn = np_single_fn
+        self._np_fn = np_fn
         self.probability = probability
         self._rng = np.random.default_rng(seed=seed)
         self._rand_fn: Callable[..., np.ndarray] = lambda: self._rng.random()
@@ -318,9 +223,7 @@ class RandomTransform:
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         if self._rand_fn() < self.probability:
-            return self._np_single_fn(
-                image, bboxes, labels, *args, **kwargs
-            )
+            return self._np_fn(image, bboxes, labels, *args, **kwargs)
         return image, bboxes, labels
 
 
@@ -331,9 +234,7 @@ class RandomFlipLeftRight(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(
-            _np_to_single_fn(flip_left_right), probability, seed
-        )
+        super().__init__(flip_left_right, probability, seed)
 
     def __call__(
             self,
@@ -351,9 +252,7 @@ class RandomFlipUpDown(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(
-            _np_to_single_fn(flip_up_down), probability, seed
-        )
+        super().__init__(flip_up_down, probability, seed)
 
     def __call__(
             self,
@@ -371,9 +270,7 @@ class RandomRotate90(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(
-            _np_to_single_fn(rotate_90), probability, seed
-        )
+        super().__init__(rotate_90, probability, seed)
 
     def __call__(
             self,
@@ -391,9 +288,7 @@ class RandomRotate90AndResize(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(
-            _np_to_single_fn(rotate_90_and_resize), probability, seed
-        )
+        super().__init__(rotate_90_and_resize, probability, seed)
 
     def __call__(
             self,
@@ -412,7 +307,7 @@ class RandomRotate(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(_np_rotate_single, probability, seed)
+        super().__init__(rotate, probability, seed)
         assert angle_deg_range[0] < angle_deg_range[1]
         self.angle_deg_range = angle_deg_range
 
@@ -438,7 +333,7 @@ class RandomShear(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(_np_shear_single, probability, seed)
+        super().__init__(shear, probability, seed)
         assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
@@ -465,7 +360,7 @@ class RandomCropAndResize(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(_np_crop_and_resize_single, probability, seed)
+        super().__init__(crop_and_resize, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 

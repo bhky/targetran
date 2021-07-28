@@ -7,15 +7,11 @@ from typing import Any, Callable, Tuple
 import tensorflow as tf  # type: ignore
 
 from ._functional import (
-    _tf_map_idx_fn,
-    _tf_to_single_fn,
     _tf_convert,
-    _tf_stack_bboxes,
     _tf_round_to_int,
     _tf_resize_image,
-    _tf_pad_images,
-    _tf_gather_image,
-    _tf_make_bboxes_ragged
+    _tf_pad_image,
+    _tf_gather_image
 )
 
 
@@ -24,200 +20,119 @@ from ._transform import (
     _flip_up_down,
     _rotate_90,
     _rotate_90_and_pad,
-    _rotate_single,
-    _shear_single,
-    _crop_single,
-    _resize_single,
-    _translate_single,
+    _rotate,
+    _shear,
+    _crop,
+    _resize,
+    _translate,
     _get_random_crop_inputs,
     _get_random_size_fractions
 )
 
 
 def tf_flip_left_right(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        labels: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_left_right(
-        images, bboxes_ragged, labels_ragged,
-        tf.shape, _tf_convert, _tf_stack_bboxes, tf.concat,
-        _tf_make_bboxes_ragged
+        image, bboxes, labels,
+        tf.shape, _tf_convert, tf.concat
     )
 
 
 def tf_flip_up_down(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        labels: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_up_down(
-        images, bboxes_ragged, labels_ragged,
-        tf.shape, _tf_convert, _tf_stack_bboxes, tf.concat,
-        _tf_make_bboxes_ragged
+        image, bboxes, labels,
+        tf.shape, _tf_convert, tf.concat
     )
 
 
-def _tf_resize_single(
+def tf_resize(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
         dest_size: Tuple[int, int]
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _resize_single(
+    return _resize(
         image, bboxes, labels,
         dest_size, tf.shape, _tf_resize_image, _tf_convert, tf.concat
     )
 
 
-def tf_resize(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor,
-        dest_size: Tuple[int, int]
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-
-    def fn(
-            idx: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-        image, bboxes, labels = _tf_resize_single(
-            images[idx],
-            bboxes_ragged[idx].to_tensor(),
-            labels_ragged[idx].to_tensor(),
-            dest_size
-        )
-        return (
-            image,
-            tf.RaggedTensor.from_tensor(bboxes),
-            tf.RaggedTensor.from_tensor(labels)
-        )
-
-    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
-
-
 def tf_rotate_90(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        labels: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate_90(
-        images, bboxes_ragged, labels_ragged,
-        tf.shape, _tf_convert, tf.transpose, _tf_stack_bboxes, tf.concat,
-        _tf_make_bboxes_ragged
+        image, bboxes, labels,
+        tf.shape, _tf_convert, tf.transpose, tf.concat
     )
 
 
 def _tf_rotate_90_and_pad(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        labels: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """
     Middle-step function for easy testing.
     """
     return _rotate_90_and_pad(
-        images, bboxes_ragged, labels_ragged,
-        tf.shape, _tf_convert, tf.transpose, _tf_stack_bboxes, tf.concat,
-        tf.where, tf.math.ceil, tf.math.floor, _tf_pad_images,
-        _tf_make_bboxes_ragged
+        image, bboxes, labels,
+        tf.shape, _tf_convert, tf.transpose, tf.concat,
+        tf.where, tf.math.ceil, tf.math.floor, _tf_pad_image
     )
 
 
 def tf_rotate_90_and_resize(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        labels: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """
     Could be tf_rotate_90_and_pad_and_resize, but thought it is too clumsy.
     """
-    height, width = int(tf.shape(images)[1]), int(tf.shape(images)[2])
-    images, bboxes_ragged, labels_ragged = _tf_rotate_90_and_pad(
-        images, bboxes_ragged, labels_ragged
-    )
-    return tf_resize(images, bboxes_ragged, labels_ragged, (height, width))
+    height, width = int(tf.shape(image)[0]), int(tf.shape(image)[1])
+    image, bboxes, labels = _tf_rotate_90_and_pad(image, bboxes, labels)
+    return tf_resize(image, bboxes, labels, (height, width))
 
 
-def _tf_rotate_single(
+def tf_rotate(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
         angle_deg: float
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _rotate_single(
-        image, bboxes, labels, angle_deg,
+    return _rotate(
+        image.to_tensor(), bboxes.to_tensor(), labels.to_tensor(), angle_deg,
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
-        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
         _tf_gather_image, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
 
 
-def tf_rotate(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor,
-        angles_deg: tf.Tensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-
-    def fn(
-            idx: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-        image, bboxes, labels = _tf_rotate_single(
-            images[idx],
-            bboxes_ragged[idx].to_tensor(),
-            labels_ragged[idx].to_tensor(),
-            angles_deg[idx]
-        )
-        return (
-            image,
-            tf.RaggedTensor.from_tensor(bboxes),
-            tf.RaggedTensor.from_tensor(labels)
-        )
-
-    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
-
-
-def _tf_shear_single(
+def tf_shear(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
         angle_deg: float
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _shear_single(
+    return _shear(
         image, bboxes, labels, angle_deg,
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
-        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
         _tf_gather_image, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
-
-
-def tf_shear(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor,
-        angles_deg: tf.Tensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-
-    def fn(
-            idx: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-        image, bboxes, labels = _tf_shear_single(
-            images[idx],
-            bboxes_ragged[idx].to_tensor(),
-            labels_ragged[idx].to_tensor(),
-            angles_deg[idx],
-        )
-        return (
-            image,
-            tf.RaggedTensor.from_tensor(bboxes),
-            tf.RaggedTensor.from_tensor(labels)
-        )
-
-    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
 
 
 def _tf_get_random_crop_inputs(
@@ -233,7 +148,7 @@ def _tf_get_random_crop_inputs(
     )
 
 
-def _tf_crop_and_resize_single(
+def tf_crop_and_resize(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
@@ -242,87 +157,31 @@ def _tf_crop_and_resize_single(
         cropped_image_height: int,
         cropped_image_width: int
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    cropped_image, cropped_bboxes, cropped_labels = _crop_single(
+    cropped_image, cropped_bboxes, cropped_labels = _crop(
         image, bboxes, labels,
         offset_height, offset_width,
         cropped_image_height, cropped_image_width,
         tf.shape, tf.reshape, _tf_convert, tf.concat,
         tf.logical_and, tf.squeeze, tf.boolean_mask
     )
-    return _tf_resize_single(
+    return tf_resize(
         cropped_image, cropped_bboxes, cropped_labels, tf.shape(image)[0:2]
     )
 
 
-def tf_crop_and_resize(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor,
-        offset_heights: tf.Tensor,
-        offset_widths: tf.Tensor,
-        cropped_image_heights: tf.Tensor,
-        cropped_image_widths: tf.Tensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-
-    def fn(
-            idx: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-        image, bboxes, labels = _tf_crop_and_resize_single(
-            images[idx],
-            bboxes_ragged[idx].to_tensor(),
-            labels_ragged[idx].to_tensor(),
-            offset_heights[idx], offset_widths[idx],
-            cropped_image_heights[idx], cropped_image_widths[idx]
-        )
-        return (
-            image,
-            tf.RaggedTensor.from_tensor(bboxes),
-            tf.RaggedTensor.from_tensor(labels)
-        )
-
-    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
-
-
-def _tf_translate_single(
+def tf_translate(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
         translate_height: int,
         translate_width: int
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _translate_single(
+    return _translate(
         image, bboxes, labels,
         translate_height, translate_width,
         tf.shape, tf.reshape, _tf_convert, tf.where, tf.abs, tf.concat,
-        tf.logical_and, tf.expand_dims, tf.squeeze, tf.boolean_mask,
-        _tf_pad_images
+        tf.logical_and, tf.squeeze, tf.boolean_mask, _tf_pad_image
     )
-
-
-def tf_translate(
-        images: tf.Tensor,
-        bboxes_ragged: tf.RaggedTensor,
-        labels_ragged: tf.RaggedTensor,
-        translate_heights: tf.Tensor,
-        translate_widths: tf.Tensor
-) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-
-    def fn(
-            idx: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-        image, bboxes, labels = _tf_translate_single(
-            images[idx],
-            bboxes_ragged[idx].to_tensor(),
-            labels_ragged[idx].to_tensor(),
-            translate_heights[idx], translate_widths[idx]
-        )
-        return (
-            image,
-            tf.RaggedTensor.from_tensor(bboxes),
-            tf.RaggedTensor.from_tensor(labels)
-        )
-
-    return _tf_map_idx_fn(fn, int(tf.shape(images)[0]))
 
 
 class TFResize:
@@ -335,26 +194,19 @@ class TFResize:
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-        new_image, new_bboxes, new_labels = _tf_resize_single(
-            image, bboxes, labels, self.dest_size
-        )
-        return (
-            new_image,
-            tf.RaggedTensor.from_tensor(new_bboxes),
-            tf.RaggedTensor.from_tensor(new_labels)
-        )
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+        return tf_resize(image, bboxes, labels, self.dest_size)
 
 
 class TFRandomTransform:
 
     def __init__(
             self,
-            tf_single_fn: Callable[..., Tuple[tf.Tensor, tf.Tensor, tf.Tensor]],
+            tf_fn: Callable[..., Tuple[tf.Tensor, tf.Tensor, tf.Tensor]],
             probability: float,
             seed: int,
     ) -> None:
-        self._tf_single_fn = tf_single_fn
+        self._tf_fn = tf_fn
         self.probability = probability
         self._rng = tf.random.Generator.from_seed(seed)
         self._rand_fn: Callable[..., tf.Tensor] = lambda: self._rng.uniform([])
@@ -366,28 +218,11 @@ class TFRandomTransform:
             labels: tf.Tensor,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
-        """
-        Note: when looping a dataset (without batching), each row of the
-        tf.RaggedTensor (bboxes_ragged) is a bboxes (tf.Tensor). However,
-        we still want to make the output new_bboxes a tf.RaggedTensor,
-        for consistency and for able to do batching in the dataset after.
-        Same for the labels.
-        """
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+
         if self._rand_fn() < self.probability:
-            new_image, new_bboxes, new_labels = self._tf_single_fn(
-                image, bboxes, labels, *args, **kwargs
-            )
-            return (
-                new_image,
-                tf.RaggedTensor.from_tensor(new_bboxes),
-                tf.RaggedTensor.from_tensor(new_labels)
-            )
-        return (
-            image,
-            tf.RaggedTensor.from_tensor(bboxes),
-            tf.RaggedTensor.from_tensor(labels)
-        )
+            return self._tf_fn(image, bboxes, labels, *args, **kwargs)
+        return image, bboxes, labels
 
 
 class TFRandomFlipLeftRight(TFRandomTransform):
@@ -397,16 +232,14 @@ class TFRandomFlipLeftRight(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(
-            _tf_to_single_fn(tf_flip_left_right), probability, seed
-        )
+        super().__init__(tf_flip_left_right, probability, seed)
 
     def __call__(
             self,
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         return super().call(image, bboxes, labels)
 
 
@@ -417,16 +250,14 @@ class TFRandomFlipUpDown(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(
-            _tf_to_single_fn(tf_flip_up_down), probability, seed
-        )
+        super().__init__(tf_flip_up_down, probability, seed)
 
     def __call__(
             self,
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         return super().call(image, bboxes, labels)
 
 
@@ -437,16 +268,14 @@ class TFRandomRotate90(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(
-            _tf_to_single_fn(tf_rotate_90), probability, seed
-        )
+        super().__init__(tf_rotate_90, probability, seed)
 
     def __call__(
             self,
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         return super().call(image, bboxes, labels)
 
 
@@ -457,16 +286,14 @@ class TFRandomRotate90AndResize(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(
-            _tf_to_single_fn(tf_rotate_90_and_resize), probability, seed
-        )
+        super().__init__(tf_rotate_90_and_resize, probability, seed)
 
     def __call__(
             self,
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         return super().call(image, bboxes, labels)
 
 
@@ -478,7 +305,7 @@ class TFRandomRotate(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(_tf_rotate_single, probability, seed)
+        super().__init__(tf_rotate, probability, seed)
         assert angle_deg_range[0] < angle_deg_range[1]
         self.angle_deg_range = angle_deg_range
 
@@ -487,7 +314,7 @@ class TFRandomRotate(TFRandomTransform):
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
 
         angle_deg = \
             _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
@@ -504,7 +331,7 @@ class TFRandomShear(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(_tf_shear_single, probability, seed)
+        super().__init__(tf_shear, probability, seed)
         assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
@@ -513,7 +340,7 @@ class TFRandomShear(TFRandomTransform):
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
 
         angle_deg = \
             _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
@@ -531,7 +358,7 @@ class TFRandomCropAndResize(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(_tf_crop_and_resize_single, probability, seed)
+        super().__init__(tf_crop_and_resize, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 
@@ -540,7 +367,7 @@ class TFRandomCropAndResize(TFRandomTransform):
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
 
         offset_height, offset_width, cropped_height, cropped_width = \
             _tf_get_random_crop_inputs(
@@ -565,7 +392,7 @@ class TFRandomTranslate(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(_tf_translate_single, probability, seed)
+        super().__init__(tf_translate, probability, seed)
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
 
@@ -574,7 +401,7 @@ class TFRandomTranslate(TFRandomTransform):
             image: tf.Tensor,
             bboxes: tf.Tensor,
             labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.RaggedTensor, tf.RaggedTensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
 
         height_fraction, width_fraction = _get_random_size_fractions(
             self.translate_height_fraction_range,
