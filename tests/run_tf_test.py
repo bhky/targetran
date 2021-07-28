@@ -3,20 +3,21 @@
 TF test.
 """
 
-from typing import Tuple
+from typing import Sequence, Tuple
 
 import numpy as np
 import tensorflow as tf
-from scipy import misc
 
 import targetran as tt
 
 
-def make_np_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def make_np_data() -> Tuple[Sequence[np.ndarray],
+                            Sequence[np.ndarray],
+                            Sequence[np.ndarray]]:
 
-    images = np.array([misc.face() for _ in range(3)], dtype=np.float32)
+    image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
 
-    bboxes_ragged = np.array([
+    bboxes_list = [
         np.array([
             [214, 223, 10, 11],
             [345, 230, 21, 9],
@@ -25,33 +26,45 @@ def make_np_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         np.array([
             [104, 151, 22, 10],
         ], dtype=np.float32),
-    ], dtype=object)
+    ]
 
-    labels_ragged = np.array([
-        np.array([[0], [1]], dtype=np.float32),
+    labels_list = [
+        np.array([0, 1], dtype=np.float32),
         np.array([], dtype=np.float32),
-        np.array([[2]], dtype=np.float32),
-    ])
+        np.array([2], dtype=np.float32),
+    ]
 
-    return images, bboxes_ragged, labels_ragged
+    return image_list, bboxes_list, labels_list
+
+
+def np_to_tf(
+        image_list: Sequence[np.ndarray],
+        bboxes_list: Sequence[np.ndarray],
+        labels_list: Sequence[np.ndarray]
+) -> Tuple[Sequence[tf.Tensor], Sequence[tf.Tensor], Sequence[tf.Tensor]]:
+
+    tuples = [
+        (tf.convert_to_tensor(image, dtype=tf.float32),
+         tf.convert_to_tensor(bboxes, dtype=tf.float32),
+         tf.convert_to_tensor(labels, dtype=tf.float32))
+        for image, bboxes, labels in zip(image_list, bboxes_list, labels_list)
+    ]
+    tf_image_list, tf_bboxes_list, tf_labels_list = list(zip(*tuples))
+    return tf_image_list, tf_bboxes_list, tf_labels_list
 
 
 def main() -> None:
 
-    images, bboxes_ragged, labels_ragged = make_np_data()
+    image_list, bboxes_list, labels_list = make_np_data()
 
-    tf_images = tf.convert_to_tensor(images)
-    tf_bboxes_ragged = tf.ragged.constant(
-        bboxes_ragged.tolist(), inner_shape=(4,)
-    )
-    tf_labels_ragged = tf.ragged.constant(
-        labels_ragged.tolist(), inner_shape=(1,)
+    tf_image_list, tf_bboxes_list, tf_labels_list = np_to_tf(
+        image_list, bboxes_list, labels_list
     )
 
     ds = tf.data.Dataset.zip((
-        tf.data.Dataset.from_tensor_slices(tf_images),
-        tf.data.Dataset.from_tensor_slices(tf_bboxes_ragged),
-        tf.data.Dataset.from_tensor_slices(tf_labels_ragged)
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_list)),
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_bboxes_list)),
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_labels_list))
     ))
 
     print("-------- Raw data --------")
@@ -64,6 +77,7 @@ def main() -> None:
 
     print("-------- Random transform --------")
 
+    ds = ds.map(lambda i, b, l: (i.to_tensor(), b.to_tensor(), l))
     ds = ds.map(tt.TFRandomRotate(probability=1.0))
 
     for sample in ds:
@@ -73,18 +87,6 @@ def main() -> None:
         print(f"transformed bboxes: {bboxes}")
         print(f"transformed labels shape: {labels.get_shape()}")
         print(f"transformed labels: {labels}")
-
-    print("-------- Batching --------")
-
-    ds = ds.batch(2)
-
-    for batch in ds:
-        image_batch, bboxes_batch, labels_batch = batch
-        print(f"transformed image batch shape: {image_batch.get_shape()}")
-        print(f"transformed bboxes batch shape: {bboxes_batch.get_shape()}")
-        print(f"transformed bboxes batch: {bboxes_batch}")
-        print(f"transformed labels batch shape: {labels_batch.get_shape()}")
-        print(f"transformed labels batch: {labels_batch}")
 
 
 if __name__ == "__main__":
