@@ -211,8 +211,8 @@ def _affine_transform_single(
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
-    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
-    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
     """
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
@@ -359,8 +359,8 @@ def _rotate(
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
-    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
-    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise.
     """
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
@@ -415,8 +415,8 @@ def _shear(
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
-    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
-    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise, where abs(angle_deg) < 90.
     """
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
@@ -455,8 +455,8 @@ def _resize(
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
-    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
-    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
     dest_size: (height, width)
     """
     image_shape = shape_fn(image)
@@ -484,7 +484,7 @@ def _get_random_size_fractions(
 ) -> Tuple[T, T]:
     """
     height_fraction_range, width_fraction_range: (-1.0, 1.0)
-    rand_fn: generate random [0.0, 1.0) array
+    rand_fn: generate array of random numbers in range [0.0, 1.0)
     """
     height_fraction_range = convert_fn(height_fraction_range)
     width_fraction_range = convert_fn(width_fraction_range)
@@ -512,8 +512,8 @@ def _get_random_crop_inputs(
         round_to_int_fn: Callable[[T], T]
 ) -> Tuple[T, T, T, T]:
     """
-    height_fraction_range, width_fraction_range: [0.0, 1.0)
-    rand_fn: generate random [0.0, 1.0) array
+    height_fraction_range, width_fraction_range: in range [0.0, 1.0)
+    rand_fn: generate array of random numbers in range [0.0, 1.0)
     Return: randomized (offset_heights, offset_widths,
                         cropped_image_heights, cropped_image_widths)
     """
@@ -560,10 +560,10 @@ def _crop(
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
-    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
-    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
-    offset_height: [0, image_height - 1]
-    offset_width: [0, image_width - 1]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
+    offset_height: in range [0, image_height - 1]
+    offset_width: in range [0, image_width - 1]
     """
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
@@ -625,10 +625,10 @@ def _translate(
     Making use of cropping and padding to perform translation.
 
     image: [h, w, c]
-    bboxes (for one image): [[top_left_x, top_left_y, width, height], ...]
-    labels (for one image, matches number of bboxes): [0, 1, 0, ...]
-    translate_height: [-image_height + 1: image_height - 1]
-    translate_width: [-image_width + 1: image_width - 1]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
+    translate_height: in range [-image_height + 1: image_height - 1]
+    translate_width: in range [-image_width + 1: image_width - 1]
     """
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
