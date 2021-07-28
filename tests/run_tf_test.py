@@ -32,7 +32,6 @@ def make_np_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         np.array([], dtype=np.float32),
         np.array([[2]], dtype=np.float32),
     ])
-
     return images, bboxes_ragged, labels_ragged
 
 
