@@ -65,8 +65,8 @@ ORIGINAL_BBOXES_LIST = [
 ]
 
 ORIGINAL_LABELS_LIST = [
-    np.array([[0], [1]], dtype=np.float32),
-    np.array([[2]], dtype=np.float32),
+    np.array([0, 1], dtype=np.float32),
+    np.array([2], dtype=np.float32),
     np.array([], dtype=np.float32),
 ]
 
@@ -435,7 +435,7 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
         original_labels_list = [
-            np.array([[1], [2]], dtype=np.float32),
+            np.array([1, 2], dtype=np.float32),
             np.array([], dtype=np.float32),
         ]
 
@@ -579,9 +579,9 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
         original_labels_list = [
-            np.array([[0], [1]], dtype=np.float32),
-            np.array([[2], [1]], dtype=np.float32),
-            np.array([[0]], dtype=np.float32),
+            np.array([0, 1], dtype=np.float32),
+            np.array([2, 1], dtype=np.float32),
+            np.array([0], dtype=np.float32),
             np.array([], dtype=np.float32),
         ]
 
@@ -603,8 +603,8 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
         expected_labels_list = [
-            np.array([[0], [1]], dtype=np.float32),
-            np.array([[2]], dtype=np.float32),
+            np.array([0, 1], dtype=np.float32),
+            np.array([2], dtype=np.float32),
             np.array([], dtype=np.float32),
             np.array([], dtype=np.float32),
         ]
@@ -689,8 +689,8 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
         expected_labels_list = [
-            np.array([[1]], dtype=np.float32),
-            np.array([[2]], dtype=np.float32),
+            np.array([1], dtype=np.float32),
+            np.array([2], dtype=np.float32),
             np.array([], dtype=np.float32),
         ]
 
