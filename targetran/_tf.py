@@ -356,8 +356,8 @@ class TFRandomTransform:
     ) -> None:
         self._tf_single_fn = tf_single_fn
         self.probability = probability
-        self._rand_fn: Callable[..., tf.Tensor] = \
-            lambda: tf.random.uniform(shape=[1], seed=seed)[0]
+        self._rng = tf.random.Generator.from_seed(seed)
+        self._rand_fn: Callable[..., tf.Tensor] = lambda: self._rng.uniform([])
 
     def call(
             self,
