@@ -110,7 +110,7 @@ def tf_rotate(
         angle_deg: float
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate(
-        image.to_tensor(), bboxes.to_tensor(), labels.to_tensor(), angle_deg,
+        image, bboxes, labels, angle_deg,
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
