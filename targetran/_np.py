@@ -2,7 +2,7 @@
 API for Numpy usage.
 """
 
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import numpy as np  # type: ignore
 
@@ -77,31 +77,27 @@ def rotate_90(
     )
 
 
-def _np_rotate_90_and_pad(
+def rotate_90_and_resize(
         image: np.ndarray,
         bboxes: np.ndarray,
-        labels: np.ndarray
+        labels: np.ndarray,
+        dest_size: Optional[Tuple[int, int]] = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Middle-step function for easy testing.
+    Could be rotate_90_and_pad_and_resize, but thought it is too clumsy.
+
+    If dest_size is None, use original image size.
     """
-    return _rotate_90_and_pad(
+    if dest_size is None:
+        height, width = int(np.shape(image)[0]), int(np.shape(image)[1])
+    else:
+        height, width = int(dest_size[0]), int(dest_size[1])
+
+    image, bboxes, labels = _rotate_90_and_pad(
         image, bboxes, labels,
         np.shape, _np_convert, np.transpose, np.concatenate,
         np.where, np.ceil, np.floor, _np_pad_image
     )
-
-
-def rotate_90_and_resize(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Could be rotate_90_and_pad_and_resize, but thought it is too clumsy.
-    """
-    height, width = int(np.shape(image)[0]), int(np.shape(image)[1])
-    image, bboxes, labels = _np_rotate_90_and_pad(image, bboxes, labels)
     return resize(image, bboxes, labels, (height, width))
 
 
@@ -157,8 +153,13 @@ def crop_and_resize(
         offset_height: int,
         offset_width: int,
         cropped_image_height: int,
-        cropped_image_width: int
+        cropped_image_width: int,
+        dest_size: Optional[Tuple[int, int]] = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    If dest_size is None, use original image size.
+    """
+    dest_size = dest_size if dest_size is not None else np.shape(image)[0:2]
     cropped_image, cropped_bboxes, cropped_labels = _crop(
         image, bboxes, labels,
         offset_height, offset_width,
@@ -167,7 +168,7 @@ def crop_and_resize(
         _np_logical_and, np.squeeze, _np_boolean_mask
     )
     return resize(
-        cropped_image, cropped_bboxes, cropped_labels, np.shape(image)[0:2]
+        cropped_image, cropped_bboxes, cropped_labels, dest_size
     )
 
 

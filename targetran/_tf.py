@@ -2,7 +2,7 @@
 API for TensorFlow usage.
 """
 
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import tensorflow as tf  # type: ignore
 
@@ -75,31 +75,27 @@ def tf_rotate_90(
     )
 
 
-def _tf_rotate_90_and_pad(
+def tf_rotate_90_and_resize(
         image: tf.Tensor,
         bboxes: tf.Tensor,
-        labels: tf.Tensor
+        labels: tf.Tensor,
+        dest_size: Optional[Tuple[int, int]] = None
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """
-    Middle-step function for easy testing.
+    Could be tf_rotate_90_and_pad_and_resize, but thought it is too clumsy.
+
+    If dest_size is None, use original image size.
     """
-    return _rotate_90_and_pad(
+    if dest_size is None:
+        height, width = int(tf.shape(image)[0]), int(tf.shape(image)[1])
+    else:
+        height, width = int(dest_size[0]), int(dest_size[1])
+
+    image, bboxes, labels = _rotate_90_and_pad(
         image, bboxes, labels,
         tf.shape, _tf_convert, tf.transpose, tf.concat,
         tf.where, tf.math.ceil, tf.math.floor, _tf_pad_image
     )
-
-
-def tf_rotate_90_and_resize(
-        image: tf.Tensor,
-        bboxes: tf.Tensor,
-        labels: tf.Tensor
-) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    """
-    Could be tf_rotate_90_and_pad_and_resize, but thought it is too clumsy.
-    """
-    height, width = int(tf.shape(image)[0]), int(tf.shape(image)[1])
-    image, bboxes, labels = _tf_rotate_90_and_pad(image, bboxes, labels)
     return tf_resize(image, bboxes, labels, (height, width))
 
 
@@ -155,8 +151,13 @@ def tf_crop_and_resize(
         offset_height: int,
         offset_width: int,
         cropped_image_height: int,
-        cropped_image_width: int
+        cropped_image_width: int,
+        dest_size: Optional[Tuple[int, int]] = None
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    """
+    If dest_size is None, use original image size.
+    """
+    dest_size = dest_size if dest_size is not None else tf.shape(image)[0:2]
     cropped_image, cropped_bboxes, cropped_labels = _crop(
         image, bboxes, labels,
         offset_height, offset_width,
@@ -165,7 +166,7 @@ def tf_crop_and_resize(
         tf.logical_and, tf.squeeze, tf.boolean_mask
     )
     return tf_resize(
-        cropped_image, cropped_bboxes, cropped_labels, tf.shape(image)[0:2]
+        cropped_image, cropped_bboxes, cropped_labels, dest_size
     )
 
 

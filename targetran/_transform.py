@@ -363,6 +363,9 @@ def _rotate(
     labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise.
     """
+    if angle_deg == 0.0:
+        return image, bboxes, labels
+
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
 
     # Image rotation matrix. Clockwise for the destination indices,
@@ -417,8 +420,11 @@ def _shear(
     image: [h, w, c]
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
-    angle_deg: goes anti-clockwise, where abs(angle_deg) < 90.
+    angle_deg: goes anti-clockwise, where abs(angle_deg) must be < 90.
     """
+    if angle_deg == 0.0:
+        return image, bboxes, labels
+
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     factor = tan_fn(ang_rad)
 
@@ -461,6 +467,9 @@ def _resize(
     """
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
+
+    if image_shape[0] == dest_size[0] and image_shape[1] == dest_size[1]:
+        return image, bboxes, labels
 
     image = resize_image_fn(image, dest_size)
 

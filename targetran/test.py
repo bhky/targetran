@@ -13,7 +13,7 @@ from ._np import (
     flip_left_right,
     flip_up_down,
     rotate_90,
-    _np_rotate_90_and_pad,
+    rotate_90_and_resize,
     rotate,
     crop_and_resize,
     translate,
@@ -24,7 +24,7 @@ from ._tf import (
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate_90,
-    _tf_rotate_90_and_pad,
+    tf_rotate_90_and_resize,
     tf_rotate,
     tf_crop_and_resize,
     tf_translate,
@@ -329,7 +329,7 @@ class TestTransform(unittest.TestCase):
                                tf_labels.numpy())
             )
 
-    def test_rotate_90_and_pad(self) -> None:
+    def test_rotate_90_and_resize(self) -> None:
 
         expected_image_list = [
             np.array([
@@ -371,10 +371,11 @@ class TestTransform(unittest.TestCase):
 
         # Numpy.
         for i in range(len(ORIGINAL_IMAGE_LIST)):
-            image, bboxes, labels = _np_rotate_90_and_pad(
+            image, bboxes, labels = rotate_90_and_resize(
                 ORIGINAL_IMAGE_LIST[i],
                 ORIGINAL_BBOXES_LIST[i],
-                ORIGINAL_LABELS_LIST[i]
+                ORIGINAL_LABELS_LIST[i],
+                expected_image_list[i].shape
             )
             self.assertTrue(
                 np.array_equal(expected_image_list[i], image)
@@ -395,10 +396,11 @@ class TestTransform(unittest.TestCase):
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
-            tf_image, tf_bboxes, tf_labels = _tf_rotate_90_and_pad(
+            tf_image, tf_bboxes, tf_labels = tf_rotate_90_and_resize(
                 TF_ORIGINAL_IMAGE_LIST[i],
                 TF_ORIGINAL_BBOXES_LIST[i],
-                TF_ORIGINAL_LABELS_LIST[i]
+                TF_ORIGINAL_LABELS_LIST[i],
+                tf_expected_image_list[i].shape
             )
             self.assertTrue(
                 np.array_equal(tf_expected_image_list[i].numpy(),
