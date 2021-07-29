@@ -7,6 +7,7 @@ from ._np import crop_and_resize
 from ._np import translate
 from ._np import shear
 from ._np import Resize
+from ._np import RandomTransform
 from ._np import RandomFlipLeftRight
 from ._np import RandomFlipUpDown
 from ._np import RandomRotate90

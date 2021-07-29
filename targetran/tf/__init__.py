@@ -7,6 +7,7 @@ from ._tf import tf_crop_and_resize
 from ._tf import tf_translate
 from ._tf import tf_shear
 from ._tf import TFResize
+from ._tf import TFRandomTransform
 from ._tf import TFRandomFlipLeftRight
 from ._tf import TFRandomFlipUpDown
 from ._tf import TFRandomRotate90
