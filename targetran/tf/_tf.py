@@ -6,7 +6,7 @@ from typing import Any, Callable, Optional, Tuple
 
 import tensorflow as tf  # type: ignore
 
-from ._functional import (
+from targetran._functional import (
     _tf_convert,
     _tf_round_to_int,
     _tf_resize_image,
@@ -15,7 +15,7 @@ from ._functional import (
 )
 
 
-from ._transform import (
+from targetran._transform import (
     _flip_left_right,
     _flip_up_down,
     _rotate_90,

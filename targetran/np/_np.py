@@ -6,7 +6,7 @@ from typing import Any, Callable, Optional, Tuple
 
 import numpy as np  # type: ignore
 
-from ._functional import (
+from targetran._functional import (
     _np_convert,
     _np_range,
     _np_round_to_int,
@@ -17,7 +17,7 @@ from ._functional import (
     _np_gather_image
 )
 
-from ._transform import (
+from targetran._transform import (
     _flip_left_right,
     _flip_up_down,
     _rotate_90,

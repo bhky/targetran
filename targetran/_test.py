@@ -9,7 +9,7 @@ import unittest
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
-from ._np import (
+from .np import (
     flip_left_right,
     flip_up_down,
     rotate_90,
@@ -20,7 +20,7 @@ from ._np import (
     shear
 )
 
-from ._tf import (
+from .tf import (
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate_90,
