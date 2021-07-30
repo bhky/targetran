@@ -11,7 +11,7 @@ from ._np import RandomTransform
 from ._np import RandomFlipLeftRight
 from ._np import RandomFlipUpDown
 from ._np import RandomRotate90
-from ._np import RandomRotate90AndResize
+from ._np import RandomRotate90AndPad
 from ._np import RandomRotate
 from ._np import RandomCrop
 from ._np import RandomTranslate

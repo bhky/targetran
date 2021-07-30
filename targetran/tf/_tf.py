@@ -260,7 +260,7 @@ class TFRandomRotate90(TFRandomTransform):
         return super().call(image, bboxes, labels)
 
 
-class TFRandomRotate90AndResize(TFRandomTransform):
+class TFRandomRotate90AndPad(TFRandomTransform):
 
     def __init__(
             self,

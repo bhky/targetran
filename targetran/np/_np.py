@@ -262,7 +262,7 @@ class RandomRotate90(RandomTransform):
         return super().call(image, bboxes, labels)
 
 
-class RandomRotate90AndResize(RandomTransform):
+class RandomRotate90AndPad(RandomTransform):
 
     def __init__(
             self,

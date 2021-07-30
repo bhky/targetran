@@ -11,7 +11,7 @@ from ._tf import TFRandomTransform
 from ._tf import TFRandomFlipLeftRight
 from ._tf import TFRandomFlipUpDown
 from ._tf import TFRandomRotate90
-from ._tf import TFRandomRotate90AndResize
+from ._tf import TFRandomRotate90AndPad
 from ._tf import TFRandomRotate
 from ._tf import TFRandomCrop
 from ._tf import TFRandomTranslate
