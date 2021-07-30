@@ -75,28 +75,16 @@ def tf_rotate_90(
     )
 
 
-def tf_rotate_90_and_resize(
+def tf_rotate_90_and_pad(
         image: tf.Tensor,
         bboxes: tf.Tensor,
-        labels: tf.Tensor,
-        dest_size: Optional[Tuple[int, int]] = None
+        labels: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    """
-    Could be tf_rotate_90_and_pad_and_resize, but thought it is too clumsy.
-
-    If dest_size is None, use original image size.
-    """
-    if dest_size is None:
-        height, width = int(tf.shape(image)[0]), int(tf.shape(image)[1])
-    else:
-        height, width = int(dest_size[0]), int(dest_size[1])
-
-    image, bboxes, labels = _rotate_90_and_pad(
+    return _rotate_90_and_pad(
         image, bboxes, labels,
         tf.shape, _tf_convert, tf.transpose, tf.concat,
         tf.where, tf.math.ceil, tf.math.floor, _tf_pad_image
     )
-    return tf_resize(image, bboxes, labels, (height, width))
 
 
 def tf_rotate(
@@ -287,7 +275,7 @@ class TFRandomRotate90AndResize(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(tf_rotate_90_and_resize, probability, seed)
+        super().__init__(tf_rotate_90_and_pad, probability, seed)
 
     def __call__(
             self,

@@ -77,28 +77,16 @@ def rotate_90(
     )
 
 
-def rotate_90_and_resize(
+def rotate_90_and_pad(
         image: np.ndarray,
         bboxes: np.ndarray,
-        labels: np.ndarray,
-        dest_size: Optional[Tuple[int, int]] = None
+        labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Could be rotate_90_and_pad_and_resize, but thought it is too clumsy.
-
-    If dest_size is None, use original image size.
-    """
-    if dest_size is None:
-        height, width = int(np.shape(image)[0]), int(np.shape(image)[1])
-    else:
-        height, width = int(dest_size[0]), int(dest_size[1])
-
-    image, bboxes, labels = _rotate_90_and_pad(
+    return _rotate_90_and_pad(
         image, bboxes, labels,
         np.shape, _np_convert, np.transpose, np.concatenate,
         np.where, np.ceil, np.floor, _np_pad_image
     )
-    return resize(image, bboxes, labels, (height, width))
 
 
 def rotate(
@@ -289,7 +277,7 @@ class RandomRotate90AndResize(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(rotate_90_and_resize, probability, seed)
+        super().__init__(rotate_90_and_pad, probability, seed)
 
     def __call__(
             self,
