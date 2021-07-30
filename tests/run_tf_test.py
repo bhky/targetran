@@ -81,7 +81,7 @@ def main() -> None:
     ds = ds \
         .map(targetran.tf.TFRandomRotate(probability=1.0)) \
         .map(targetran.tf.TFRandomCrop(probability=1.0)) \
-        .map(targetran.tf.TFRandomFlipUpDown(probability=1.0)) \
+        .map(targetran.tf.TFRandomFlipUpDown(probability=1.0))
 
     for sample in ds:
         image, bboxes, labels = sample
