@@ -2,7 +2,7 @@
 API for Numpy usage.
 """
 
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Tuple
 
 import numpy as np  # type: ignore
 
@@ -134,29 +134,21 @@ def _np_get_random_crop_inputs(
     )
 
 
-def crop_and_resize(
+def crop(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
         offset_height: int,
         offset_width: int,
         cropped_image_height: int,
-        cropped_image_width: int,
-        dest_size: Optional[Tuple[int, int]] = None
+        cropped_image_width: int
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """
-    If dest_size is None, use original image size.
-    """
-    dest_size = dest_size if dest_size is not None else np.shape(image)[0:2]
-    cropped_image, cropped_bboxes, cropped_labels = _crop(
+    return _crop(
         image, bboxes, labels,
         offset_height, offset_width,
         cropped_image_height, cropped_image_width,
         np.shape, np.reshape, _np_convert, np.concatenate,
         _np_logical_and, np.squeeze, _np_boolean_mask
-    )
-    return resize(
-        cropped_image, cropped_bboxes, cropped_labels, dest_size
     )
 
 
@@ -340,7 +332,7 @@ class RandomShear(RandomTransform):
         return super().call(image, bboxes, labels, angle_deg)
 
 
-class RandomCropAndResize(RandomTransform):
+class RandomCrop(RandomTransform):
 
     def __init__(
             self,
@@ -349,7 +341,7 @@ class RandomCropAndResize(RandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(crop_and_resize, probability, seed)
+        super().__init__(crop, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 

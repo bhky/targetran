@@ -15,7 +15,7 @@ from .np import (
     rotate_90,
     rotate_90_and_pad,
     rotate,
-    crop_and_resize,
+    crop,
     translate,
     shear
 )
@@ -26,7 +26,7 @@ from .tf import (
     tf_rotate_90,
     tf_rotate_90_and_pad,
     tf_rotate,
-    tf_crop_and_resize,
+    tf_crop,
     tf_translate,
     tf_shear
 )
@@ -561,7 +561,7 @@ class TestTransform(unittest.TestCase):
             np.allclose(tf_expected_labels.numpy(), tf_labels.numpy())
         )
 
-    def test_crop_and_resize(self) -> None:
+    def test_crop(self) -> None:
 
         dummy_image_list = [np.random.rand(128, 128, 3) for _ in range(4)]
         original_bboxes_list = [
@@ -590,14 +590,13 @@ class TestTransform(unittest.TestCase):
         cropped_image_heights = [128 * 0.75] * 4
         cropped_image_widths = [128 * 0.75] * 4
 
-        f = 4 / 3
         expected_bboxes_list = [
             np.array([
-                [32 * f, 20 * f, 20 * f, 24 * f],
-                [12 * f, 16 * f, 12 * f, 8 * f],
+                [32, 20, 20, 24],
+                [12, 16, 12, 8],
             ], dtype=np.float32),
             np.array([
-                [24 * f, 12 * f, 20 * f, 24 * f],
+                [24, 12, 20, 24],
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
             np.array([], dtype=np.float32).reshape(-1, 4),
@@ -611,7 +610,7 @@ class TestTransform(unittest.TestCase):
 
         # Numpy.
         for i in range(len(dummy_image_list)):
-            _, bboxes, labels = crop_and_resize(
+            _, bboxes, labels = crop(
                 dummy_image_list[i],
                 original_bboxes_list[i],
                 original_labels_list[i],
@@ -638,7 +637,7 @@ class TestTransform(unittest.TestCase):
         )
 
         for i in range(len(tf_dummy_image_list)):
-            _, tf_bboxes, tf_labels = tf_crop_and_resize(
+            _, tf_bboxes, tf_labels = tf_crop(
                 tf_dummy_image_list[i],
                 tf_original_bboxes_list[i],
                 tf_original_labels_list[i],

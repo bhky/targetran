@@ -78,7 +78,10 @@ def main() -> None:
     print("-------- Random transform --------")
 
     ds = ds.map(lambda i, b, l: (i.to_tensor(), b.to_tensor(), l))
-    ds = ds.map(targetran.tf.TFRandomRotate(probability=1.0))
+    ds = ds \
+        .map(targetran.tf.TFRandomRotate(probability=1.0)) \
+        .map(targetran.tf.TFRandomCrop(probability=1.0)) \
+        .map(targetran.tf.TFRandomFlipUpDown(probability=1.0)) \
 
     for sample in ds:
         image, bboxes, labels = sample

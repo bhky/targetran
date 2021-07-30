@@ -2,7 +2,7 @@
 API for TensorFlow usage.
 """
 
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Tuple
 
 import tensorflow as tf  # type: ignore
 
@@ -132,29 +132,21 @@ def _tf_get_random_crop_inputs(
     )
 
 
-def tf_crop_and_resize(
+def tf_crop(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
         offset_height: int,
         offset_width: int,
         cropped_image_height: int,
-        cropped_image_width: int,
-        dest_size: Optional[Tuple[int, int]] = None
+        cropped_image_width: int
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    """
-    If dest_size is None, use original image size.
-    """
-    dest_size = dest_size if dest_size is not None else tf.shape(image)[0:2]
-    cropped_image, cropped_bboxes, cropped_labels = _crop(
+    return _crop(
         image, bboxes, labels,
         offset_height, offset_width,
         cropped_image_height, cropped_image_width,
         tf.shape, tf.reshape, _tf_convert, tf.concat,
         tf.logical_and, tf.squeeze, tf.boolean_mask
-    )
-    return tf_resize(
-        cropped_image, cropped_bboxes, cropped_labels, dest_size
     )
 
 
@@ -338,7 +330,7 @@ class TFRandomShear(TFRandomTransform):
         return super().call(image, bboxes, labels, angle_deg)
 
 
-class TFRandomCropAndResize(TFRandomTransform):
+class TFRandomCrop(TFRandomTransform):
 
     def __init__(
             self,
@@ -347,7 +339,7 @@ class TFRandomCropAndResize(TFRandomTransform):
             probability: float = 0.5,
             seed: int = 0
     ) -> None:
-        super().__init__(tf_crop_and_resize, probability, seed)
+        super().__init__(tf_crop, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 

@@ -502,8 +502,6 @@ def _get_random_size_fractions(
     min_width_fraction = width_fraction_range[0]
     height_fraction_diff = height_fraction_range[1] - min_height_fraction
     width_fraction_diff = width_fraction_range[1] - min_width_fraction
-    assert height_fraction_diff > 0
-    assert width_fraction_diff > 0
 
     height_fractions = height_fraction_diff * rand_fn() + min_height_fraction
     width_fractions = width_fraction_diff * rand_fn() + min_width_fraction
