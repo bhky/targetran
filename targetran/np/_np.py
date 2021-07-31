@@ -194,7 +194,7 @@ class RandomTransform:
         self._rng = np.random.default_rng(seed=seed)
         self._rand_fn: Callable[..., np.ndarray] = lambda: self._rng.random()
 
-    def call(
+    def __call__(
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
@@ -221,9 +221,11 @@ class RandomFlipLeftRight(RandomTransform):
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
-            labels: np.ndarray
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return super().call(image, bboxes, labels)
+        return super().__call__(image, bboxes, labels)
 
 
 class RandomFlipUpDown(RandomTransform):
@@ -239,9 +241,11 @@ class RandomFlipUpDown(RandomTransform):
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
-            labels: np.ndarray
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return super().call(image, bboxes, labels)
+        return super().__call__(image, bboxes, labels)
 
 
 class RandomRotate90(RandomTransform):
@@ -257,9 +261,11 @@ class RandomRotate90(RandomTransform):
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
-            labels: np.ndarray
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return super().call(image, bboxes, labels)
+        return super().__call__(image, bboxes, labels)
 
 
 class RandomRotate90AndPad(RandomTransform):
@@ -275,9 +281,11 @@ class RandomRotate90AndPad(RandomTransform):
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
-            labels: np.ndarray
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return super().call(image, bboxes, labels)
+        return super().__call__(image, bboxes, labels)
 
 
 class RandomRotate(RandomTransform):
@@ -296,14 +304,16 @@ class RandomRotate(RandomTransform):
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
-            labels: np.ndarray
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         angle_deg = \
             self.angle_deg_range[1] - self.angle_deg_range[0] \
             * self._rand_fn() + self.angle_deg_range[0]
 
-        return super().call(image, bboxes, labels, angle_deg)
+        return super().__call__(image, bboxes, labels, angle_deg)
 
 
 class RandomShear(RandomTransform):
@@ -322,14 +332,16 @@ class RandomShear(RandomTransform):
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
-            labels: np.ndarray
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         angle_deg = \
             self.angle_deg_range[1] - self.angle_deg_range[0] \
             * self._rand_fn() + self.angle_deg_range[0]
 
-        return super().call(image, bboxes, labels, angle_deg)
+        return super().__call__(image, bboxes, labels, angle_deg)
 
 
 class RandomCrop(RandomTransform):
@@ -349,7 +361,9 @@ class RandomCrop(RandomTransform):
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
-            labels: np.ndarray
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         offset_height, offset_width, cropped_height, cropped_width = \
@@ -360,7 +374,7 @@ class RandomCrop(RandomTransform):
                 self._rand_fn
             )
 
-        return super().call(
+        return super().__call__(
             image, bboxes, labels,
             offset_height, offset_width, cropped_height, cropped_width
         )
@@ -383,7 +397,9 @@ class RandomTranslate(RandomTransform):
             self,
             image: np.ndarray,
             bboxes: np.ndarray,
-            labels: np.ndarray
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         height_fraction, width_fraction = _get_random_size_fractions(
@@ -395,6 +411,6 @@ class RandomTranslate(RandomTransform):
         translate_height = np.shape(image)[0] * height_fraction
         translate_width = np.shape(image)[1] * width_fraction
 
-        return super().call(
+        return super().__call__(
             image, bboxes, labels, translate_height, translate_width
         )
