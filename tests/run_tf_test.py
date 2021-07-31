@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TF test.
+TensorFlow test.
 """
 
 from typing import Sequence, Tuple
