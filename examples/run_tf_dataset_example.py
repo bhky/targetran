@@ -146,7 +146,7 @@ def main() -> None:
         .map(TFRandomTranslate(probability=1.0)) \
         .map(TFRandomRotate(probability=1.0)) \
         .map(TFRandomShear(probability=1.0)) \
-        .repeat()
+        .repeat()  # Re-using the same samples for illustration.
 
     plot(ds, num_rows=2, num_cols=3)
 
