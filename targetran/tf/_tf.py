@@ -2,8 +2,9 @@
 API for TensorFlow usage.
 """
 
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Sequence, Tuple
 
+import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
 from targetran._functional import (
@@ -28,6 +29,24 @@ from targetran._transform import (
     _get_random_crop_inputs,
     _get_random_size_fractions
 )
+
+
+def np_to_tf(
+        image_list: Sequence[np.ndarray],
+        bboxes_list: Sequence[np.ndarray],
+        labels_list: Sequence[np.ndarray]
+) -> Tuple[Sequence[tf.Tensor], Sequence[tf.Tensor], Sequence[tf.Tensor]]:
+    """
+    Convert Numpy array lists to TF (eager) tensor lists.
+    """
+    tuples = [
+        (tf.convert_to_tensor(image, dtype=tf.float32),
+         tf.convert_to_tensor(bboxes, dtype=tf.float32),
+         tf.convert_to_tensor(labels, dtype=tf.float32))
+        for image, bboxes, labels in zip(image_list, bboxes_list, labels_list)
+    ]
+    tf_image_list, tf_bboxes_list, tf_labels_list = list(zip(*tuples))
+    return tf_image_list, tf_bboxes_list, tf_labels_list
 
 
 def tf_flip_left_right(
