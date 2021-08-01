@@ -615,8 +615,8 @@ def _translate(
         image: T,
         bboxes: T,
         labels: T,
-        translate_height: int,
-        translate_width: int,
+        translate_height: float,
+        translate_width: float,
         shape_fn: Callable[[T], Tuple[int, ...]],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
         convert_fn: Callable[..., T],
@@ -643,16 +643,19 @@ def _translate(
     translate_height = convert_fn(translate_height)
     translate_width = convert_fn(translate_width)
 
-    offset_height, pad_top, pad_bottom = where_fn(
+    t = where_fn(
         translate_height >= 0,
         convert_fn([0, translate_height, 0]),
         convert_fn([-translate_height, 0, -translate_height])
     )
-    offset_width, pad_left, pad_right = where_fn(
+    offset_height, pad_top, pad_bottom = t[0], t[1], t[2]
+
+    t = where_fn(
         translate_width >= 0,
         convert_fn([0, translate_width, 0]),
         convert_fn([-translate_width, 0, -translate_width])
     )
+    offset_width, pad_left, pad_right = t[0], t[1], t[2]
 
     cropped_height = convert_fn(image_shape[0]) - abs_fn(translate_height)
     cropped_width = convert_fn(image_shape[1]) - abs_fn(translate_width)
