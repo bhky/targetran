@@ -9,6 +9,7 @@ import numpy as np
 from torch.utils.data import Dataset
 
 import targetran.np
+from targetran.utils import Compose
 
 
 def make_np_data() -> Tuple[Sequence[np.ndarray],
@@ -35,22 +36,6 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
     ]
 
     return image_list, bboxes_list, labels_list
-
-
-class Compose:
-
-    def __init__(self, fns: Sequence[targetran.np.RandomTransform]) -> None:
-        self.fns = fns
-
-    def __call__(
-            self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        for fn in self.fns:
-            image, bboxes, labels = fn(image, bboxes, labels)
-        return image, bboxes, labels
 
 
 class TestDataset(Dataset):
