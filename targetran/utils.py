@@ -2,24 +2,15 @@
 Utilities.
 """
 
-from typing import Sequence, Tuple
-
-import numpy as np
-
-from .np import RandomTransform
+from typing import Any, Callable, Sequence
 
 
 class Compose:
 
-    def __init__(self, fns: Sequence[RandomTransform]) -> None:
+    def __init__(self, fns: Sequence[Callable[..., Any]]) -> None:
         self.fns = fns
 
-    def __call__(
-            self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def __call__(self, *args: Any) -> Any:
         for fn in self.fns:
-            image, bboxes, labels = fn(image, bboxes, labels)
-        return image, bboxes, labels
+            args = fn(*args)
+        return args
