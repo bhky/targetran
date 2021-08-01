@@ -16,7 +16,10 @@ import tensorflow as tf
 
 from targetran.tf import (
     np_to_tf,
-    TFRandomRotate
+    TFRandomRotate,
+    TFRandomShear,
+    TFRandomCrop,
+    TFRandomTranslate
 )
 
 
@@ -139,8 +142,11 @@ def main() -> None:
     ds = make_tf_dataset(load_images(), load_annotations())
 
     ds = ds \
-        .map(TFRandomRotate(angle_deg_range=(0.0, 30.0), probability=0.5)) \
-        .repeat()  # Re-using the same samples for illustration.
+        .map(TFRandomCrop(probability=1.0)) \
+        .map(TFRandomTranslate(probability=1.0)) \
+        .map(TFRandomRotate(probability=1.0)) \
+        .map(TFRandomShear(probability=1.0)) \
+        .repeat()
 
     plot(ds, num_rows=2, num_cols=3)
 
