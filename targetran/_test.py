@@ -2,8 +2,6 @@
 Unit tests.
 """
 
-from typing import Sequence, Tuple
-
 import unittest
 
 import numpy as np  # type: ignore
@@ -21,6 +19,7 @@ from .np import (
 )
 
 from .tf import (
+    np_to_tf,
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate_90,
@@ -71,27 +70,9 @@ ORIGINAL_LABELS_LIST = [
 ]
 
 
-def _np_to_tf(
-        image_list: Sequence[np.ndarray],
-        bboxes_list: Sequence[np.ndarray],
-        labels_list: Sequence[np.ndarray]
-) -> Tuple[Sequence[tf.Tensor], Sequence[tf.Tensor], Sequence[tf.Tensor]]:
-    """
-    Convert Numpy arrays to TF tensors.
-    """
-    tuples = [
-        (tf.convert_to_tensor(image, dtype=tf.float32),
-         tf.convert_to_tensor(bboxes, dtype=tf.float32),
-         tf.convert_to_tensor(labels, dtype=tf.float32))
-        for image, bboxes, labels in zip(image_list, bboxes_list, labels_list)
-    ]
-    tf_image_list, tf_bboxes_list, tf_labels_list = list(zip(*tuples))
-    return tf_image_list, tf_bboxes_list, tf_labels_list
-
-
 (
     TF_ORIGINAL_IMAGE_LIST, TF_ORIGINAL_BBOXES_LIST, TF_ORIGINAL_LABELS_LIST
-) = _np_to_tf(
+) = np_to_tf(
     ORIGINAL_IMAGE_LIST, ORIGINAL_BBOXES_LIST, ORIGINAL_LABELS_LIST
 )
 
@@ -154,7 +135,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = _np_to_tf(
+        ) = np_to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
@@ -232,7 +213,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = _np_to_tf(
+        ) = np_to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
@@ -307,7 +288,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = _np_to_tf(
+        ) = np_to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
@@ -391,7 +372,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = _np_to_tf(
+        ) = np_to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
@@ -485,14 +466,14 @@ class TestTransform(unittest.TestCase):
             tf_original_image_list,
             tf_original_bboxes_list,
             tf_original_labels_list
-        ) = _np_to_tf(
+        ) = np_to_tf(
             original_image_list, original_bboxes_list, original_labels_list
         )
         (
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = _np_to_tf(
+        ) = np_to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(tf_original_image_list)):
@@ -629,10 +610,10 @@ class TestTransform(unittest.TestCase):
             tf_dummy_image_list,
             tf_original_bboxes_list,
             tf_original_labels_list
-        ) = _np_to_tf(
+        ) = np_to_tf(
             dummy_image_list, original_bboxes_list, original_labels_list
         )
-        _, tf_expected_bboxes_list, tf_expected_labels_list = _np_to_tf(
+        _, tf_expected_bboxes_list, tf_expected_labels_list = np_to_tf(
             dummy_image_list, expected_bboxes_list, expected_labels_list
         )
 
@@ -710,7 +691,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = _np_to_tf(
+        ) = np_to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
 
