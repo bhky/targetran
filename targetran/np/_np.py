@@ -212,7 +212,7 @@ class RandomFlipLeftRight(RandomTransform):
 
     def __init__(
             self,
-            probability: float = 0.5,
+            probability: float = 0.7,
             seed: int = 0
     ) -> None:
         super().__init__(flip_left_right, probability, seed)
@@ -232,7 +232,7 @@ class RandomFlipUpDown(RandomTransform):
 
     def __init__(
             self,
-            probability: float = 0.5,
+            probability: float = 0.7,
             seed: int = 0
     ) -> None:
         super().__init__(flip_up_down, probability, seed)
@@ -252,7 +252,7 @@ class RandomRotate90(RandomTransform):
 
     def __init__(
             self,
-            probability: float = 0.5,
+            probability: float = 0.7,
             seed: int = 0
     ) -> None:
         super().__init__(rotate_90, probability, seed)
@@ -272,7 +272,7 @@ class RandomRotate90AndPad(RandomTransform):
 
     def __init__(
             self,
-            probability: float = 0.5,
+            probability: float = 0.7,
             seed: int = 0
     ) -> None:
         super().__init__(rotate_90_and_pad, probability, seed)
@@ -293,7 +293,7 @@ class RandomRotate(RandomTransform):
     def __init__(
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
-            probability: float = 0.5,
+            probability: float = 0.7,
             seed: int = 0
     ) -> None:
         super().__init__(rotate, probability, seed)
@@ -321,7 +321,7 @@ class RandomShear(RandomTransform):
     def __init__(
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
-            probability: float = 0.5,
+            probability: float = 0.7,
             seed: int = 0
     ) -> None:
         super().__init__(shear, probability, seed)
@@ -350,7 +350,7 @@ class RandomCrop(RandomTransform):
             self,
             crop_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
             crop_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
-            probability: float = 0.5,
+            probability: float = 0.7,
             seed: int = 0
     ) -> None:
         super().__init__(crop, probability, seed)
@@ -386,7 +386,7 @@ class RandomTranslate(RandomTransform):
             self,
             translate_height_fraction_range: Tuple[float, float] = (-0.2, 0.2),
             translate_width_fraction_range: Tuple[float, float] = (-0.2, 0.2),
-            probability: float = 0.5,
+            probability: float = 0.7,
             seed: int = 0
     ) -> None:
         super().__init__(translate, probability, seed)
