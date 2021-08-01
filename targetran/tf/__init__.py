@@ -1,3 +1,4 @@
+from ._tf import np_to_tf
 from ._tf import tf_flip_left_right
 from ._tf import tf_flip_up_down
 from ._tf import tf_rotate_90
