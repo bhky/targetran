@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PyTorch/Numpy test.
+PyTorch Dataset test.
 """
 
 from typing import Optional, Sequence, Tuple

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TensorFlow test.
+TensorFlow Dataset test.
 """
 
 from typing import Sequence, Tuple
