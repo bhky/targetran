@@ -37,27 +37,11 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
     return image_list, bboxes_list, labels_list
 
 
-def np_to_tf(
-        image_list: Sequence[np.ndarray],
-        bboxes_list: Sequence[np.ndarray],
-        labels_list: Sequence[np.ndarray]
-) -> Tuple[Sequence[tf.Tensor], Sequence[tf.Tensor], Sequence[tf.Tensor]]:
-
-    tuples = [
-        (tf.convert_to_tensor(image, dtype=tf.float32),
-         tf.convert_to_tensor(bboxes, dtype=tf.float32),
-         tf.convert_to_tensor(labels, dtype=tf.float32))
-        for image, bboxes, labels in zip(image_list, bboxes_list, labels_list)
-    ]
-    tf_image_list, tf_bboxes_list, tf_labels_list = list(zip(*tuples))
-    return tf_image_list, tf_bboxes_list, tf_labels_list
-
-
 def main() -> None:
 
     image_list, bboxes_list, labels_list = make_np_data()
 
-    tf_image_list, tf_bboxes_list, tf_labels_list = np_to_tf(
+    tf_image_list, tf_bboxes_list, tf_labels_list = targetran.tf.np_to_tf(
         image_list, bboxes_list, labels_list
     )
 
