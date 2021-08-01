@@ -85,15 +85,18 @@ def make_tf_dataset(
         image_list, bboxes_list, labels_list
     )
 
-    # Tensors of different shapes can be included as ragged-tensors.
+    # Tensors of different shapes can be included in a TF Dataset
+    # as ragged-tensors.
     ds = tf.data.Dataset.zip((
         tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_list)),
         tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_bboxes_list)),
         tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_labels_list))
     ))
-    # However, for downstream operations the ragged-tensors should be
-    # converted back to tensors. The label ragged-tensors are of rank-0,
-    # so they automatically converted to tensors during mapping.
+    # However, our transformations expect normal tensors, so the ragged-tensors
+    # have to be first converted back to tensors during mapping. Therefore,
+    # the whole point of using ragged-tensors is ONLY for building a Dataset...
+    # Note that the label ragged-tensors are of rank-0, so they are implicitly
+    # converted to tensors during mapping. Strange TF Dataset behaviour...
     ds = ds.map(lambda i, b, l: (i.to_tensor(), b.to_tensor(), l))
 
     return ds
