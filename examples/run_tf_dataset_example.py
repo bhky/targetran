@@ -137,7 +137,7 @@ def main() -> None:
 
     ds = ds \
         .map(TFRandomRotate(angle_deg_range=(0.0, 30.0), probability=0.5)) \
-        .repeat()
+        .repeat()  # Re-using the same samples for illustration.
 
     plot(ds, num_rows=2, num_cols=3)
 
