@@ -2,7 +2,7 @@
 Utilities.
 """
 
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Sequence, Tuple
 
 
 class Compose:
@@ -14,3 +14,7 @@ class Compose:
         for fn in self.fns:
             args = fn(*args)
         return args
+
+
+def collate_fn(batch_: Sequence[Tuple[Any, ...]]) -> Tuple[Sequence[Any], ...]:
+    return tuple(zip(*batch_))

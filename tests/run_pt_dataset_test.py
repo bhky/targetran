@@ -6,10 +6,10 @@ PyTorch Dataset test.
 from typing import Optional, Sequence, Tuple
 
 import numpy as np
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 import targetran.np
-from targetran.utils import Compose
+from targetran.utils import Compose, collate_fn
 
 
 def make_np_data() -> Tuple[Sequence[np.ndarray],
@@ -94,6 +94,20 @@ def main() -> None:
         print(f"transformed bboxes: {bboxes.tolist()}")
         print(f"transformed labels shape: {labels.shape}")
         print(f"transformed labels: {labels.tolist()}")
+        print("=========")
+
+    print("-------- Batching --------")
+
+    data_loader = DataLoader(ds, batch_size=2, collate_fn=collate_fn)
+
+    for batch in data_loader:
+        image_tuple, bboxes_tuple, labels_tuple = batch
+        print(f"transformed image batch size: {len(image_tuple)}")
+        print(f"transformed bboxes batch size: {len(bboxes_tuple)}")
+        print(f"transformed labels batch size: {len(labels_tuple)}")
+        print(f"image shapes: {[i.shape for i in image_tuple]}")
+        print(f"bboxes shapes: {[b.shape for b in bboxes_tuple]}")
+        print(f"labels shapes: {[l.shape for l in labels_tuple]}")
         print("=========")
 
 
