@@ -15,7 +15,7 @@ import numpy as np
 import tensorflow as tf
 
 from targetran.tf import (
-    make_tf_dataset,
+    lists_to_tf_dataset,
     TFRandomRotate,
     TFRandomShear,
     TFRandomCrop,
@@ -70,7 +70,7 @@ def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
     return data_dict
 
 
-def to_tf_dataset(
+def make_tf_dataset(
         image_dict: Dict[str, np.ndarray],
         annotation_dict: Dict[str, Dict[str, np.ndarray]]
 ) -> tf.data.Dataset:
@@ -87,7 +87,7 @@ def to_tf_dataset(
         bboxes_list.append(annotation_dict[image_id]["bboxes"])
         labels_list.append(annotation_dict[image_id]["labels"])
 
-    return make_tf_dataset(image_list, bboxes_list, labels_list)
+    return lists_to_tf_dataset(image_list, bboxes_list, labels_list)
 
 
 def plot(ds: tf.data.Dataset, num_rows: int, num_cols: int) -> None:
@@ -126,7 +126,7 @@ def plot(ds: tf.data.Dataset, num_rows: int, num_cols: int) -> None:
 
 def main() -> None:
 
-    ds = to_tf_dataset(load_images(), load_annotations())
+    ds = make_tf_dataset(load_images(), load_annotations())
 
     ds = ds \
         .map(TFRandomCrop(probability=1.0)) \

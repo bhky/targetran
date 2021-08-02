@@ -47,7 +47,7 @@ def np_to_tf(
     return tf_image_list, tf_bboxes_list, tf_labels_list
 
 
-def make_tf_dataset(
+def lists_to_tf_dataset(
         image_list: Sequence[np.ndarray],
         bboxes_list: Sequence[np.ndarray],
         labels_list: Sequence[np.ndarray]
