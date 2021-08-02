@@ -60,6 +60,7 @@ def main() -> None:
         print(f"image shape: {image.get_shape()}")
         print(f"bboxes shape: {bboxes.get_shape()}")
         print(f"labels shape: {labels.get_shape()}")
+        print("=========")
 
     print("-------- Random transform --------")
 
@@ -75,6 +76,7 @@ def main() -> None:
         print(f"transformed bboxes: {bboxes.numpy().tolist()}")
         print(f"transformed labels shape: {labels.get_shape()}")
         print(f"transformed labels: {labels.numpy().tolist()}")
+        print("=========")
 
     print("-------- Batching --------")
 
@@ -87,6 +89,7 @@ def main() -> None:
         print(f"transformed bboxes batch: {bboxes_batch.numpy().tolist()}")
         print(f"transformed labels batch shape: {labels_batch.get_shape()}")
         print(f"transformed labels batch: {labels_batch.numpy().tolist()}")
+        print("=========")
 
 
 if __name__ == "__main__":

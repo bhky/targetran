@@ -83,6 +83,8 @@ def main() -> None:
         targetran.np.RandomFlipUpDown(probability=1.0)
     ])
 
+    print("-------- Random transform --------")
+
     ds = TestDataset(image_list, bboxes_list, labels_list, transforms)
 
     for sample in ds:
@@ -92,6 +94,7 @@ def main() -> None:
         print(f"transformed bboxes: {bboxes.tolist()}")
         print(f"transformed labels shape: {labels.shape}")
         print(f"transformed labels: {labels.tolist()}")
+        print("=========")
 
 
 if __name__ == "__main__":
