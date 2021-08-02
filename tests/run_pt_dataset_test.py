@@ -26,13 +26,15 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
         np.array([], dtype=np.float32).reshape(-1, 4),
         np.array([
             [104, 151, 22, 10],
+            [99, 132, 20, 15],
+            [340, 220, 31, 12],
         ], dtype=np.float32),
     ]
 
     labels_list = [
         np.array([0, 1], dtype=np.float32),
         np.array([], dtype=np.float32),
-        np.array([2], dtype=np.float32),
+        np.array([2, 3, 0], dtype=np.float32),
     ]
 
     return image_list, bboxes_list, labels_list
@@ -78,7 +80,6 @@ def main() -> None:
 
     transforms = Compose([
         targetran.np.RandomRotate(probability=1.0),
-        targetran.np.RandomCrop(probability=1.0),
         targetran.np.RandomFlipUpDown(probability=1.0)
     ])
 
@@ -88,9 +89,9 @@ def main() -> None:
         image, bboxes, labels = sample
         print(f"transformed image shape: {image.shape}")
         print(f"transformed bboxes shape: {bboxes.shape}")
-        print(f"transformed bboxes: {bboxes}")
+        print(f"transformed bboxes: {bboxes.tolist()}")
         print(f"transformed labels shape: {labels.shape}")
-        print(f"transformed labels: {labels}")
+        print(f"transformed labels: {labels.tolist()}")
 
 
 if __name__ == "__main__":
