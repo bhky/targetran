@@ -32,37 +32,37 @@ from targetran._transform import (
 
 
 def np_to_tf(
-        image_list: Sequence[np.ndarray],
-        bboxes_list: Sequence[np.ndarray],
-        labels_list: Sequence[np.ndarray]
+        image_seq: Sequence[np.ndarray],
+        bboxes_seq: Sequence[np.ndarray],
+        labels_seq: Sequence[np.ndarray]
 ) -> Tuple[Sequence[tf.Tensor], Sequence[tf.Tensor], Sequence[tf.Tensor]]:
     """
-    Convert Numpy array lists to TF (eager) tensor lists.
+    Convert Numpy array seqs to TF (eager) tensor seqs.
     """
     tuples = [
         (_tf_convert(image), _tf_convert(bboxes), _tf_convert(labels))
-        for image, bboxes, labels in zip(image_list, bboxes_list, labels_list)
+        for image, bboxes, labels in zip(image_seq, bboxes_seq, labels_seq)
     ]
-    tf_image_list, tf_bboxes_list, tf_labels_list = list(zip(*tuples))
-    return tf_image_list, tf_bboxes_list, tf_labels_list
+    tf_image_seq, tf_bboxes_seq, tf_labels_seq = tuple(zip(*tuples))
+    return tf_image_seq, tf_bboxes_seq, tf_labels_seq
 
 
-def lists_to_tf_dataset(
-        image_list: Sequence[np.ndarray],
-        bboxes_list: Sequence[np.ndarray],
-        labels_list: Sequence[np.ndarray]
+def seqs_to_tf_dataset(
+        image_seq: Sequence[np.ndarray],
+        bboxes_seq: Sequence[np.ndarray],
+        labels_seq: Sequence[np.ndarray]
 ) -> tf.data.Dataset:
 
-    tf_image_list, tf_bboxes_list, tf_labels_list = np_to_tf(
-        image_list, bboxes_list, labels_list
+    tf_image_seq, tf_bboxes_seq, tf_labels_seq = np_to_tf(
+        image_seq, bboxes_seq, labels_seq
     )
 
     # Tensors of different shapes can be included in a TF Dataset
     # as ragged-tensors.
     ds = tf.data.Dataset.zip((
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_list)),
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_bboxes_list)),
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_labels_list))
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_seq)),
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_bboxes_seq)),
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_labels_seq))
     ))
     # However, our transformations expect normal tensors, so the ragged-tensors
     # have to be first converted back to tensors during mapping. Therefore,

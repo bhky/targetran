@@ -15,7 +15,7 @@ import numpy as np
 import tensorflow as tf
 
 from targetran.tf import (
-    lists_to_tf_dataset,
+    seqs_to_tf_dataset,
     TFRandomRotate,
     TFRandomShear,
     TFRandomCrop,
@@ -87,7 +87,7 @@ def make_tf_dataset(
         bboxes_list.append(annotation_dict[image_id]["bboxes"])
         labels_list.append(annotation_dict[image_id]["labels"])
 
-    return lists_to_tf_dataset(image_list, bboxes_list, labels_list)
+    return seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
 
 
 def plot(ds: tf.data.Dataset, num_rows: int, num_cols: int) -> None:
