@@ -15,7 +15,7 @@ import numpy as np
 import tensorflow as tf
 
 from targetran.tf import (
-    np_to_tf,
+    make_tf_dataset,
     TFRandomRotate,
     TFRandomShear,
     TFRandomCrop,
@@ -70,11 +70,14 @@ def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
     return data_dict
 
 
-def make_tf_dataset(
+def to_tf_dataset(
         image_dict: Dict[str, np.ndarray],
         annotation_dict: Dict[str, Dict[str, np.ndarray]]
 ) -> tf.data.Dataset:
-
+    """
+    Users may do it differently. The main point is the item order of each list
+    must match correspondingly.
+    """
     image_list: List[np.ndarray] = []
     bboxes_list: List[np.ndarray] = []
     labels_list: List[np.ndarray] = []
@@ -84,29 +87,13 @@ def make_tf_dataset(
         bboxes_list.append(annotation_dict[image_id]["bboxes"])
         labels_list.append(annotation_dict[image_id]["labels"])
 
-    tf_image_list, tf_bboxes_list, tf_labels_list = np_to_tf(
-        image_list, bboxes_list, labels_list
-    )
-
-    # Tensors of different shapes can be included in a TF Dataset
-    # as ragged-tensors.
-    ds = tf.data.Dataset.zip((
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_list)),
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_bboxes_list)),
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_labels_list))
-    ))
-    # However, our transformations expect normal tensors, so the ragged-tensors
-    # have to be first converted back to tensors during mapping. Therefore,
-    # the whole point of using ragged-tensors is ONLY for building a Dataset...
-    # Note that the label ragged-tensors are of rank-0, so they are implicitly
-    # converted to tensors during mapping. Strange TF Dataset behaviour...
-    ds = ds.map(lambda i, b, l: (i.to_tensor(), b.to_tensor(), l))
-
-    return ds
+    return make_tf_dataset(image_list, bboxes_list, labels_list)
 
 
 def plot(ds: tf.data.Dataset, num_rows: int, num_cols: int) -> None:
-
+    """
+    Plot the image, bboxes, and the corresponding labels.
+    """
     assert num_rows > 1 and num_cols > 1
     fig, axes = plt.subplots(num_rows, num_cols)
 
@@ -139,7 +126,7 @@ def plot(ds: tf.data.Dataset, num_rows: int, num_cols: int) -> None:
 
 def main() -> None:
 
-    ds = make_tf_dataset(load_images(), load_annotations())
+    ds = to_tf_dataset(load_images(), load_annotations())
 
     ds = ds \
         .map(TFRandomCrop(probability=1.0)) \

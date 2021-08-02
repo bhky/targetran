@@ -40,13 +40,37 @@ def np_to_tf(
     Convert Numpy array lists to TF (eager) tensor lists.
     """
     tuples = [
-        (tf.convert_to_tensor(image, dtype=tf.float32),
-         tf.convert_to_tensor(bboxes, dtype=tf.float32),
-         tf.convert_to_tensor(labels, dtype=tf.float32))
+        (_tf_convert(image), _tf_convert(bboxes), _tf_convert(labels))
         for image, bboxes, labels in zip(image_list, bboxes_list, labels_list)
     ]
     tf_image_list, tf_bboxes_list, tf_labels_list = list(zip(*tuples))
     return tf_image_list, tf_bboxes_list, tf_labels_list
+
+
+def make_tf_dataset(
+        image_list: Sequence[np.ndarray],
+        bboxes_list: Sequence[np.ndarray],
+        labels_list: Sequence[np.ndarray]
+) -> tf.data.Dataset:
+
+    tf_image_list, tf_bboxes_list, tf_labels_list = np_to_tf(
+        image_list, bboxes_list, labels_list
+    )
+
+    # Tensors of different shapes can be included in a TF Dataset
+    # as ragged-tensors.
+    ds = tf.data.Dataset.zip((
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_list)),
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_bboxes_list)),
+        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_labels_list))
+    ))
+    # However, our transformations expect normal tensors, so the ragged-tensors
+    # have to be first converted back to tensors during mapping. Therefore,
+    # the whole point of using ragged-tensors is ONLY for building a Dataset...
+    # Note that the label ragged-tensors are of rank-0, so they are implicitly
+    # converted to tensors during mapping. Strange TF Dataset behaviour...
+    ds = ds.map(lambda i, b, l: (i.to_tensor(), b.to_tensor(), l))
+    return ds
 
 
 def tf_flip_left_right(
