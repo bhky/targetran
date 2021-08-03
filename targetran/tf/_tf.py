@@ -245,6 +245,10 @@ class TFRandomTransform:
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
 
+        image = _tf_convert(image)
+        bboxes = _tf_convert(bboxes)
+        labels = _tf_convert(labels)
+
         if self._rand_fn() < self.probability:
             return self._tf_fn(image, bboxes, labels, *args, **kwargs)
         return image, bboxes, labels
