@@ -314,13 +314,28 @@ def _affine_transform_single(
 
     new_xs = tran_bboxes[:, :1] + width // 2 + w_mod - 1
     new_ys = tran_bboxes[:, 1:2] + height // 2 + h_mod - 1
-    new_bboxes = concat_fn([new_xs, new_ys, new_widths, new_heights], 1)
 
-    # Filter new bboxes.
+    # Filter new bboxes values.
+    xcens = new_xs + new_widths // 2
+    ycens = new_ys + new_heights // 2
     included = squeeze_fn(logical_and_fn(
-        logical_and_fn(new_xs >= 0, new_xs + new_widths <= width),
-        logical_and_fn(new_ys >= 0, new_ys + new_heights <= height)
+        logical_and_fn(xcens >= 0, xcens <= width),
+        logical_and_fn(ycens >= 0, ycens <= height)
     ), -1)
+
+    # Clip new bboxes values.
+    xmaxs = clip_fn(
+        convert_fn(new_xs + new_widths), convert_fn(0), convert_fn(width)
+    )
+    ymaxs = clip_fn(
+        convert_fn(new_ys + new_heights), convert_fn(0), convert_fn(height)
+    )
+    new_xs = clip_fn(convert_fn(new_xs), convert_fn(0), convert_fn(width))
+    new_ys = clip_fn(convert_fn(new_ys), convert_fn(0), convert_fn(height))
+    new_widths = xmaxs - new_xs
+    new_heights = ymaxs - new_ys
+
+    new_bboxes = concat_fn([new_xs, new_ys, new_widths, new_heights], 1)
     new_bboxes = convert_fn(boolean_mask_fn(new_bboxes, included))
 
     # Filter labels.
@@ -563,6 +578,7 @@ def _crop(
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
         squeeze_fn: Callable[[T, int], T],
+        clip_fn: Callable[[T, T, T], T],
         boolean_mask_fn: Callable[[T, T], T],
 ) -> Tuple[T, T, T]:
     """
@@ -588,21 +604,30 @@ def _crop(
     # Crop image.
     image = image[int(top):int(bottom), int(left):int(right), :]
 
-    # Translate bboxes.
+    # Translate bboxes values.
     bboxes = reshape_fn(bboxes, (-1, 4))
     xs = bboxes[:, :1] - offset_width
     ys = bboxes[:, 1:2] - offset_height
     widths = bboxes[:, 2:3]
     heights = bboxes[:, 3:]
-    bboxes = concat_fn([xs, ys, widths, heights], 1)
 
-    # Filter bboxes.
-    xmaxs = xs + widths
-    ymaxs = ys + heights
+    # Filter bboxes values.
+    xcens = xs + widths // 2
+    ycens = ys + heights // 2
     included = squeeze_fn(logical_and_fn(
-        logical_and_fn(xs >= 0, xmaxs <= cropped_image_width),
-        logical_and_fn(ys >= 0, ymaxs <= cropped_image_height)
+        logical_and_fn(xcens >= 0, xcens <= cropped_image_width),
+        logical_and_fn(ycens >= 0, ycens <= cropped_image_height)
     ), -1)  # Squeeze along the last axis.
+
+    # Clip bboxes values.
+    xmaxs = clip_fn(xs + widths, convert_fn(0), cropped_image_width)
+    ymaxs = clip_fn(ys + heights, convert_fn(0), cropped_image_height)
+    xs = clip_fn(xs, convert_fn(0), cropped_image_width)
+    ys = clip_fn(ys, convert_fn(0), cropped_image_height)
+    widths = xmaxs - xs
+    heights = ymaxs - ys
+
+    bboxes = concat_fn([xs, ys, widths, heights], 1)
     bboxes = boolean_mask_fn(bboxes, included)
 
     # Filter labels.
@@ -625,6 +650,7 @@ def _translate(
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
         squeeze_fn: Callable[[T, int], T],
+        clip_fn: Callable[[T, T, T], T],
         boolean_mask_fn: Callable[[T, T], T],
         pad_image_fn: Callable[[T, T], T],
 ) -> Tuple[T, T, T]:
@@ -664,7 +690,7 @@ def _translate(
         image, bboxes, labels,
         offset_height, offset_width, cropped_height, cropped_width,
         shape_fn, reshape_fn, convert_fn, concat_fn, logical_and_fn,
-        squeeze_fn, boolean_mask_fn
+        squeeze_fn, clip_fn, boolean_mask_fn
     )
 
     image = pad_image_fn(

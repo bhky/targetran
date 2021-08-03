@@ -104,10 +104,10 @@ def plot(
     for n, sample in enumerate(ds.take(num_rows * num_cols)):
 
         image, bboxes, labels = [tensor.numpy() for tensor in sample]
+        image = image.astype(np.int32)
 
         for bbox, label in zip(bboxes, labels):
 
-            image = image.astype(np.int32)
             x_min, y_min, width, height = [int(v) for v in bbox]
 
             cv2.rectangle(

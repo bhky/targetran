@@ -148,7 +148,7 @@ def crop(
         offset_height, offset_width,
         cropped_image_height, cropped_image_width,
         np.shape, np.reshape, _np_convert, np.concatenate,
-        _np_logical_and, np.squeeze, _np_boolean_mask
+        _np_logical_and, np.squeeze, np.clip, _np_boolean_mask
     )
 
 
@@ -163,7 +163,7 @@ def translate(
         image, bboxes, labels,
         translate_height, translate_width,
         np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
-        _np_logical_and, np.squeeze, _np_boolean_mask, _np_pad_image
+        _np_logical_and, np.squeeze, np.clip, _np_boolean_mask, _np_pad_image
     )
 
 

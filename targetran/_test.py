@@ -661,6 +661,7 @@ class TestTransform(unittest.TestCase):
         ]
         expected_bboxes_list = [
             np.array([
+                [1, 0, 2, 1],
                 [0, 0, 3, 2],
             ], dtype=np.float32),
             np.array([
@@ -669,7 +670,7 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
         expected_labels_list = [
-            np.array([1], dtype=np.float32),
+            np.array([0, 1], dtype=np.float32),
             np.array([2], dtype=np.float32),
             np.array([], dtype=np.float32),
         ]

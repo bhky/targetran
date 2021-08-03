@@ -189,7 +189,7 @@ def tf_crop(
         offset_height, offset_width,
         cropped_image_height, cropped_image_width,
         tf.shape, tf.reshape, _tf_convert, tf.concat,
-        tf.logical_and, tf.squeeze, tf.boolean_mask
+        tf.logical_and, tf.squeeze, tf.clip_by_value, tf.boolean_mask
     )
 
 
@@ -204,7 +204,8 @@ def tf_translate(
         image, bboxes, labels,
         translate_height, translate_width,
         tf.shape, tf.reshape, _tf_convert, tf.where, tf.abs, tf.concat,
-        tf.logical_and, tf.squeeze, tf.boolean_mask, _tf_pad_image
+        tf.logical_and, tf.squeeze, tf.clip_by_value, tf.boolean_mask,
+        _tf_pad_image
     )
 
 
