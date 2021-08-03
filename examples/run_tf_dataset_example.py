@@ -3,7 +3,7 @@
 TensorFlow Dataset example.
 """
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import os
 import glob
@@ -75,8 +75,8 @@ def make_tf_dataset(
         annotation_dict: Dict[str, Dict[str, np.ndarray]]
 ) -> tf.data.Dataset:
     """
-    Users may do it differently. The main point is the item order of each list
-    must match correspondingly.
+    Users may do it differently depending on the data.
+    The main point is the item order of each list must match correspondingly.
     """
     image_list: List[np.ndarray] = []
     bboxes_list: List[np.ndarray] = []
@@ -90,12 +90,16 @@ def make_tf_dataset(
     return seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
 
 
-def plot(ds: tf.data.Dataset, num_rows: int, num_cols: int) -> None:
+def plot(
+        ds: tf.data.Dataset,
+        num_rows: int,
+        num_cols: int,
+        figure_size_inches: Tuple[float, float] = (9.5, 7.5)
+) -> None:
     """
-    Plot the image, bboxes, and the corresponding labels.
+    Plot samples of image, bboxes, and the corresponding labels.
     """
-    assert num_rows > 1 and num_cols > 1
-    fig, axes = plt.subplots(num_rows, num_cols)
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
 
     for n, sample in enumerate(ds.take(num_rows * num_cols)):
 
@@ -117,8 +121,13 @@ def plot(ds: tf.data.Dataset, num_rows: int, num_cols: int) -> None:
                 color=(0, 0, 255), thickness=2
             )
 
-        axes[n % num_rows][n % num_cols].imshow(image)
-        axes[n % num_rows][n % num_cols].set_axis_off()
+        if num_rows == 1 or num_cols == 1:
+            ax = axes[n]
+        else:
+            ax = axes[n % num_rows][n % num_cols]
+
+        ax.imshow(image)
+        ax.set_axis_off()
         fig.set_tight_layout(True)
 
     plt.show()
