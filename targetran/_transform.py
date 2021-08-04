@@ -240,7 +240,7 @@ def _affine_transform_single(
     # Note the (col, row) -> (x, y) swapping.
     image_dest_idxes = stack_fn([col_idxes, row_idxes], 0)
 
-    # Transform image.
+    # Transform image, with clipping.
     new_image_dest_idxes = matmul_fn(
         image_dest_tran_mat, convert_fn(image_dest_idxes)
     )
