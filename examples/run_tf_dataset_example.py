@@ -24,7 +24,9 @@ from targetran.tf import (
 
 
 def load_images() -> Dict[str, np.ndarray]:
-
+    """
+    Users may do it differently depending on the data.
+    """
     image_paths = glob.glob("./images/*.jpg")
 
     image_dict: Dict[str, np.ndarray] = {}
@@ -42,7 +44,9 @@ def load_images() -> Dict[str, np.ndarray]:
 
 
 def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
-
+    """
+    Users may do it differently depending on the data.
+    """
     with open("./annotations.json", "rb") as f:
         data = json.load(f)
 
@@ -75,7 +79,6 @@ def make_tf_dataset(
         annotation_dict: Dict[str, Dict[str, np.ndarray]]
 ) -> tf.data.Dataset:
     """
-    Users may do it differently depending on the data.
     The main point is the item order of each list must match correspondingly.
     """
     image_list: List[np.ndarray] = []
