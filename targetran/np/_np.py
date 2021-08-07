@@ -156,8 +156,8 @@ def translate(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
-        translate_height: float,
-        translate_width: float
+        translate_height: int,
+        translate_width: int
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _translate(
         image, bboxes, labels,
@@ -412,8 +412,12 @@ class RandomTranslate(RandomTransform):
             self._rand_fn, _np_convert
         )
 
-        translate_height = np.shape(image)[0] * height_fraction
-        translate_width = np.shape(image)[1] * width_fraction
+        translate_height = _np_round_to_int(
+            np.shape(image)[0] * height_fraction
+        )
+        translate_width = _np_round_to_int(
+            np.shape(image)[1] * width_fraction
+        )
 
         return super().__call__(
             image, bboxes, labels, translate_height, translate_width

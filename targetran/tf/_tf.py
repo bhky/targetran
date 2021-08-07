@@ -197,8 +197,8 @@ def tf_translate(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
-        translate_height: float,
-        translate_width: float
+        translate_height: int,
+        translate_width: int
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _translate(
         image, bboxes, labels,
@@ -454,8 +454,12 @@ class TFRandomTranslate(TFRandomTransform):
             self._rand_fn, _tf_convert
         )
 
-        translate_height = _tf_convert(tf.shape(image)[0]) * height_fraction
-        translate_width = _tf_convert(tf.shape(image)[1]) * width_fraction
+        translate_height = _tf_round_to_int(
+            _tf_convert(tf.shape(image)[0]) * height_fraction
+        )
+        translate_width = _tf_round_to_int(
+            _tf_convert(tf.shape(image)[1]) * width_fraction
+        )
 
         return super().__call__(
             image, bboxes, labels, translate_height, translate_width
