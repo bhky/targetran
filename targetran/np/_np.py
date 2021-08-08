@@ -13,8 +13,8 @@ from targetran._functional import (
     _np_resize_image,
     _np_boolean_mask,
     _np_logical_and,
-    _np_pad_image,
-    _np_gather_image
+    _np_pad_images,
+    _np_gather_images
 )
 
 from targetran._transform import (
@@ -85,7 +85,7 @@ def rotate_90_and_pad(
     return _rotate_90_and_pad(
         image, bboxes, labels,
         np.shape, _np_convert, np.transpose, np.concatenate,
-        np.where, np.ceil, np.floor, _np_pad_image
+        np.where, np.ceil, np.floor, _np_pad_images
     )
 
 
@@ -98,9 +98,9 @@ def rotate(
     return _rotate(
         image, bboxes, labels, angle_deg,
         np.shape, _np_convert, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
+        _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
-        _np_gather_image, np.reshape, np.copy,
+        _np_gather_images, np.reshape, np.copy,
         np.max, np.min, _np_logical_and, _np_boolean_mask
     )
 
@@ -114,9 +114,9 @@ def shear(
     return _shear(
         image, bboxes, labels, angle_deg,
         np.shape, _np_convert, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
+        _np_pad_images, _np_range, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.tan, np.matmul, np.clip,
-        _np_gather_image, np.reshape, np.copy,
+        _np_gather_images, np.reshape, np.copy,
         np.max, np.min, _np_logical_and, _np_boolean_mask
     )
 
@@ -163,7 +163,7 @@ def translate(
         image, bboxes, labels,
         translate_height, translate_width,
         np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
-        _np_logical_and, np.squeeze, np.clip, _np_boolean_mask, _np_pad_image
+        _np_logical_and, np.squeeze, np.clip, _np_boolean_mask, _np_pad_images
     )
 
 

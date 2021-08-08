@@ -11,8 +11,8 @@ from targetran._functional import (
     _tf_convert,
     _tf_round_to_int,
     _tf_resize_image,
-    _tf_pad_image,
-    _tf_gather_image
+    _tf_pad_images,
+    _tf_gather_images
 )
 
 
@@ -126,7 +126,7 @@ def tf_rotate_90_and_pad(
     return _rotate_90_and_pad(
         image, bboxes, labels,
         tf.shape, _tf_convert, tf.transpose, tf.concat,
-        tf.where, tf.math.ceil, tf.math.floor, _tf_pad_image
+        tf.where, tf.math.ceil, tf.math.floor, _tf_pad_images
     )
 
 
@@ -139,9 +139,9 @@ def tf_rotate(
     return _rotate(
         image, bboxes, labels, angle_deg,
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
-        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.reshape, tf.identity,
+        _tf_gather_images, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
 
@@ -155,9 +155,9 @@ def tf_shear(
     return _shear(
         image, bboxes, labels, angle_deg,
         tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
-        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        _tf_pad_images, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.reshape, tf.identity,
+        _tf_gather_images, tf.reshape, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
 
@@ -205,7 +205,7 @@ def tf_translate(
         translate_height, translate_width,
         tf.shape, tf.reshape, _tf_convert, tf.where, tf.abs, tf.concat,
         tf.logical_and, tf.squeeze, tf.clip_by_value, tf.boolean_mask,
-        _tf_pad_image
+        _tf_pad_images
     )
 
 

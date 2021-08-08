@@ -27,19 +27,20 @@ def _np_logical_and(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.logical_and(x, y)
 
 
-def _np_pad_image(
-        image: np.ndarray,
+def _np_pad_images(
+        images: np.ndarray,
         pad_offsets: np.ndarray
 ) -> np.ndarray:
     """
     pad_offsets: [top, bottom, left, right]
     """
-    pad_width = (  # From axis 0 to 2.
+    pad_width = (  # From axis 0 to 3.
+        (0, 0),
         (int(pad_offsets[0]), int(pad_offsets[1])),
         (int(pad_offsets[2]), int(pad_offsets[3])),
         (0, 0)
     )
-    return np.pad(image, pad_width=pad_width, constant_values=0)
+    return np.pad(images, pad_width=pad_width, constant_values=0)
 
 
 def _np_resize_image(
@@ -61,11 +62,12 @@ def _np_boolean_mask(x: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return x[mask]
 
 
-def _np_gather_image(image: np.ndarray, indices: np.ndarray) -> np.ndarray:
+def _np_gather_images(images: np.ndarray, indices: np.ndarray) -> np.ndarray:
     """
-    indices: [[row_0, row_1, ...], [col_0, col_1, ...]]
+    indices (3D): batch of [[row_idx_0, row_idx_1, ...],
+                            [col_idx_0, col_idx_1, ...]]
     """
-    return image[tuple(indices)]
+    return images[tuple(indices)]
 
 
 # TF.
@@ -80,19 +82,19 @@ def _tf_round_to_int(x: tf.Tensor) -> tf.Tensor:
     return tf.cast(tf.math.rint(x), dtype=tf.int32)
 
 
-def _tf_pad_image(
-        image: tf.Tensor,
+def _tf_pad_images(
+        images: tf.Tensor,
         pad_offsets: tf.Tensor,
 ) -> tf.Tensor:
     """
     pad_offsets: [top, bottom, left, right]
     """
-    height = int(tf.shape(image)[0])
-    width = int(tf.shape(image)[1])
+    height = int(tf.shape(images)[1])
+    width = int(tf.shape(images)[2])
     target_height = int(pad_offsets[0]) + height + int(pad_offsets[1])
     target_width = int(pad_offsets[2]) + width + int(pad_offsets[3])
     return tf.image.pad_to_bounding_box(
-        image,
+        images,
         int(pad_offsets[0]), int(pad_offsets[2]),
         target_height, target_width
     )
@@ -110,8 +112,9 @@ def _tf_resize_image(
     )
 
 
-def _tf_gather_image(image: tf.Tensor, indices: tf.Tensor) -> tf.Tensor:
+def _tf_gather_images(images: tf.Tensor, indices: tf.Tensor) -> tf.Tensor:
     """
-    indices: [[row_0, row_1, ...], [col_0, col_1, ...]]
+    indices (3D): batch of [[row_idx_0, row_idx_1, ...],
+                            [col_idx_0, col_idx_1, ...]]
     """
-    return tf.gather_nd(image, tf.transpose(indices))
+    return tf.gather_nd(images, tf.transpose(indices, (0, 2, 1)))
