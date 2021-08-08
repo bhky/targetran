@@ -182,7 +182,7 @@ def _rotate_90_and_pad(
     )
 
 
-def _affine_transform_single(
+def _affine_transform(
         image: T,
         bboxes: T,
         labels: T,
@@ -395,7 +395,7 @@ def _rotate(
         [-sin_fn(ang_rad), cos_fn(ang_rad)]
     ])
 
-    return _affine_transform_single(
+    return _affine_transform(
         image, bboxes, labels, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
         pad_image_fn, range_fn, round_to_int_fn, repeat_fn, tile_fn,
         stack_fn, concat_fn, image_dest_rot_mat, bboxes_rot_mat, matmul_fn,
@@ -455,7 +455,7 @@ def _shear(
         [convert_fn(0), convert_fn(1)]
     ])
 
-    return _affine_transform_single(
+    return _affine_transform(
         image, bboxes, labels, shape_fn, convert_fn, expand_dim_fn, squeeze_fn,
         pad_image_fn, range_fn, round_to_int_fn, repeat_fn, tile_fn,
         stack_fn, concat_fn, image_dest_shear_mat, bboxes_shear_mat, matmul_fn,
