@@ -2,7 +2,7 @@
 API for TensorFlow usage.
 """
 
-from typing import Any, Callable, Sequence, Tuple
+from typing import Any, Callable, Optional, Sequence, Tuple
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
@@ -231,11 +231,12 @@ class TFRandomTransform:
             self,
             tf_fn: Callable[..., Tuple[tf.Tensor, tf.Tensor, tf.Tensor]],
             probability: float,
-            seed: int,
+            seed: Optional[int],
     ) -> None:
         self._tf_fn = tf_fn
         self.probability = probability
-        self._rng = tf.random.Generator.from_seed(seed)
+        self._rng = tf.random.Generator.from_seed(seed) if seed is not None \
+            else tf.random.Generator.from_non_deterministic_state()
         self._rand_fn: Callable[..., tf.Tensor] = lambda: self._rng.uniform([])
 
     def __call__(
@@ -261,7 +262,7 @@ class TFRandomFlipLeftRight(TFRandomTransform):
     def __init__(
             self,
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_flip_left_right, probability, seed)
 
@@ -281,7 +282,7 @@ class TFRandomFlipUpDown(TFRandomTransform):
     def __init__(
             self,
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_flip_up_down, probability, seed)
 
@@ -301,7 +302,7 @@ class TFRandomRotate90(TFRandomTransform):
     def __init__(
             self,
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_rotate_90, probability, seed)
 
@@ -321,7 +322,7 @@ class TFRandomRotate90AndPad(TFRandomTransform):
     def __init__(
             self,
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_rotate_90_and_pad, probability, seed)
 
@@ -342,7 +343,7 @@ class TFRandomRotate(TFRandomTransform):
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_rotate, probability, seed)
         assert angle_deg_range[0] < angle_deg_range[1]
@@ -370,7 +371,7 @@ class TFRandomShear(TFRandomTransform):
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_shear, probability, seed)
         assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
@@ -399,7 +400,7 @@ class TFRandomCrop(TFRandomTransform):
             crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
             crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_crop, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
@@ -435,7 +436,7 @@ class TFRandomTranslate(TFRandomTransform):
             translate_height_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             translate_width_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_translate, probability, seed)
         self.translate_height_fraction_range = translate_height_fraction_range

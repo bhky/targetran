@@ -2,7 +2,7 @@
 API for Numpy usage.
 """
 
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import numpy as np  # type: ignore
 
@@ -187,7 +187,7 @@ class RandomTransform:
             self,
             np_fn: Callable[..., Tuple[np.ndarray, np.ndarray, np.ndarray]],
             probability: float,
-            seed: int,
+            seed: Optional[int],
     ) -> None:
         self._np_fn = np_fn
         self.probability = probability
@@ -217,7 +217,7 @@ class RandomFlipLeftRight(RandomTransform):
     def __init__(
             self,
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(flip_left_right, probability, seed)
 
@@ -237,7 +237,7 @@ class RandomFlipUpDown(RandomTransform):
     def __init__(
             self,
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(flip_up_down, probability, seed)
 
@@ -257,7 +257,7 @@ class RandomRotate90(RandomTransform):
     def __init__(
             self,
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(rotate_90, probability, seed)
 
@@ -277,7 +277,7 @@ class RandomRotate90AndPad(RandomTransform):
     def __init__(
             self,
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(rotate_90_and_pad, probability, seed)
 
@@ -298,7 +298,7 @@ class RandomRotate(RandomTransform):
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(rotate, probability, seed)
         assert angle_deg_range[0] < angle_deg_range[1]
@@ -326,7 +326,7 @@ class RandomShear(RandomTransform):
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(shear, probability, seed)
         assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
@@ -355,7 +355,7 @@ class RandomCrop(RandomTransform):
             crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
             crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(crop, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
@@ -391,7 +391,7 @@ class RandomTranslate(RandomTransform):
             translate_height_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             translate_width_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             probability: float = 0.7,
-            seed: int = 0
+            seed: Optional[int] = None
     ) -> None:
         super().__init__(translate, probability, seed)
         self.translate_height_fraction_range = translate_height_fraction_range
