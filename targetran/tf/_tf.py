@@ -433,8 +433,8 @@ class TFRandomTranslate(TFRandomTransform):
 
     def __init__(
             self,
-            translate_height_fraction_range: Tuple[float, float] = (-0.1, 0.1),
-            translate_width_fraction_range: Tuple[float, float] = (-0.1, 0.1),
+            translate_height_fraction_range: Tuple[float, float] = (-0.2, 0.2),
+            translate_width_fraction_range: Tuple[float, float] = (-0.2, 0.2),
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
