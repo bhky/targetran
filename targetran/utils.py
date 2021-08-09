@@ -2,7 +2,9 @@
 Utilities.
 """
 
-from typing import Any, Callable, Sequence, Tuple
+from typing import Any, Callable, Sequence, Tuple, TypeVar
+
+T = TypeVar("T")
 
 
 class Compose:
@@ -18,3 +20,13 @@ class Compose:
 
 def collate_fn(batch_: Sequence[Tuple[Any, ...]]) -> Tuple[Sequence[Any], ...]:
     return tuple(zip(*batch_))
+
+
+def to_classification(
+        tran_fn: Callable[[T, Any, Any], Tuple[T, T, T]]
+) -> Callable[[T, T], Tuple[T, T]]:
+
+    def fn(image: T, label: T) -> Tuple[T, T]:
+        return tran_fn(image, [], [])[0], label
+
+    return fn
