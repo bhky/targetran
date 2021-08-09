@@ -39,7 +39,7 @@ def flip_left_right(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_left_right(
         image, bboxes, labels,
-        np.shape, np.reshape, _np_convert, np.concatenate
+        _np_convert, np.shape, np.reshape, np.concatenate
     )
 
 
@@ -50,7 +50,7 @@ def flip_up_down(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_up_down(
         image, bboxes, labels,
-        np.shape, np.reshape, _np_convert, np.concatenate
+        _np_convert, np.shape, np.reshape, np.concatenate
     )
 
 
@@ -61,9 +61,8 @@ def resize(
         dest_size: Tuple[int, int]
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _resize(
-        image, bboxes, labels,
-        dest_size, np.shape, np.reshape, _np_resize_image,
-        _np_convert, np.concatenate
+        image, bboxes, labels, dest_size,
+        _np_convert, np.shape, np.reshape, _np_resize_image, np.concatenate
     )
 
 
@@ -74,7 +73,7 @@ def rotate_90(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _rotate_90(
         image, bboxes, labels,
-        np.shape, np.reshape, _np_convert, np.transpose, np.concatenate
+        _np_convert, np.shape, np.reshape, np.transpose, np.concatenate
     )
 
 
@@ -85,7 +84,7 @@ def rotate_90_and_pad(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _rotate_90_and_pad(
         image, bboxes, labels,
-        np.shape, np.reshape, _np_convert, np.transpose, np.concatenate,
+        _np_convert, np.shape, np.reshape, np.transpose, np.concatenate,
         np.where, np.ceil, np.floor, _np_pad_image
     )
 
@@ -98,7 +97,7 @@ def rotate(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _rotate(
         image, bboxes, labels, angle_deg,
-        np.shape, np.reshape, _np_convert, np.expand_dims, np.squeeze,
+        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
         _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
         _np_gather_image, np.copy, np.max, np.min,
@@ -114,7 +113,7 @@ def shear(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _shear(
         image, bboxes, labels, angle_deg,
-        np.shape, np.reshape, _np_convert, np.expand_dims, np.squeeze,
+        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
         _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
         np.stack, np.concatenate, np.tan, np.matmul, np.clip,
         _np_gather_image, np.copy, np.max, np.min,
@@ -148,7 +147,7 @@ def crop(
         image, bboxes, labels,
         offset_height, offset_width,
         cropped_image_height, cropped_image_width,
-        np.shape, np.reshape, _np_convert, np.concatenate,
+        _np_convert, np.shape, np.reshape, np.concatenate,
         _np_logical_and, np.squeeze, np.clip, _np_boolean_mask
     )
 
@@ -163,7 +162,7 @@ def translate(
     return _translate(
         image, bboxes, labels,
         translate_height, translate_width,
-        np.shape, np.reshape, _np_convert, np.where, np.abs, np.concatenate,
+        _np_convert, np.shape, np.reshape, np.where, np.abs, np.concatenate,
         _np_logical_and, np.squeeze, np.clip, _np_boolean_mask, _np_pad_image
     )
 
