@@ -8,7 +8,14 @@ from timeit import default_timer as timer
 
 import tensorflow as tf
 
-import targetran.tf
+from targetran.tf import (
+    TFRandomFlipLeftRight,
+    TFRandomRotate,
+    TFRandomShear,
+    TFRandomCrop,
+    TFRandomTranslate,
+    TFResize
+)
 
 rng = tf.random.Generator.from_seed(42)
 
@@ -50,12 +57,15 @@ def main() -> None:
         )
     )
 
+    auto_tune = tf.data.AUTOTUNE
+
     ds = ds \
-        .map(targetran.tf.TFRandomFlipLeftRight()) \
-        .map(targetran.tf.TFRandomRotate()) \
-        .map(targetran.tf.TFRandomShear()) \
-        .map(targetran.tf.TFRandomCrop()) \
-        .map(targetran.tf.TFResize(dest_size=(256, 256)))
+        .map(TFRandomFlipLeftRight(), num_parallel_calls=auto_tune) \
+        .map(TFRandomRotate(), num_parallel_calls=auto_tune) \
+        .map(TFRandomShear(), num_parallel_calls=auto_tune) \
+        .map(TFRandomCrop(), num_parallel_calls=auto_tune) \
+        .map(TFRandomTranslate(), num_parallel_calls=auto_tune) \
+        .map(TFResize(dest_size=(256, 256)), num_parallel_calls=auto_tune)
 
     start = timer()
     count = 0
