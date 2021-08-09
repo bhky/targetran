@@ -353,8 +353,8 @@ class RandomCrop(RandomTransform):
 
     def __init__(
             self,
-            crop_height_fraction_range: Tuple[float, float] = (0.6, 0.9),
-            crop_width_fraction_range: Tuple[float, float] = (0.6, 0.9),
+            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
             probability: float = 0.7,
             seed: int = 0
     ) -> None:
@@ -389,8 +389,8 @@ class RandomTranslate(RandomTransform):
 
     def __init__(
             self,
-            translate_height_fraction_range: Tuple[float, float] = (-0.2, 0.2),
-            translate_width_fraction_range: Tuple[float, float] = (-0.2, 0.2),
+            translate_height_fraction_range: Tuple[float, float] = (-0.1, 0.1),
+            translate_width_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             probability: float = 0.7,
             seed: int = 0
     ) -> None:
