@@ -12,6 +12,8 @@ import cv2  # type: ignore
 # Numpy.
 
 def _np_convert(x: Any) -> np.ndarray:
+    if isinstance(x, np.ndarray):
+        return x.astype(np.float32)
     return np.array(x, dtype=np.float32)
 
 
