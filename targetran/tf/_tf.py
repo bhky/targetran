@@ -40,7 +40,9 @@ def np_to_tf(
     Convert Numpy array seqs to TF (eager) tensor seqs.
     """
     tuples = [
-        (_tf_convert(image), _tf_convert(bboxes), _tf_convert(labels))
+        (_tf_convert(image),
+         tf.reshape(_tf_convert(bboxes), (-1, 4)),
+         _tf_convert(labels))
         for image, bboxes, labels in zip(image_seq, bboxes_seq, labels_seq)
     ]
     tf_image_seq, tf_bboxes_seq, tf_labels_seq = tuple(zip(*tuples))
@@ -80,7 +82,7 @@ def tf_flip_left_right(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_left_right(
         image, bboxes, labels,
-        tf.shape, _tf_convert, tf.concat
+        tf.shape, tf.reshape, _tf_convert, tf.concat
     )
 
 
@@ -91,7 +93,7 @@ def tf_flip_up_down(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_up_down(
         image, bboxes, labels,
-        tf.shape, _tf_convert, tf.concat
+        tf.shape, tf.reshape, _tf_convert, tf.concat
     )
 
 
@@ -103,7 +105,8 @@ def tf_resize(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _resize(
         image, bboxes, labels,
-        dest_size, tf.shape, _tf_resize_image, _tf_convert, tf.concat
+        dest_size, tf.shape, tf.reshape, _tf_resize_image,
+        _tf_convert, tf.concat
     )
 
 
@@ -114,7 +117,7 @@ def tf_rotate_90(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate_90(
         image, bboxes, labels,
-        tf.shape, _tf_convert, tf.transpose, tf.concat
+        tf.shape, tf.reshape, _tf_convert, tf.transpose, tf.concat
     )
 
 
@@ -125,7 +128,7 @@ def tf_rotate_90_and_pad(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate_90_and_pad(
         image, bboxes, labels,
-        tf.shape, _tf_convert, tf.transpose, tf.concat,
+        tf.shape, tf.reshape, _tf_convert, tf.transpose, tf.concat,
         tf.where, tf.math.ceil, tf.math.floor, _tf_pad_image
     )
 
@@ -138,11 +141,11 @@ def tf_rotate(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate(
         image, bboxes, labels, angle_deg,
-        tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
+        tf.shape, tf.reshape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.reshape, tf.identity,
-        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
+        tf.logical_and, tf.boolean_mask
     )
 
 
@@ -154,11 +157,11 @@ def tf_shear(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _shear(
         image, bboxes, labels, angle_deg,
-        tf.shape, _tf_convert, tf.expand_dims, tf.squeeze,
+        tf.shape, tf.reshape, _tf_convert, tf.expand_dims, tf.squeeze,
         _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.reshape, tf.identity,
-        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
+        tf.logical_and, tf.boolean_mask
     )
 
 
