@@ -22,11 +22,14 @@ def collate_fn(batch_: Sequence[Tuple[Any, ...]]) -> Tuple[Sequence[Any], ...]:
     return tuple(zip(*batch_))
 
 
-def to_classification(
+def image_only(
         tran_fn: Callable[[T, Any, Any], Tuple[T, T, T]]
 ) -> Callable[[T, T], Tuple[T, T]]:
 
-    def fn(image: T, label: T) -> Tuple[T, T]:
-        return tran_fn(image, [], [])[0], label
+    def fn(image: T, *args: Any) -> Any:
+        transformed_image = tran_fn(image, [], [])[0]
+        if not len(args):
+            return transformed_image
+        return (transformed_image, *args)
 
     return fn
