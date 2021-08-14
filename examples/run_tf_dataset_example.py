@@ -143,10 +143,10 @@ def main() -> None:
     auto_tune = tf.data.AUTOTUNE
 
     ds = ds \
-        .map(TFRandomCrop(probability=1.0), num_parallel_calls=auto_tune) \
-        .map(TFRandomTranslate(probability=1.0), num_parallel_calls=auto_tune) \
-        .map(TFRandomRotate(probability=1.0), num_parallel_calls=auto_tune) \
-        .map(TFRandomShear(probability=1.0), num_parallel_calls=auto_tune) \
+        .map(TFRandomCrop(probability=1.0, seed=0), num_parallel_calls=auto_tune) \
+        .map(TFRandomTranslate(probability=1.0, seed=0), num_parallel_calls=auto_tune) \
+        .map(TFRandomRotate(probability=1.0, seed=0), num_parallel_calls=auto_tune) \
+        .map(TFRandomShear(probability=1.0, seed=0), num_parallel_calls=auto_tune) \
         .repeat()  # Re-using the same samples for illustration.
 
     plot(ds, num_rows=2, num_cols=3)
