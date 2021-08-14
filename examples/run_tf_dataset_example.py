@@ -31,7 +31,6 @@ def load_images() -> Dict[str, np.ndarray]:
 
     image_dict: Dict[str, np.ndarray] = {}
     for image_path in image_paths:
-
         image: np.ndarray = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -85,7 +84,6 @@ def make_tf_dataset(
     bboxes_list: List[np.ndarray] = []
     labels_list: List[np.ndarray] = []
     for image_id, image in image_dict.items():
-
         image_list.append(image)
         bboxes_list.append(annotation_dict[image_id]["bboxes"])
         labels_list.append(annotation_dict[image_id]["labels"])
@@ -110,7 +108,6 @@ def plot(
         image = image.astype(np.int32)
 
         for bbox, label in zip(bboxes, labels):
-
             x_min, y_min, width, height = [int(v) for v in bbox]
 
             cv2.rectangle(
@@ -137,7 +134,6 @@ def plot(
 
 
 def main() -> None:
-
     ds = make_tf_dataset(load_images(), load_annotations())
 
     auto = tf.data.AUTOTUNE

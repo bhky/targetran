@@ -30,7 +30,6 @@ from .tf import (
     tf_shear
 )
 
-
 ORIGINAL_IMAGE_LIST = [
     np.array([
         [[1], [2], [3]],
@@ -68,7 +67,6 @@ ORIGINAL_LABELS_LIST = [
     np.array([2], dtype=np.float32),
     np.array([], dtype=np.float32),
 ]
-
 
 (
     TF_ORIGINAL_IMAGE_LIST, TF_ORIGINAL_BBOXES_LIST, TF_ORIGINAL_LABELS_LIST

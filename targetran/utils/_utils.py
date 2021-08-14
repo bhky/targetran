@@ -25,7 +25,7 @@ def collate_fn(batch_: Sequence[Tuple[Any, ...]]) -> Tuple[Sequence[Any], ...]:
 def image_only(
         tran_fn: Callable[[T, Any, Any], Tuple[T, T, T]]
 ) -> Callable[[T, T], Tuple[T, T]]:
-
+    # Only the image will be transformed.
     def fn(image: T, *args: Any) -> Any:
         transformed_image = tran_fn(image, [], [])[0]
         if not len(args):

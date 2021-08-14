@@ -47,7 +47,6 @@ def generator() -> Iterator[Tuple[tf.Tensor, tf.Tensor, tf.Tensor]]:
 
 
 def main() -> None:
-
     ds = tf.data.Dataset.from_generator(
         generator,
         output_signature=(

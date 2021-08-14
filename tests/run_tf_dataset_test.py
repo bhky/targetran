@@ -14,7 +14,6 @@ import targetran.tf
 def make_np_data() -> Tuple[Sequence[np.ndarray],
                             Sequence[np.ndarray],
                             Sequence[np.ndarray]]:
-
     image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
 
     bboxes_list = [
@@ -40,7 +39,6 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
 
 
 def main() -> None:
-
     image_list, bboxes_list, labels_list = make_np_data()
 
     tf_image_list, tf_bboxes_list, tf_labels_list = targetran.tf.np_to_tf(

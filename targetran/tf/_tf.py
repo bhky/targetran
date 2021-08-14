@@ -15,7 +15,6 @@ from targetran._functional import (
     _tf_gather_image
 )
 
-
 from targetran._transform import (
     _flip_left_right,
     _flip_up_down,
@@ -54,7 +53,6 @@ def seqs_to_tf_dataset(
         bboxes_seq: Sequence[np.ndarray],
         labels_seq: Sequence[np.ndarray]
 ) -> tf.data.Dataset:
-
     tf_image_seq, tf_bboxes_seq, tf_labels_seq = np_to_tf(
         image_seq, bboxes_seq, labels_seq
     )
@@ -247,7 +245,7 @@ class TFRandomTransform:
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-
+        # Make sure inputs are in the needed format.
         image = _tf_convert(image)
         bboxes = _tf_convert(bboxes)
         labels = _tf_convert(labels)
@@ -357,7 +355,6 @@ class TFRandomRotate(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-
         angle_deg = \
             _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
             * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
@@ -385,7 +382,6 @@ class TFRandomShear(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-
         angle_deg = \
             _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
             * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
@@ -414,7 +410,6 @@ class TFRandomCrop(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-
         offset_height, offset_width, cropped_height, cropped_width = \
             _tf_get_random_crop_inputs(
                 tf.shape(image)[0], tf.shape(image)[1],
@@ -450,7 +445,6 @@ class TFRandomTranslate(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-
         height_fraction, width_fraction = _get_random_size_fractions(
             self.translate_height_fraction_range,
             self.translate_width_fraction_range,

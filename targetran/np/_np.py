@@ -202,7 +202,7 @@ class RandomTransform:
             *args: Any,
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
+        # Make sure inputs are in the needed format.
         image = _np_convert(image)
         bboxes = _np_convert(bboxes)
         labels = _np_convert(labels)
@@ -312,7 +312,6 @@ class RandomRotate(RandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
         angle_deg = \
             self.angle_deg_range[1] - self.angle_deg_range[0] \
             * self._rand_fn() + self.angle_deg_range[0]
@@ -340,7 +339,6 @@ class RandomShear(RandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
         angle_deg = \
             self.angle_deg_range[1] - self.angle_deg_range[0] \
             * self._rand_fn() + self.angle_deg_range[0]
@@ -369,7 +367,6 @@ class RandomCrop(RandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
         offset_height, offset_width, cropped_height, cropped_width = \
             _np_get_random_crop_inputs(
                 np.shape(image)[0], np.shape(image)[1],
@@ -405,7 +402,6 @@ class RandomTranslate(RandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
         height_fraction, width_fraction = _get_random_size_fractions(
             self.translate_height_fraction_range,
             self.translate_width_fraction_range,

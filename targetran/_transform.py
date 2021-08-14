@@ -7,7 +7,6 @@ from typing import Callable, List, Tuple, TypeVar
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
-
 T = TypeVar("T", np.ndarray, tf.Tensor)
 
 

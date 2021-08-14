@@ -15,7 +15,6 @@ from targetran.utils import Compose, collate_fn
 def make_np_data() -> Tuple[Sequence[np.ndarray],
                             Sequence[np.ndarray],
                             Sequence[np.ndarray]]:
-
     image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
 
     bboxes_list = [
@@ -75,7 +74,6 @@ class TestDataset(Dataset):
 
 
 def main() -> None:
-
     image_list, bboxes_list, labels_list = make_np_data()
 
     transforms = Compose([
