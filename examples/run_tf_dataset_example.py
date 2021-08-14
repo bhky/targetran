@@ -22,6 +22,8 @@ from targetran.tf import (
     TFRandomTranslate
 )
 
+AUTO = tf.data.AUTOTUNE
+
 
 def load_images() -> Dict[str, np.ndarray]:
     """
@@ -136,13 +138,11 @@ def plot(
 def main() -> None:
     ds = make_tf_dataset(load_images(), load_annotations())
 
-    auto = tf.data.AUTOTUNE
-
     ds = ds \
-        .map(TFRandomCrop(probability=1.0, seed=0), num_parallel_calls=auto) \
-        .map(TFRandomTranslate(probability=1.0, seed=0), num_parallel_calls=auto) \
-        .map(TFRandomRotate(probability=1.0, seed=0), num_parallel_calls=auto) \
-        .map(TFRandomShear(probability=1.0, seed=0), num_parallel_calls=auto) \
+        .map(TFRandomCrop(probability=1.0, seed=0), num_parallel_calls=AUTO) \
+        .map(TFRandomTranslate(probability=1.0, seed=0), num_parallel_calls=AUTO) \
+        .map(TFRandomRotate(probability=1.0, seed=0), num_parallel_calls=AUTO) \
+        .map(TFRandomShear(probability=1.0, seed=0), num_parallel_calls=AUTO) \
         .repeat()  # Re-using the same samples for illustration.
 
     plot(ds, num_rows=2, num_cols=3)

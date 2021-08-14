@@ -17,6 +17,7 @@ from targetran.tf import (
     TFResize
 )
 
+AUTO = tf.data.AUTOTUNE
 rng = tf.random.Generator.from_seed(42)
 
 
@@ -56,15 +57,13 @@ def main() -> None:
         )
     )
 
-    auto_tune = tf.data.AUTOTUNE
-
     ds = ds \
-        .map(TFRandomFlipLeftRight(), num_parallel_calls=auto_tune) \
-        .map(TFRandomRotate(), num_parallel_calls=auto_tune) \
-        .map(TFRandomShear(), num_parallel_calls=auto_tune) \
-        .map(TFRandomCrop(), num_parallel_calls=auto_tune) \
-        .map(TFRandomTranslate(), num_parallel_calls=auto_tune) \
-        .map(TFResize(dest_size=(256, 256)), num_parallel_calls=auto_tune)
+        .map(TFRandomFlipLeftRight(), num_parallel_calls=AUTO) \
+        .map(TFRandomRotate(), num_parallel_calls=AUTO) \
+        .map(TFRandomShear(), num_parallel_calls=AUTO) \
+        .map(TFRandomCrop(), num_parallel_calls=AUTO) \
+        .map(TFRandomTranslate(), num_parallel_calls=AUTO) \
+        .map(TFResize(dest_size=(256, 256)), num_parallel_calls=AUTO)
 
     start = timer()
     count = 0
