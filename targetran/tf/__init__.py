@@ -1,5 +1,5 @@
 from ._tf import (
-    np_to_tf,
+    to_tf,
     seqs_to_tf_dataset,
     tf_flip_left_right,
     tf_flip_up_down,

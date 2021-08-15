@@ -2,7 +2,7 @@
 API for TensorFlow usage.
 """
 
-from typing import Any, Callable, Optional, Sequence, Tuple
+from typing import Any, Callable, Optional, Sequence, Tuple, TypeVar
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
@@ -29,14 +29,16 @@ from targetran._transform import (
     _get_random_size_fractions
 )
 
+T = TypeVar("T", np.ndarray, tf.Tensor)
 
-def np_to_tf(
-        image_seq: Sequence[np.ndarray],
-        bboxes_seq: Sequence[np.ndarray],
-        labels_seq: Sequence[np.ndarray]
+
+def to_tf(
+        image_seq: Sequence[T],
+        bboxes_seq: Sequence[T],
+        labels_seq: Sequence[T]
 ) -> Tuple[Sequence[tf.Tensor], Sequence[tf.Tensor], Sequence[tf.Tensor]]:
     """
-    Convert Numpy array seqs to TF (eager) tensor seqs.
+    Convert seqs to TF (eager) tensor seqs.
     """
     tuples = [
         (_tf_convert(image),
@@ -49,11 +51,11 @@ def np_to_tf(
 
 
 def seqs_to_tf_dataset(
-        image_seq: Sequence[np.ndarray],
-        bboxes_seq: Sequence[np.ndarray],
-        labels_seq: Sequence[np.ndarray]
+        image_seq: Sequence[T],
+        bboxes_seq: Sequence[T],
+        labels_seq: Sequence[T]
 ) -> tf.data.Dataset:
-    tf_image_seq, tf_bboxes_seq, tf_labels_seq = np_to_tf(
+    tf_image_seq, tf_bboxes_seq, tf_labels_seq = to_tf(
         image_seq, bboxes_seq, labels_seq
     )
 

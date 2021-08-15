@@ -3,14 +3,13 @@
 TensorFlow Dataset timing.
 """
 
-from typing import Iterator, Tuple
-
-import os
+from typing import List
 from timeit import default_timer as timer
 
 import tensorflow as tf
 
 from targetran.tf import (
+    seqs_to_tf_dataset,
     TFRandomFlipLeftRight,
     TFRandomRotate,
     TFRandomShear,
@@ -19,16 +18,16 @@ from targetran.tf import (
     TFResize
 )
 
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
 AUTO = tf.data.AUTOTUNE
 rng = tf.random.Generator.from_seed(42)
 
 
-def generator() -> Iterator[Tuple[tf.Tensor, tf.Tensor, tf.Tensor]]:
-    """
-    Generate random data.
-    """
+def make_ds() -> tf.data.Dataset:
     sample_size = 100000
+    image_list: List[tf.Tensor] = []
+    bboxes_list: List[tf.Tensor] = []
+    labels_list: List[tf.Tensor] = []
+    print(f"Preparing {sample_size} random samples...")
     for _ in range(sample_size):
         height = rng.uniform(
             shape=(), minval=512, maxval=1024, dtype=tf.int32
@@ -47,19 +46,16 @@ def generator() -> Iterator[Tuple[tf.Tensor, tf.Tensor, tf.Tensor]]:
         labels = rng.uniform(
             shape=(num_bboxes,), minval=0, maxval=20, dtype=tf.int32
         )
-        yield image, bboxes, labels
+
+        image_list.append(image)
+        bboxes_list.append(bboxes)
+        labels_list.append(labels)
+    print("Done preparing random samples.")
+    return seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
 
 
 def main() -> None:
-    ds = tf.data.Dataset.from_generator(
-        generator,
-        output_signature=(
-            tf.TensorSpec((None, None, 3)),
-            tf.TensorSpec((None, 4)),
-            tf.TensorSpec((None,))
-        )
-    )
-
+    ds = make_ds()
     ds = ds \
         .map(TFRandomFlipLeftRight(), num_parallel_calls=AUTO) \
         .map(TFRandomRotate(), num_parallel_calls=AUTO) \

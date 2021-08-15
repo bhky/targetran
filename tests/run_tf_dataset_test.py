@@ -41,7 +41,7 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
 def main() -> None:
     image_list, bboxes_list, labels_list = make_np_data()
 
-    tf_image_list, tf_bboxes_list, tf_labels_list = targetran.tf.np_to_tf(
+    tf_image_list, tf_bboxes_list, tf_labels_list = targetran.tf.to_tf(
         image_list, bboxes_list, labels_list
     )
 

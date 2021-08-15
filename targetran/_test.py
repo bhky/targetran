@@ -19,7 +19,7 @@ from .np import (
 )
 
 from .tf import (
-    np_to_tf,
+    to_tf,
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate_90,
@@ -70,7 +70,7 @@ ORIGINAL_LABELS_LIST = [
 
 (
     TF_ORIGINAL_IMAGE_LIST, TF_ORIGINAL_BBOXES_LIST, TF_ORIGINAL_LABELS_LIST
-) = np_to_tf(
+) = to_tf(
     ORIGINAL_IMAGE_LIST, ORIGINAL_BBOXES_LIST, ORIGINAL_LABELS_LIST
 )
 
@@ -133,7 +133,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = np_to_tf(
+        ) = to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
@@ -211,7 +211,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = np_to_tf(
+        ) = to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
@@ -286,7 +286,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = np_to_tf(
+        ) = to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
@@ -370,7 +370,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = np_to_tf(
+        ) = to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
@@ -464,14 +464,14 @@ class TestTransform(unittest.TestCase):
             tf_original_image_list,
             tf_original_bboxes_list,
             tf_original_labels_list
-        ) = np_to_tf(
+        ) = to_tf(
             original_image_list, original_bboxes_list, original_labels_list
         )
         (
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = np_to_tf(
+        ) = to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
         for i in range(len(tf_original_image_list)):
@@ -608,10 +608,10 @@ class TestTransform(unittest.TestCase):
             tf_dummy_image_list,
             tf_original_bboxes_list,
             tf_original_labels_list
-        ) = np_to_tf(
+        ) = to_tf(
             dummy_image_list, original_bboxes_list, original_labels_list
         )
-        _, tf_expected_bboxes_list, tf_expected_labels_list = np_to_tf(
+        _, tf_expected_bboxes_list, tf_expected_labels_list = to_tf(
             dummy_image_list, expected_bboxes_list, expected_labels_list
         )
 
@@ -690,7 +690,7 @@ class TestTransform(unittest.TestCase):
             tf_expected_image_list,
             tf_expected_bboxes_list,
             tf_expected_labels_list
-        ) = np_to_tf(
+        ) = to_tf(
             expected_image_list, expected_bboxes_list, expected_labels_list
         )
 
