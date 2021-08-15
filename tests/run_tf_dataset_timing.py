@@ -4,6 +4,8 @@ TensorFlow Dataset timing.
 """
 
 from typing import Iterator, Tuple
+
+import os
 from timeit import default_timer as timer
 
 import tensorflow as tf
@@ -48,6 +50,8 @@ def generator() -> Iterator[Tuple[tf.Tensor, tf.Tensor, tf.Tensor]]:
 
 
 def main() -> None:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
     ds = tf.data.Dataset.from_generator(
         generator,
         output_signature=(
