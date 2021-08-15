@@ -19,6 +19,7 @@ from targetran.tf import (
     TFResize
 )
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 AUTO = tf.data.AUTOTUNE
 rng = tf.random.Generator.from_seed(42)
 
@@ -50,8 +51,6 @@ def generator() -> Iterator[Tuple[tf.Tensor, tf.Tensor, tf.Tensor]]:
 
 
 def main() -> None:
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
     ds = tf.data.Dataset.from_generator(
         generator,
         output_signature=(
