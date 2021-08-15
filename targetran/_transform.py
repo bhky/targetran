@@ -233,6 +233,7 @@ def _affine_transform(
         round_to_int_fn: Callable[[T], T],
         repeat_fn: Callable[[T, T], T],
         tile_fn: Callable[[T, T], T],
+        ones_like_fn: Callable[[T], T],
         stack_fn: Callable[[List[T], int], T],
         concat_fn: Callable[[List[T], int], T],
         image_dest_tran_mat: T,
@@ -278,8 +279,10 @@ def _affine_transform(
         range_fn(-(width // 2) + 1 - w_mod, width // 2 + 1, 1),
         round_to_int_fn(convert_fn([height]))
     )
-    # Note the (col, row) -> (x, y) swapping.
-    image_dest_idxes = stack_fn([col_idxes, row_idxes], 0)
+    # Note the (col, row) -> (x, y) swapping. Last axis is dummy.
+    image_dest_idxes = stack_fn(
+        [col_idxes, row_idxes, ones_like_fn(col_idxes)], 0
+    )
 
     # Transform image, with clipping.
     new_image_dest_idxes = matmul_fn(
@@ -331,7 +334,9 @@ def _affine_transform(
          bottom_right_ys - convert_fn(height // 2 - 1 + h_mod)],
         1
     )
-    bboxes_idxes = stack_fn([xs, ys], 1)  # Shape: [num_bboxes, 2, 4].
+    bboxes_idxes = stack_fn(  # Shape: [num_bboxes, 3, 4].
+        [xs, ys, ones_like_fn(xs)], 1
+    )
 
     tran_bboxes_idxes = matmul_fn(bboxes_tran_mat, bboxes_idxes)
 
@@ -400,6 +405,7 @@ def _rotate(
         round_to_int_fn: Callable[[T], T],
         repeat_fn: Callable[[T, T], T],
         tile_fn: Callable[[T, T], T],
+        ones_like_fn: Callable[[T], T],
         stack_fn: Callable[[List[T], int], T],
         concat_fn: Callable[[List[T], int], T],
         cos_fn: Callable[[T], T],
@@ -427,19 +433,19 @@ def _rotate(
     # Image rotation matrix. Clockwise for the destination indices,
     # so the final image would appear to be rotated anti-clockwise.
     image_dest_rot_mat = convert_fn([
-        [cos_fn(ang_rad), -sin_fn(ang_rad)],
-        [sin_fn(ang_rad), cos_fn(ang_rad)]
+        [cos_fn(ang_rad), -sin_fn(ang_rad), convert_fn(0)],
+        [sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)]
     ])
 
     bboxes_rot_mat = convert_fn([  # Anti-clockwise.
-        [cos_fn(ang_rad), sin_fn(ang_rad)],
-        [-sin_fn(ang_rad), cos_fn(ang_rad)]
+        [cos_fn(ang_rad), sin_fn(ang_rad), convert_fn(0)],
+        [-sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)]
     ])
 
     return _affine_transform(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
         expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
-        repeat_fn, tile_fn, stack_fn, concat_fn,
+        repeat_fn, tile_fn, ones_like_fn, stack_fn, concat_fn,
         image_dest_rot_mat, bboxes_rot_mat, matmul_fn,
         clip_fn, gather_image_fn, copy_fn, max_fn, min_fn,
         logical_and_fn, boolean_mask_fn
@@ -461,6 +467,7 @@ def _shear(
         round_to_int_fn: Callable[[T], T],
         repeat_fn: Callable[[T, T], T],
         tile_fn: Callable[[T, T], T],
+        ones_like_fn: Callable[[T], T],
         stack_fn: Callable[[List[T], int], T],
         concat_fn: Callable[[List[T], int], T],
         tan_fn: Callable[[T], T],
@@ -488,20 +495,75 @@ def _shear(
     # Image shear matrix. Clockwise for the destination indices,
     # so the final image would appear to be sheared anti-clockwise.
     image_dest_shear_mat = convert_fn([
-        [convert_fn(1), -factor],
-        [convert_fn(0), convert_fn(1)]
+        [convert_fn(1), -factor, convert_fn(0)],
+        [convert_fn(0), convert_fn(1), convert_fn(0)]
     ])
 
     bboxes_shear_mat = convert_fn([  # Anti-clockwise.
-        [convert_fn(1), factor],
-        [convert_fn(0), convert_fn(1)]
+        [convert_fn(1), factor, convert_fn(0)],
+        [convert_fn(0), convert_fn(1), convert_fn(0)]
     ])
 
     return _affine_transform(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
         expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
-        repeat_fn, tile_fn, stack_fn, concat_fn,
+        repeat_fn, tile_fn, ones_like_fn, stack_fn, concat_fn,
         image_dest_shear_mat, bboxes_shear_mat, matmul_fn,
+        clip_fn, gather_image_fn, copy_fn, max_fn, min_fn,
+        logical_and_fn, boolean_mask_fn
+    )
+
+
+def _translate(
+        image: T,
+        bboxes: T,
+        labels: T,
+        translate_height: int,
+        translate_width: int,
+        convert_fn: Callable[..., T],
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        expand_dim_fn: Callable[[T, int], T],
+        squeeze_fn: Callable[[T, int], T],
+        pad_image_fn: Callable[[T, T], T],
+        range_fn: Callable[[int, int, int], T],
+        round_to_int_fn: Callable[[T], T],
+        repeat_fn: Callable[[T, T], T],
+        tile_fn: Callable[[T, T], T],
+        ones_like_fn: Callable[[T], T],
+        stack_fn: Callable[[List[T], int], T],
+        concat_fn: Callable[[List[T], int], T],
+        matmul_fn: Callable[[T, T], T],
+        clip_fn: Callable[[T, T, T], T],
+        gather_image_fn: Callable[[T, T], T],
+        copy_fn: Callable[[T], T],
+        max_fn: Callable[[T, int], T],
+        min_fn: Callable[[T, int], T],
+        logical_and_fn: Callable[[T, T], T],
+        boolean_mask_fn: Callable[[T, T], T]
+) -> Tuple[T, T, T]:
+    """
+    image: [h, w, c]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
+    translate_height: in range [-image_height + 1: image_height - 1]
+    translate_width: in range [-image_width + 1: image_width - 1]
+    """
+    image_dest_translate_mat = convert_fn([
+        [convert_fn(1), convert_fn(0), -convert_fn(translate_width)],
+        [convert_fn(0), convert_fn(1), -convert_fn(translate_height)]
+    ])
+
+    bboxes_translate_mat = convert_fn([
+        [convert_fn(1), convert_fn(0), convert_fn(translate_width)],
+        [convert_fn(0), convert_fn(1), convert_fn(translate_height)]
+    ])
+
+    return _affine_transform(
+        image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
+        expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
+        repeat_fn, tile_fn, ones_like_fn, stack_fn, concat_fn,
+        image_dest_translate_mat, bboxes_translate_mat, matmul_fn,
         clip_fn, gather_image_fn, copy_fn, max_fn, min_fn,
         logical_and_fn, boolean_mask_fn
     )
@@ -683,75 +745,5 @@ def _crop(
 
     # Filter labels.
     labels = boolean_mask_fn(labels, included)
-
-    return image, bboxes, labels
-
-
-def _translate(
-        image: T,
-        bboxes: T,
-        labels: T,
-        translate_height: int,
-        translate_width: int,
-        convert_fn: Callable[..., T],
-        shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, ...]], T],
-        where_fn: Callable[[T, T, T], T],
-        abs_fn: Callable[[T], T],
-        concat_fn: Callable[[List[T], int], T],
-        logical_and_fn: Callable[[T, T], T],
-        squeeze_fn: Callable[[T, int], T],
-        clip_fn: Callable[[T, T, T], T],
-        boolean_mask_fn: Callable[[T, T], T],
-        pad_image_fn: Callable[[T, T], T],
-) -> Tuple[T, T, T]:
-    """
-    Making use of cropping and padding to perform translation.
-
-    image: [h, w, c]
-    bboxes: [[top_left_x, top_left_y, width, height], ...]
-    labels: [0, 1, 0, ...]
-    translate_height: in range [-image_height + 1: image_height - 1]
-    translate_width: in range [-image_width + 1: image_width - 1]
-    """
-    image, bboxes, labels = _sanitise(
-        image, bboxes, labels, convert_fn, reshape_fn
-    )
-
-    image_shape = shape_fn(image)
-    assert len(image_shape) == 3
-
-    translate_height = convert_fn(translate_height)
-    translate_width = convert_fn(translate_width)
-
-    t = where_fn(
-        translate_height >= 0,
-        convert_fn([0, translate_height, 0]),
-        convert_fn([-translate_height, 0, -translate_height])
-    )
-    offset_height, pad_top, pad_bottom = t[0], t[1], t[2]
-
-    t = where_fn(
-        translate_width >= 0,
-        convert_fn([0, translate_width, 0]),
-        convert_fn([-translate_width, 0, -translate_width])
-    )
-    offset_width, pad_left, pad_right = t[0], t[1], t[2]
-
-    cropped_height = convert_fn(image_shape[0]) - abs_fn(translate_height)
-    cropped_width = convert_fn(image_shape[1]) - abs_fn(translate_width)
-
-    image, bboxes, labels = _crop(
-        image, bboxes, labels,
-        offset_height, offset_width, cropped_height, cropped_width,
-        convert_fn, shape_fn, reshape_fn, concat_fn, logical_and_fn,
-        squeeze_fn, clip_fn, boolean_mask_fn
-    )
-
-    image = pad_image_fn(
-        image, convert_fn([pad_top, pad_bottom, pad_left, pad_right])
-    )
-
-    bboxes = _translate_bboxes(bboxes, pad_top, pad_left, concat_fn)
 
     return image, bboxes, labels

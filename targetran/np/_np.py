@@ -99,8 +99,8 @@ def rotate(
         image, bboxes, labels, angle_deg,
         _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
         _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
-        np.stack, np.concatenate, np.cos, np.sin, np.matmul, np.clip,
-        _np_gather_image, np.copy, np.max, np.min,
+        np.ones_like, np.stack, np.concatenate, np.cos, np.sin, np.matmul,
+        np.clip, _np_gather_image, np.copy, np.max, np.min,
         _np_logical_and, _np_boolean_mask
     )
 
@@ -115,7 +115,25 @@ def shear(
         image, bboxes, labels, angle_deg,
         _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
         _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
-        np.stack, np.concatenate, np.tan, np.matmul, np.clip,
+        np.ones_like, np.stack, np.concatenate, np.tan, np.matmul, np.clip,
+        _np_gather_image, np.copy, np.max, np.min,
+        _np_logical_and, _np_boolean_mask
+    )
+
+
+def translate(
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        labels: np.ndarray,
+        translate_height: int,
+        translate_width: int
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    return _translate(
+        image, bboxes, labels,
+        translate_height, translate_width,
+        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
+        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
+        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
         _np_gather_image, np.copy, np.max, np.min,
         _np_logical_and, _np_boolean_mask
     )
@@ -149,21 +167,6 @@ def crop(
         cropped_image_height, cropped_image_width,
         _np_convert, np.shape, np.reshape, np.concatenate,
         _np_logical_and, np.squeeze, np.clip, _np_boolean_mask
-    )
-
-
-def translate(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray,
-        translate_height: int,
-        translate_width: int
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _translate(
-        image, bboxes, labels,
-        translate_height, translate_width,
-        _np_convert, np.shape, np.reshape, np.where, np.abs, np.concatenate,
-        _np_logical_and, np.squeeze, np.clip, _np_boolean_mask, _np_pad_image
     )
 
 
@@ -346,41 +349,6 @@ class RandomShear(RandomTransform):
         return super().__call__(image, bboxes, labels, angle_deg)
 
 
-class RandomCrop(RandomTransform):
-
-    def __init__(
-            self,
-            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
-            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
-            probability: float = 0.7,
-            seed: Optional[int] = None
-    ) -> None:
-        super().__init__(crop, probability, seed)
-        self.crop_height_fraction_range = crop_height_fraction_range
-        self.crop_width_fraction_range = crop_width_fraction_range
-
-    def __call__(
-            self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
-            *args: Any,
-            **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        offset_height, offset_width, cropped_height, cropped_width = \
-            _np_get_random_crop_inputs(
-                np.shape(image)[0], np.shape(image)[1],
-                self.crop_height_fraction_range,
-                self.crop_width_fraction_range,
-                self._rand_fn
-            )
-
-        return super().__call__(
-            image, bboxes, labels,
-            offset_height, offset_width, cropped_height, cropped_width
-        )
-
-
 class RandomTranslate(RandomTransform):
 
     def __init__(
@@ -417,4 +385,39 @@ class RandomTranslate(RandomTransform):
 
         return super().__call__(
             image, bboxes, labels, translate_height, translate_width
+        )
+
+
+class RandomCrop(RandomTransform):
+
+    def __init__(
+            self,
+            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            probability: float = 0.7,
+            seed: Optional[int] = None
+    ) -> None:
+        super().__init__(crop, probability, seed)
+        self.crop_height_fraction_range = crop_height_fraction_range
+        self.crop_width_fraction_range = crop_width_fraction_range
+
+    def __call__(
+            self,
+            image: np.ndarray,
+            bboxes: np.ndarray,
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        offset_height, offset_width, cropped_height, cropped_width = \
+            _np_get_random_crop_inputs(
+                np.shape(image)[0], np.shape(image)[1],
+                self.crop_height_fraction_range,
+                self.crop_width_fraction_range,
+                self._rand_fn
+            )
+
+        return super().__call__(
+            image, bboxes, labels,
+            offset_height, offset_width, cropped_height, cropped_width
         )

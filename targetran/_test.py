@@ -540,6 +540,88 @@ class TestTransform(unittest.TestCase):
             np.allclose(tf_expected_labels.numpy(), tf_labels.numpy())
         )
 
+    def test_translate(self) -> None:
+
+        translate_heights = [-1, 0, 1]
+        translate_widths = [0, 1, 1]
+
+        expected_image_list = [
+            np.array([
+                [[4], [5], [6]],
+                [[7], [8], [9]],
+                [[10], [11], [12]],
+                [[0], [0], [0]]
+            ], dtype=np.float32),
+            np.array([
+                [[0], [11], [12]],
+                [[0], [14], [15]],
+                [[0], [17], [18]],
+                [[0], [20], [21]]
+            ], dtype=np.float32),
+            np.array([
+                [[0], [0], [0]],
+                [[0], [21], [22]],
+                [[0], [24], [25]],
+                [[0], [27], [28]]
+            ], dtype=np.float32),
+        ]
+        expected_bboxes_list = [
+            np.array([
+                [1, 0, 2, 1],
+                [0, 0, 3, 2],
+            ], dtype=np.float32),
+            np.array([
+                [1, 0, 2, 3],
+            ], dtype=np.float32),
+            np.array([], dtype=np.float32).reshape(-1, 4),
+        ]
+        expected_labels_list = [
+            np.array([0, 1], dtype=np.float32),
+            np.array([2], dtype=np.float32),
+            np.array([], dtype=np.float32),
+        ]
+
+        # Numpy.
+        for i in range(len(ORIGINAL_IMAGE_LIST)):
+            image, bboxes, labels = translate(
+                ORIGINAL_IMAGE_LIST[i],
+                ORIGINAL_BBOXES_LIST[i],
+                ORIGINAL_LABELS_LIST[i],
+                translate_heights[i], translate_widths[i]
+            )
+            self.assertTrue(np.array_equal(expected_image_list[i], image))
+            self.assertTrue(np.array_equal(expected_bboxes_list[i], bboxes))
+            self.assertTrue(np.array_equal(expected_labels_list[i], labels))
+
+        # TF.
+        (
+            tf_expected_image_list,
+            tf_expected_bboxes_list,
+            tf_expected_labels_list
+        ) = to_tf(
+            expected_image_list, expected_bboxes_list, expected_labels_list
+        )
+
+        for i in range(len(TF_ORIGINAL_LABELS_LIST)):
+            tf_image, tf_bboxes, tf_labels = tf_translate(
+                TF_ORIGINAL_IMAGE_LIST[i],
+                TF_ORIGINAL_BBOXES_LIST[i],
+                TF_ORIGINAL_LABELS_LIST[i],
+                translate_heights[i], translate_widths[i]
+            )
+            self.assertTrue(
+                np.array_equal(tf_expected_image_list[i].numpy(),
+                               tf_image.numpy())
+            )
+            self.assertTrue(
+                np.array_equal(tf_expected_bboxes_list[i].numpy(),
+                               tf_bboxes.numpy())
+            )
+            self.assertTrue(
+                np.array_equal(tf_expected_labels_list[i].numpy(),
+                               tf_labels.numpy())
+            )
+
     def test_crop(self) -> None:
 
         dummy_image_list = [np.random.rand(128, 128, 3) for _ in range(4)]
@@ -630,88 +712,6 @@ class TestTransform(unittest.TestCase):
             self.assertTrue(
                 np.allclose(tf_expected_labels_list[i].numpy(),
                             tf_labels.numpy())
-            )
-
-    def test_translate(self) -> None:
-
-        translate_heights = [-1, 0, 1]
-        translate_widths = [0, 1, 1]
-
-        expected_image_list = [
-            np.array([
-                [[4], [5], [6]],
-                [[7], [8], [9]],
-                [[10], [11], [12]],
-                [[0], [0], [0]]
-            ], dtype=np.float32),
-            np.array([
-                [[0], [11], [12]],
-                [[0], [14], [15]],
-                [[0], [17], [18]],
-                [[0], [20], [21]]
-            ], dtype=np.float32),
-            np.array([
-                [[0], [0], [0]],
-                [[0], [21], [22]],
-                [[0], [24], [25]],
-                [[0], [27], [28]]
-            ], dtype=np.float32),
-        ]
-        expected_bboxes_list = [
-            np.array([
-                [1, 0, 2, 1],
-                [0, 0, 3, 2],
-            ], dtype=np.float32),
-            np.array([
-                [1, 0, 2, 3],
-            ], dtype=np.float32),
-            np.array([], dtype=np.float32).reshape(-1, 4),
-        ]
-        expected_labels_list = [
-            np.array([0, 1], dtype=np.float32),
-            np.array([2], dtype=np.float32),
-            np.array([], dtype=np.float32),
-        ]
-
-        # Numpy.
-        for i in range(len(ORIGINAL_IMAGE_LIST)):
-            image, bboxes, labels = translate(
-                ORIGINAL_IMAGE_LIST[i],
-                ORIGINAL_BBOXES_LIST[i],
-                ORIGINAL_LABELS_LIST[i],
-                translate_heights[i], translate_widths[i]
-            )
-            self.assertTrue(np.array_equal(expected_image_list[i], image))
-            self.assertTrue(np.array_equal(expected_bboxes_list[i], bboxes))
-            self.assertTrue(np.array_equal(expected_labels_list[i], labels))
-
-        # TF.
-        (
-            tf_expected_image_list,
-            tf_expected_bboxes_list,
-            tf_expected_labels_list
-        ) = to_tf(
-            expected_image_list, expected_bboxes_list, expected_labels_list
-        )
-
-        for i in range(len(TF_ORIGINAL_LABELS_LIST)):
-            tf_image, tf_bboxes, tf_labels = tf_translate(
-                TF_ORIGINAL_IMAGE_LIST[i],
-                TF_ORIGINAL_BBOXES_LIST[i],
-                TF_ORIGINAL_LABELS_LIST[i],
-                translate_heights[i], translate_widths[i]
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_image_list[i].numpy(),
-                               tf_image.numpy())
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_bboxes_list[i].numpy(),
-                               tf_bboxes.numpy())
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_labels_list[i].numpy(),
-                               tf_labels.numpy())
             )
 
 

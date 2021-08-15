@@ -142,9 +142,9 @@ def tf_rotate(
         image, bboxes, labels, angle_deg,
         _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
         _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
-        tf.logical_and, tf.boolean_mask
+        tf.ones_like, tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul,
+        tf.clip_by_value, _tf_gather_image, tf.identity,
+        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
 
 
@@ -158,7 +158,25 @@ def tf_shear(
         image, bboxes, labels, angle_deg,
         _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
         _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
+        tf.ones_like, tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
+        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
+        tf.logical_and, tf.boolean_mask
+    )
+
+
+def tf_translate(
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        labels: tf.Tensor,
+        translate_height: int,
+        translate_width: int
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    return _translate(
+        image, bboxes, labels,
+        translate_height, translate_width,
+        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
+        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
         _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
         tf.logical_and, tf.boolean_mask
     )
@@ -192,22 +210,6 @@ def tf_crop(
         cropped_image_height, cropped_image_width,
         _tf_convert, tf.shape, tf.reshape, tf.concat,
         tf.logical_and, tf.squeeze, tf.clip_by_value, tf.boolean_mask
-    )
-
-
-def tf_translate(
-        image: tf.Tensor,
-        bboxes: tf.Tensor,
-        labels: tf.Tensor,
-        translate_height: int,
-        translate_width: int
-) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _translate(
-        image, bboxes, labels,
-        translate_height, translate_width,
-        _tf_convert, tf.shape, tf.reshape, tf.where, tf.abs, tf.concat,
-        tf.logical_and, tf.squeeze, tf.clip_by_value, tf.boolean_mask,
-        _tf_pad_image
     )
 
 
@@ -391,41 +393,6 @@ class TFRandomShear(TFRandomTransform):
         return super().__call__(image, bboxes, labels, angle_deg)
 
 
-class TFRandomCrop(TFRandomTransform):
-
-    def __init__(
-            self,
-            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
-            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
-            probability: float = 0.7,
-            seed: Optional[int] = None
-    ) -> None:
-        super().__init__(tf_crop, probability, seed)
-        self.crop_height_fraction_range = crop_height_fraction_range
-        self.crop_width_fraction_range = crop_width_fraction_range
-
-    def __call__(
-            self,
-            image: tf.Tensor,
-            bboxes: tf.Tensor,
-            labels: tf.Tensor,
-            *args: Any,
-            **kwargs: Any
-    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        offset_height, offset_width, cropped_height, cropped_width = \
-            _tf_get_random_crop_inputs(
-                tf.shape(image)[0], tf.shape(image)[1],
-                self.crop_height_fraction_range,
-                self.crop_width_fraction_range,
-                self._rand_fn
-            )
-
-        return super().__call__(
-            image, bboxes, labels,
-            offset_height, offset_width, cropped_height, cropped_width
-        )
-
-
 class TFRandomTranslate(TFRandomTransform):
 
     def __init__(
@@ -462,4 +429,39 @@ class TFRandomTranslate(TFRandomTransform):
 
         return super().__call__(
             image, bboxes, labels, translate_height, translate_width
+        )
+
+
+class TFRandomCrop(TFRandomTransform):
+
+    def __init__(
+            self,
+            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            probability: float = 0.7,
+            seed: Optional[int] = None
+    ) -> None:
+        super().__init__(tf_crop, probability, seed)
+        self.crop_height_fraction_range = crop_height_fraction_range
+        self.crop_width_fraction_range = crop_width_fraction_range
+
+    def __call__(
+            self,
+            image: tf.Tensor,
+            bboxes: tf.Tensor,
+            labels: tf.Tensor,
+            *args: Any,
+            **kwargs: Any
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+        offset_height, offset_width, cropped_height, cropped_width = \
+            _tf_get_random_crop_inputs(
+                tf.shape(image)[0], tf.shape(image)[1],
+                self.crop_height_fraction_range,
+                self.crop_width_fraction_range,
+                self._rand_fn
+            )
+
+        return super().__call__(
+            image, bboxes, labels,
+            offset_height, offset_width, cropped_height, cropped_width
         )
