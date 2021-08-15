@@ -68,15 +68,20 @@ def main() -> None:
         .map(TFRandomTranslate(), num_parallel_calls=AUTO) \
         .map(TFResize(dest_size=(256, 256)), num_parallel_calls=AUTO)
 
-    start = timer()
+    logging_batch_size = 100
     count = 0
     print("Start...")
+    start = timer()
+    total_start = start
     for _ in ds:
         count += 1
-        if count % 100 == 0:
-            print(f"- Runtime for {count} samples: {timer() - start} s")
+        if count % logging_batch_size == 0:
+            print(f"- Runtime for recent {logging_batch_size} samples: "
+                  f"{timer() - start} s; "
+                  f"total number of samples so far: {count}")
+            start = timer()
     print("--------------")
-    print(f"Total runtime for {count} samples: {timer() - start}")
+    print(f"Total runtime for {count} samples: {timer() - total_start}")
 
 
 if __name__ == "__main__":
