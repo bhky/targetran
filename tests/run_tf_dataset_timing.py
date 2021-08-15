@@ -19,7 +19,7 @@ from targetran.tf import (
     TFResize
 )
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 AUTO = tf.data.AUTOTUNE
 rng = tf.random.Generator.from_seed(42)
 
