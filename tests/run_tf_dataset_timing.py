@@ -68,8 +68,7 @@ def main() -> None:
     start = timer()
     count = 0
     print("Start...")
-    for sample in ds:
-        type(sample)
+    for _ in ds:
         count += 1
         if count == 1000:
             print(f"- Runtime for {count} samples: {timer() - start} s")
