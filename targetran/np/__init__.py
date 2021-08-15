@@ -2,15 +2,15 @@ from ._np import (
     flip_left_right,
     flip_up_down,
     rotate,
-    crop,
-    translate,
     shear,
-    Resize,
+    translate,
+    crop,
     RandomTransform,
     RandomFlipLeftRight,
     RandomFlipUpDown,
     RandomRotate,
-    RandomCrop,
+    RandomShear,
     RandomTranslate,
-    RandomShear
+    RandomCrop,
+    Resize
 )

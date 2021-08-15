@@ -11,9 +11,9 @@ from .np import (
     flip_left_right,
     flip_up_down,
     rotate,
-    crop,
+    shear,
     translate,
-    shear
+    crop
 )
 
 from .tf import (
@@ -21,9 +21,9 @@ from .tf import (
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate,
-    tf_crop,
+    tf_shear,
     tf_translate,
-    tf_shear
+    tf_crop
 )
 
 ORIGINAL_IMAGE_LIST = [
@@ -153,33 +153,34 @@ class TestTransform(unittest.TestCase):
 
     def test_flip_up_down(self) -> None:
 
+        # Noted the shifted pixel.
         expected_image_list = [
             np.array([
-                [[10], [11], [12]],
                 [[7], [8], [9]],
                 [[4], [5], [6]],
-                [[1], [2], [3]]
+                [[1], [2], [3]],
+                [[0], [0], [0]]
             ], dtype=np.float32),
             np.array([
-                [[20], [21], [22]],
                 [[17], [18], [19]],
                 [[14], [15], [16]],
-                [[11], [12], [13]]
+                [[11], [12], [13]],
+                [[0], [0], [0]]
             ], dtype=np.float32),
             np.array([
-                [[30], [31], [32]],
                 [[27], [28], [29]],
                 [[24], [25], [26]],
-                [[21], [22], [23]]
+                [[21], [22], [23]],
+                [[0], [0], [0]]
             ], dtype=np.float32),
         ]
         expected_bboxes_list = [
             np.array([
-                [1, 2, 2, 2],
-                [0, 1, 3, 2],
+                [1, 1, 2, 2],
+                [0, 0, 3, 2],
             ], dtype=np.float32),
             np.array([
-                [0, 1, 2, 3],
+                [0, 0, 2, 3],
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
@@ -257,6 +258,7 @@ class TestTransform(unittest.TestCase):
 
         angles_deg = [90.0, 180.0]
 
+        # Noted the shifted pixel.
         expected_image_list = [
             np.array([
                 [[3], [7], [11], [0]],

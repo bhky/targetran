@@ -22,11 +22,11 @@ from targetran._transform import (
     _flip_up_down,
     _rotate,
     _shear,
-    _crop,
-    _resize,
     _translate,
     _get_random_crop_inputs,
-    _get_random_size_fractions
+    _get_random_size_fractions,
+    _crop,
+    _resize,
 )
 
 
@@ -37,7 +37,11 @@ def flip_left_right(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_left_right(
         image, bboxes, labels,
-        _np_convert, np.shape, np.reshape, np.concatenate
+        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
+        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
+        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
+        _np_gather_image, np.copy, np.max, np.min,
+        _np_logical_and, _np_boolean_mask
     )
 
 
@@ -48,19 +52,11 @@ def flip_up_down(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_up_down(
         image, bboxes, labels,
-        _np_convert, np.shape, np.reshape, np.concatenate
-    )
-
-
-def resize(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray,
-        dest_size: Tuple[int, int]
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _resize(
-        image, bboxes, labels, dest_size,
-        _np_convert, np.shape, np.reshape, _np_resize_image, np.concatenate
+        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
+        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
+        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
+        _np_gather_image, np.copy, np.max, np.min,
+        _np_logical_and, _np_boolean_mask
     )
 
 
@@ -145,18 +141,16 @@ def crop(
     )
 
 
-class Resize:
-
-    def __init__(self, dest_size: Tuple[int, int]) -> None:
-        self.dest_size = dest_size
-
-    def __call__(
-            self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return resize(image, bboxes, labels, self.dest_size)
+def resize(
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        labels: np.ndarray,
+        dest_size: Tuple[int, int]
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    return _resize(
+        image, bboxes, labels, dest_size,
+        _np_convert, np.shape, np.reshape, _np_resize_image, np.concatenate
+    )
 
 
 class RandomTransform:
@@ -356,3 +350,17 @@ class RandomCrop(RandomTransform):
             image, bboxes, labels,
             offset_height, offset_width, cropped_height, cropped_width
         )
+
+
+class Resize:
+
+    def __init__(self, dest_size: Tuple[int, int]) -> None:
+        self.dest_size = dest_size
+
+    def __call__(
+            self,
+            image: np.ndarray,
+            bboxes: np.ndarray,
+            labels: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        return resize(image, bboxes, labels, self.dest_size)

@@ -26,68 +26,6 @@ def _sanitise(
     return image, bboxes, labels
 
 
-def _flip_left_right(
-        image: T,
-        bboxes: T,
-        labels: T,
-        convert_fn: Callable[..., T],
-        shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, ...]], T],
-        concat_fn: Callable[[List[T], int], T]
-) -> Tuple[T, T, T]:
-    """
-    image: [h, w, c]
-    bboxes: [[top_left_x, top_left_y, width, height], ...]
-    labels: [0, 1, 0, ...]
-    """
-    image, bboxes, labels = _sanitise(
-        image, bboxes, labels, convert_fn, reshape_fn
-    )
-
-    image_shape = shape_fn(image)
-    assert len(image_shape) == 3
-
-    image_width = convert_fn(image_shape[1])
-
-    image = image[:, ::-1, :]
-
-    xs = image_width - bboxes[:, :1] - bboxes[:, 2:3]
-    bboxes = concat_fn([xs, bboxes[:, 1:]], 1)
-
-    return image, bboxes, labels
-
-
-def _flip_up_down(
-        image: T,
-        bboxes: T,
-        labels: T,
-        convert_fn: Callable[..., T],
-        shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, ...]], T],
-        concat_fn: Callable[[List[T], int], T]
-) -> Tuple[T, T, T]:
-    """
-    image: [h, w, c]
-    bboxes: [[top_left_x, top_left_y, width, height], ...]
-    labels: [0, 1, 0, ...]
-    """
-    image, bboxes, labels = _sanitise(
-        image, bboxes, labels, convert_fn, reshape_fn
-    )
-
-    image_shape = shape_fn(image)
-    assert len(image_shape) == 3
-
-    image_height = convert_fn(image_shape[0])
-
-    image = image[::-1, :, :]
-
-    ys = image_height - bboxes[:, 1:2] - bboxes[:, 3:]
-    bboxes = concat_fn([bboxes[:, :1], ys, bboxes[:, 2:]], 1)
-
-    return image, bboxes, labels
-
-
 def _affine_transform(
         image: T,
         bboxes: T,
@@ -257,6 +195,108 @@ def _affine_transform(
     new_labels = boolean_mask_fn(labels, included)
 
     return new_image, new_bboxes, new_labels
+
+
+def _flip_left_right(
+        image: T,
+        bboxes: T,
+        labels: T,
+        convert_fn: Callable[..., T],
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        expand_dim_fn: Callable[[T, int], T],
+        squeeze_fn: Callable[[T, int], T],
+        pad_image_fn: Callable[[T, T], T],
+        range_fn: Callable[[int, int, int], T],
+        round_to_int_fn: Callable[[T], T],
+        repeat_fn: Callable[[T, T], T],
+        tile_fn: Callable[[T, T], T],
+        ones_like_fn: Callable[[T], T],
+        stack_fn: Callable[[List[T], int], T],
+        concat_fn: Callable[[List[T], int], T],
+        matmul_fn: Callable[[T, T], T],
+        clip_fn: Callable[[T, T, T], T],
+        gather_image_fn: Callable[[T, T], T],
+        copy_fn: Callable[[T], T],
+        max_fn: Callable[[T, int], T],
+        min_fn: Callable[[T, int], T],
+        logical_and_fn: Callable[[T, T], T],
+        boolean_mask_fn: Callable[[T, T], T]
+) -> Tuple[T, T, T]:
+    """
+    image: [h, w, c]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
+    """
+    image_dest_flip_lr_mat = convert_fn([
+        [convert_fn(-1), convert_fn(0), convert_fn(0)],
+        [convert_fn(0), convert_fn(1), convert_fn(0)]
+    ])
+
+    bboxes_flip_lr_mat = convert_fn([
+        [convert_fn(-1), convert_fn(0), convert_fn(0)],
+        [convert_fn(0), convert_fn(1), convert_fn(0)]
+    ])
+
+    return _affine_transform(
+        image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
+        expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
+        repeat_fn, tile_fn, ones_like_fn, stack_fn, concat_fn,
+        image_dest_flip_lr_mat, bboxes_flip_lr_mat, matmul_fn,
+        clip_fn, gather_image_fn, copy_fn, max_fn, min_fn,
+        logical_and_fn, boolean_mask_fn
+    )
+
+
+def _flip_up_down(
+        image: T,
+        bboxes: T,
+        labels: T,
+        convert_fn: Callable[..., T],
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        expand_dim_fn: Callable[[T, int], T],
+        squeeze_fn: Callable[[T, int], T],
+        pad_image_fn: Callable[[T, T], T],
+        range_fn: Callable[[int, int, int], T],
+        round_to_int_fn: Callable[[T], T],
+        repeat_fn: Callable[[T, T], T],
+        tile_fn: Callable[[T, T], T],
+        ones_like_fn: Callable[[T], T],
+        stack_fn: Callable[[List[T], int], T],
+        concat_fn: Callable[[List[T], int], T],
+        matmul_fn: Callable[[T, T], T],
+        clip_fn: Callable[[T, T, T], T],
+        gather_image_fn: Callable[[T, T], T],
+        copy_fn: Callable[[T], T],
+        max_fn: Callable[[T, int], T],
+        min_fn: Callable[[T, int], T],
+        logical_and_fn: Callable[[T, T], T],
+        boolean_mask_fn: Callable[[T, T], T]
+) -> Tuple[T, T, T]:
+    """
+    image: [h, w, c]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
+    """
+    image_dest_flip_ud_mat = convert_fn([
+        [convert_fn(1), convert_fn(0), convert_fn(0)],
+        [convert_fn(0), convert_fn(-1), convert_fn(0)]
+    ])
+
+    bboxes_flip_ud_mat = convert_fn([
+        [convert_fn(1), convert_fn(0), convert_fn(0)],
+        [convert_fn(0), convert_fn(-1), convert_fn(0)]
+    ])
+
+    return _affine_transform(
+        image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
+        expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
+        repeat_fn, tile_fn, ones_like_fn, stack_fn, concat_fn,
+        image_dest_flip_ud_mat, bboxes_flip_ud_mat, matmul_fn,
+        clip_fn, gather_image_fn, copy_fn, max_fn, min_fn,
+        logical_and_fn, boolean_mask_fn
+    )
 
 
 def _rotate(
@@ -432,47 +472,6 @@ def _translate(
     )
 
 
-def _resize(
-        image: T,
-        bboxes: T,
-        labels: T,
-        dest_size: Tuple[int, int],
-        convert_fn: Callable[..., T],
-        shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, ...]], T],
-        resize_image_fn: Callable[[T, Tuple[int, int]], T],
-        concat_fn: Callable[[List[T], int], T],
-) -> Tuple[T, T, T]:
-    """
-    image: [h, w, c]
-    bboxes: [[top_left_x, top_left_y, width, height], ...]
-    labels: [0, 1, 0, ...]
-    dest_size: (height, width)
-    """
-    image, bboxes, labels = _sanitise(
-        image, bboxes, labels, convert_fn, reshape_fn
-    )
-
-    image_shape = shape_fn(image)
-    assert len(image_shape) == 3
-
-    if image_shape[0] == dest_size[0] and image_shape[1] == dest_size[1]:
-        return image, bboxes, labels
-
-    image = resize_image_fn(image, dest_size)
-
-    w = convert_fn(dest_size[1] / image_shape[1])
-    h = convert_fn(dest_size[0] / image_shape[0])
-
-    xs = bboxes[:, :1] * w
-    ys = bboxes[:, 1:2] * h
-    widths = bboxes[:, 2:3] * w
-    heights = bboxes[:, 3:] * h
-    bboxes = concat_fn([xs, ys, widths, heights], 1)
-
-    return image, bboxes, labels
-
-
 def _get_random_size_fractions(
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
@@ -608,5 +607,46 @@ def _crop(
 
     # Filter labels.
     labels = boolean_mask_fn(labels, included)
+
+    return image, bboxes, labels
+
+
+def _resize(
+        image: T,
+        bboxes: T,
+        labels: T,
+        dest_size: Tuple[int, int],
+        convert_fn: Callable[..., T],
+        shape_fn: Callable[[T], Tuple[int, ...]],
+        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        resize_image_fn: Callable[[T, Tuple[int, int]], T],
+        concat_fn: Callable[[List[T], int], T],
+) -> Tuple[T, T, T]:
+    """
+    image: [h, w, c]
+    bboxes: [[top_left_x, top_left_y, width, height], ...]
+    labels: [0, 1, 0, ...]
+    dest_size: (height, width)
+    """
+    image, bboxes, labels = _sanitise(
+        image, bboxes, labels, convert_fn, reshape_fn
+    )
+
+    image_shape = shape_fn(image)
+    assert len(image_shape) == 3
+
+    if image_shape[0] == dest_size[0] and image_shape[1] == dest_size[1]:
+        return image, bboxes, labels
+
+    image = resize_image_fn(image, dest_size)
+
+    w = convert_fn(dest_size[1] / image_shape[1])
+    h = convert_fn(dest_size[0] / image_shape[0])
+
+    xs = bboxes[:, :1] * w
+    ys = bboxes[:, 1:2] * h
+    widths = bboxes[:, 2:3] * w
+    heights = bboxes[:, 3:] * h
+    bboxes = concat_fn([xs, ys, widths, heights], 1)
 
     return image, bboxes, labels

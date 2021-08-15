@@ -4,15 +4,15 @@ from ._tf import (
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate,
-    tf_crop,
-    tf_translate,
     tf_shear,
-    TFResize,
+    tf_translate,
+    tf_crop,
     TFRandomTransform,
     TFRandomFlipLeftRight,
     TFRandomFlipUpDown,
     TFRandomRotate,
-    TFRandomCrop,
+    TFRandomShear,
     TFRandomTranslate,
-    TFRandomShear
+    TFRandomCrop,
+    TFResize
 )

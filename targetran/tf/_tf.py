@@ -20,11 +20,11 @@ from targetran._transform import (
     _flip_up_down,
     _rotate,
     _shear,
-    _crop,
-    _resize,
     _translate,
     _get_random_crop_inputs,
-    _get_random_size_fractions
+    _get_random_size_fractions,
+    _crop,
+    _resize
 )
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
@@ -80,7 +80,11 @@ def tf_flip_left_right(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_left_right(
         image, bboxes, labels,
-        _tf_convert, tf.shape, tf.reshape, tf.concat
+        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
+        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
+        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
+        tf.logical_and, tf.boolean_mask
     )
 
 
@@ -91,19 +95,11 @@ def tf_flip_up_down(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_up_down(
         image, bboxes, labels,
-        _tf_convert, tf.shape, tf.reshape, tf.concat
-    )
-
-
-def tf_resize(
-        image: tf.Tensor,
-        bboxes: tf.Tensor,
-        labels: tf.Tensor,
-        dest_size: Tuple[int, int]
-) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _resize(
-        image, bboxes, labels, dest_size,
-        _tf_convert, tf.shape, tf.reshape, _tf_resize_image, tf.concat
+        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
+        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
+        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
+        tf.logical_and, tf.boolean_mask
     )
 
 
@@ -188,18 +184,16 @@ def tf_crop(
     )
 
 
-class TFResize:
-
-    def __init__(self, dest_size: Tuple[int, int]) -> None:
-        self.dest_size = dest_size
-
-    def __call__(
-            self,
-            image: tf.Tensor,
-            bboxes: tf.Tensor,
-            labels: tf.Tensor
-    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        return tf_resize(image, bboxes, labels, self.dest_size)
+def tf_resize(
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        labels: tf.Tensor,
+        dest_size: Tuple[int, int]
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    return _resize(
+        image, bboxes, labels, dest_size,
+        _tf_convert, tf.shape, tf.reshape, _tf_resize_image, tf.concat
+    )
 
 
 class TFRandomTransform:
@@ -400,3 +394,17 @@ class TFRandomCrop(TFRandomTransform):
             image, bboxes, labels,
             offset_height, offset_width, cropped_height, cropped_width
         )
+
+
+class TFResize:
+
+    def __init__(self, dest_size: Tuple[int, int]) -> None:
+        self.dest_size = dest_size
+
+    def __call__(
+            self,
+            image: tf.Tensor,
+            bboxes: tf.Tensor,
+            labels: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+        return tf_resize(image, bboxes, labels, self.dest_size)
