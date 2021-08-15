@@ -20,8 +20,6 @@ from targetran._functional import (
 from targetran._transform import (
     _flip_left_right,
     _flip_up_down,
-    _rotate_90,
-    _rotate_90_and_pad,
     _rotate,
     _shear,
     _crop,
@@ -63,29 +61,6 @@ def resize(
     return _resize(
         image, bboxes, labels, dest_size,
         _np_convert, np.shape, np.reshape, _np_resize_image, np.concatenate
-    )
-
-
-def rotate_90(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _rotate_90(
-        image, bboxes, labels,
-        _np_convert, np.shape, np.reshape, np.transpose, np.concatenate
-    )
-
-
-def rotate_90_and_pad(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _rotate_90_and_pad(
-        image, bboxes, labels,
-        _np_convert, np.shape, np.reshape, np.transpose, np.concatenate,
-        np.where, np.ceil, np.floor, _np_pad_image
     )
 
 
@@ -243,46 +218,6 @@ class RandomFlipUpDown(RandomTransform):
             seed: Optional[int] = None
     ) -> None:
         super().__init__(flip_up_down, probability, seed)
-
-    def __call__(
-            self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
-            *args: Any,
-            **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return super().__call__(image, bboxes, labels)
-
-
-class RandomRotate90(RandomTransform):
-
-    def __init__(
-            self,
-            probability: float = 0.7,
-            seed: Optional[int] = None
-    ) -> None:
-        super().__init__(rotate_90, probability, seed)
-
-    def __call__(
-            self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
-            *args: Any,
-            **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return super().__call__(image, bboxes, labels)
-
-
-class RandomRotate90AndPad(RandomTransform):
-
-    def __init__(
-            self,
-            probability: float = 0.7,
-            seed: Optional[int] = None
-    ) -> None:
-        super().__init__(rotate_90_and_pad, probability, seed)
 
     def __call__(
             self,

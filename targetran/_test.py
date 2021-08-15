@@ -10,8 +10,6 @@ import tensorflow as tf  # type: ignore
 from .np import (
     flip_left_right,
     flip_up_down,
-    rotate_90,
-    rotate_90_and_pad,
     rotate,
     crop,
     translate,
@@ -22,8 +20,6 @@ from .tf import (
     to_tf,
     tf_flip_left_right,
     tf_flip_up_down,
-    tf_rotate_90,
-    tf_rotate_90_and_pad,
     tf_rotate,
     tf_crop,
     tf_translate,
@@ -216,165 +212,6 @@ class TestTransform(unittest.TestCase):
         )
         for i in range(len(TF_ORIGINAL_LABELS_LIST)):
             tf_image, tf_bboxes, tf_labels = tf_flip_up_down(
-                TF_ORIGINAL_IMAGE_LIST[i],
-                TF_ORIGINAL_BBOXES_LIST[i],
-                TF_ORIGINAL_LABELS_LIST[i]
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_image_list[i].numpy(),
-                               tf_image.numpy())
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_bboxes_list[i].numpy(),
-                               tf_bboxes.numpy())
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_labels_list[i].numpy(),
-                               tf_labels.numpy())
-            )
-
-    def test_rotate_90(self) -> None:
-
-        expected_image_list = [
-            np.array([
-                [[3], [6], [9], [12]],
-                [[2], [5], [8], [11]],
-                [[1], [4], [7], [10]]
-            ], dtype=np.float32),
-            np.array([
-                [[13], [16], [19], [22]],
-                [[12], [15], [18], [21]],
-                [[11], [14], [17], [20]]
-            ], dtype=np.float32),
-            np.array([
-                [[23], [26], [29], [32]],
-                [[22], [25], [28], [31]],
-                [[21], [24], [27], [30]]
-            ], dtype=np.float32),
-        ]
-        expected_bboxes_list = [
-            np.array([
-                [0, 0, 2, 2],
-                [1, 0, 2, 3],
-            ], dtype=np.float32),
-            np.array([
-                [0, 1, 3, 2],
-            ], dtype=np.float32),
-            np.array([], dtype=np.float32).reshape(-1, 4),
-        ]
-        expected_labels_list = ORIGINAL_LABELS_LIST
-
-        # Numpy.
-        for i in range(len(ORIGINAL_IMAGE_LIST)):
-            image, bboxes, labels = rotate_90(
-                ORIGINAL_IMAGE_LIST[i],
-                ORIGINAL_BBOXES_LIST[i],
-                ORIGINAL_LABELS_LIST[i]
-            )
-            self.assertTrue(
-                np.array_equal(expected_image_list[i], image)
-            )
-            self.assertTrue(
-                np.array_equal(expected_bboxes_list[i], bboxes)
-            )
-            self.assertTrue(
-                np.array_equal(expected_labels_list[i], labels)
-            )
-
-        # TF.
-        (
-            tf_expected_image_list,
-            tf_expected_bboxes_list,
-            tf_expected_labels_list
-        ) = to_tf(
-            expected_image_list, expected_bboxes_list, expected_labels_list
-        )
-        for i in range(len(TF_ORIGINAL_LABELS_LIST)):
-            tf_image, tf_bboxes, tf_labels = tf_rotate_90(
-                TF_ORIGINAL_IMAGE_LIST[i],
-                TF_ORIGINAL_BBOXES_LIST[i],
-                TF_ORIGINAL_LABELS_LIST[i]
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_image_list[i].numpy(),
-                               tf_image.numpy())
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_bboxes_list[i].numpy(),
-                               tf_bboxes.numpy())
-            )
-            self.assertTrue(
-                np.array_equal(tf_expected_labels_list[i].numpy(),
-                               tf_labels.numpy())
-            )
-
-    def test_rotate_90_and_pad(self) -> None:
-
-        expected_image_list = [
-            np.array([
-                [[0], [0], [0], [0]],
-                [[0], [0], [0], [0]],
-                [[3], [6], [9], [12]],
-                [[2], [5], [8], [11]],
-                [[1], [4], [7], [10]],
-                [[0], [0], [0], [0]]
-            ], dtype=np.float32),
-            np.array([
-                [[0], [0], [0], [0]],
-                [[0], [0], [0], [0]],
-                [[13], [16], [19], [22]],
-                [[12], [15], [18], [21]],
-                [[11], [14], [17], [20]],
-                [[0], [0], [0], [0]]
-            ], dtype=np.float32),
-            np.array([
-                [[0], [0], [0], [0]],
-                [[0], [0], [0], [0]],
-                [[23], [26], [29], [32]],
-                [[22], [25], [28], [31]],
-                [[21], [24], [27], [30]],
-                [[0], [0], [0], [0]]
-            ], dtype=np.float32),
-        ]
-        expected_bboxes_list = [
-            np.array([
-                [0, 2, 2, 2],
-                [1, 2, 2, 3],
-            ], dtype=np.float32),
-            np.array([
-                [0, 3, 3, 2],
-            ], dtype=np.float32),
-            np.array([], dtype=np.float32).reshape(-1, 4),
-        ]
-        expected_labels_list = ORIGINAL_LABELS_LIST
-
-        # Numpy.
-        for i in range(len(ORIGINAL_IMAGE_LIST)):
-            image, bboxes, labels = rotate_90_and_pad(
-                ORIGINAL_IMAGE_LIST[i],
-                ORIGINAL_BBOXES_LIST[i],
-                ORIGINAL_LABELS_LIST[i]
-            )
-            self.assertTrue(
-                np.array_equal(expected_image_list[i], image)
-            )
-            self.assertTrue(
-                np.array_equal(expected_bboxes_list[i], bboxes)
-            )
-            self.assertTrue(
-                np.array_equal(expected_labels_list[i], labels)
-            )
-
-        # TF.
-        (
-            tf_expected_image_list,
-            tf_expected_bboxes_list,
-            tf_expected_labels_list
-        ) = to_tf(
-            expected_image_list, expected_bboxes_list, expected_labels_list
-        )
-        for i in range(len(TF_ORIGINAL_LABELS_LIST)):
-            tf_image, tf_bboxes, tf_labels = tf_rotate_90_and_pad(
                 TF_ORIGINAL_IMAGE_LIST[i],
                 TF_ORIGINAL_BBOXES_LIST[i],
                 TF_ORIGINAL_LABELS_LIST[i]

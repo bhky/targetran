@@ -18,8 +18,6 @@ from targetran._functional import (
 from targetran._transform import (
     _flip_left_right,
     _flip_up_down,
-    _rotate_90,
-    _rotate_90_and_pad,
     _rotate,
     _shear,
     _crop,
@@ -106,29 +104,6 @@ def tf_resize(
     return _resize(
         image, bboxes, labels, dest_size,
         _tf_convert, tf.shape, tf.reshape, _tf_resize_image, tf.concat
-    )
-
-
-def tf_rotate_90(
-        image: tf.Tensor,
-        bboxes: tf.Tensor,
-        labels: tf.Tensor
-) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _rotate_90(
-        image, bboxes, labels,
-        _tf_convert, tf.shape, tf.reshape, tf.transpose, tf.concat
-    )
-
-
-def tf_rotate_90_and_pad(
-        image: tf.Tensor,
-        bboxes: tf.Tensor,
-        labels: tf.Tensor
-) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _rotate_90_and_pad(
-        image, bboxes, labels,
-        _tf_convert, tf.shape, tf.reshape, tf.transpose, tf.concat,
-        tf.where, tf.math.ceil, tf.math.floor, _tf_pad_image
     )
 
 
@@ -287,46 +262,6 @@ class TFRandomFlipUpDown(TFRandomTransform):
             seed: Optional[int] = None
     ) -> None:
         super().__init__(tf_flip_up_down, probability, seed)
-
-    def __call__(
-            self,
-            image: tf.Tensor,
-            bboxes: tf.Tensor,
-            labels: tf.Tensor,
-            *args: Any,
-            **kwargs: Any
-    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        return super().__call__(image, bboxes, labels)
-
-
-class TFRandomRotate90(TFRandomTransform):
-
-    def __init__(
-            self,
-            probability: float = 0.7,
-            seed: Optional[int] = None
-    ) -> None:
-        super().__init__(tf_rotate_90, probability, seed)
-
-    def __call__(
-            self,
-            image: tf.Tensor,
-            bboxes: tf.Tensor,
-            labels: tf.Tensor,
-            *args: Any,
-            **kwargs: Any
-    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        return super().__call__(image, bboxes, labels)
-
-
-class TFRandomRotate90AndPad(TFRandomTransform):
-
-    def __init__(
-            self,
-            probability: float = 0.7,
-            seed: Optional[int] = None
-    ) -> None:
-        super().__init__(tf_rotate_90_and_pad, probability, seed)
 
     def __call__(
             self,
