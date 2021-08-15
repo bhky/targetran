@@ -425,9 +425,6 @@ def _rotate(
     labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise.
     """
-    if angle_deg == 0.0:
-        return image, bboxes, labels
-
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
 
     # Image rotation matrix. Clockwise for the destination indices,
@@ -486,9 +483,6 @@ def _shear(
     labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise, where abs(angle_deg) must be < 90.
     """
-    if angle_deg == 0.0:
-        return image, bboxes, labels
-
     ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     factor = tan_fn(ang_rad)
 
