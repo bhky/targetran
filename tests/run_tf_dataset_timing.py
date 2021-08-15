@@ -4,6 +4,8 @@ TensorFlow Dataset timing.
 """
 
 from typing import Iterator, Tuple
+
+import os
 from timeit import default_timer as timer
 
 import tensorflow as tf
@@ -17,6 +19,7 @@ from targetran.tf import (
     TFResize
 )
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 AUTO = tf.data.AUTOTUNE
 rng = tf.random.Generator.from_seed(42)
 
