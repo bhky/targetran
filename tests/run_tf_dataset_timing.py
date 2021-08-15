@@ -70,7 +70,7 @@ def main() -> None:
     print("Start...")
     for _ in ds:
         count += 1
-        if count % 1000 == 0:
+        if count % 100 == 0:
             print(f"- Runtime for {count} samples: {timer() - start} s")
     print("--------------")
     print(f"Total runtime for {count} samples: {timer() - start}")
