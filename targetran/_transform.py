@@ -197,6 +197,20 @@ def _affine_transform(
     return new_image, new_bboxes, new_labels
 
 
+def get_flip_left_right_mats(
+    convert_fn: Callable[..., T]
+) -> Tuple[T, T]:
+    image_dest_flip_lr_mat = convert_fn([
+        [convert_fn(-1), convert_fn(0), convert_fn(0)],
+        [convert_fn(0), convert_fn(1), convert_fn(0)]
+    ])
+    bboxes_flip_lr_mat = convert_fn([
+        [convert_fn(-1), convert_fn(0), convert_fn(0)],
+        [convert_fn(0), convert_fn(1), convert_fn(0)]
+    ])
+    return image_dest_flip_lr_mat, bboxes_flip_lr_mat
+
+
 def _flip_left_right(
         image: T,
         bboxes: T,
@@ -228,16 +242,9 @@ def _flip_left_right(
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
     """
-    image_dest_flip_lr_mat = convert_fn([
-        [convert_fn(-1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)]
-    ])
-
-    bboxes_flip_lr_mat = convert_fn([
-        [convert_fn(-1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)]
-    ])
-
+    image_dest_flip_lr_mat, bboxes_flip_lr_mat = get_flip_left_right_mats(
+        convert_fn
+    )
     return _affine_transform(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
         expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
@@ -246,6 +253,20 @@ def _flip_left_right(
         clip_fn, gather_image_fn, copy_fn, max_fn, min_fn,
         logical_and_fn, boolean_mask_fn
     )
+
+
+def get_flip_up_down_mats(
+    convert_fn: Callable[..., T]
+) -> Tuple[T, T]:
+    image_dest_flip_ud_mat = convert_fn([
+        [convert_fn(1), convert_fn(0), convert_fn(0)],
+        [convert_fn(0), convert_fn(-1), convert_fn(0)]
+    ])
+    bboxes_flip_ud_mat = convert_fn([
+        [convert_fn(1), convert_fn(0), convert_fn(0)],
+        [convert_fn(0), convert_fn(-1), convert_fn(0)]
+    ])
+    return image_dest_flip_ud_mat, bboxes_flip_ud_mat
 
 
 def _flip_up_down(
@@ -279,16 +300,9 @@ def _flip_up_down(
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
     """
-    image_dest_flip_ud_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(-1), convert_fn(0)]
-    ])
-
-    bboxes_flip_ud_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(-1), convert_fn(0)]
-    ])
-
+    image_dest_flip_ud_mat, bboxes_flip_ud_mat = get_flip_up_down_mats(
+        convert_fn
+    )
     return _affine_transform(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
         expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
@@ -299,12 +313,34 @@ def _flip_up_down(
     )
 
 
+def get_rotate_mats(
+        angle_deg: float,
+        convert_fn: Callable[..., T],
+        cos_fn: Callable[[T], T],
+        sin_fn: Callable[[T], T]
+) -> Tuple[T, T]:
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
+    # Image rotation matrix. Clockwise for the destination indices,
+    # so the final image would appear to be rotated anti-clockwise.
+    image_dest_rot_mat = convert_fn([
+        [cos_fn(ang_rad), -sin_fn(ang_rad), convert_fn(0)],
+        [sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)]
+    ])
+    bboxes_rot_mat = convert_fn([  # Anti-clockwise.
+        [cos_fn(ang_rad), sin_fn(ang_rad), convert_fn(0)],
+        [-sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)]
+    ])
+    return image_dest_rot_mat, bboxes_rot_mat
+
+
 def _rotate(
         image: T,
         bboxes: T,
         labels: T,
         angle_deg: float,
         convert_fn: Callable[..., T],
+        cos_fn: Callable[[T], T],
+        sin_fn: Callable[[T], T],
         shape_fn: Callable[[T], Tuple[int, ...]],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
         expand_dim_fn: Callable[[T, int], T],
@@ -317,8 +353,6 @@ def _rotate(
         ones_like_fn: Callable[[T], T],
         stack_fn: Callable[[List[T], int], T],
         concat_fn: Callable[[List[T], int], T],
-        cos_fn: Callable[[T], T],
-        sin_fn: Callable[[T], T],
         matmul_fn: Callable[[T, T], T],
         clip_fn: Callable[[T, T, T], T],
         gather_image_fn: Callable[[T, T], T],
@@ -334,20 +368,9 @@ def _rotate(
     labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise.
     """
-    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
-
-    # Image rotation matrix. Clockwise for the destination indices,
-    # so the final image would appear to be rotated anti-clockwise.
-    image_dest_rot_mat = convert_fn([
-        [cos_fn(ang_rad), -sin_fn(ang_rad), convert_fn(0)],
-        [sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)]
-    ])
-
-    bboxes_rot_mat = convert_fn([  # Anti-clockwise.
-        [cos_fn(ang_rad), sin_fn(ang_rad), convert_fn(0)],
-        [-sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)]
-    ])
-
+    image_dest_rot_mat, bboxes_rot_mat = get_rotate_mats(
+        angle_deg, convert_fn, cos_fn, sin_fn
+    )
     return _affine_transform(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
         expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
@@ -358,12 +381,33 @@ def _rotate(
     )
 
 
+def get_shear_mats(
+        angle_deg: float,
+        convert_fn: Callable[..., T],
+        tan_fn: Callable[[T], T]
+) -> Tuple[T, T]:
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
+    factor = tan_fn(ang_rad)
+    # Image shear matrix. Clockwise for the destination indices,
+    # so the final image would appear to be sheared anti-clockwise.
+    image_dest_shear_mat = convert_fn([
+        [convert_fn(1), -factor, convert_fn(0)],
+        [convert_fn(0), convert_fn(1), convert_fn(0)]
+    ])
+    bboxes_shear_mat = convert_fn([  # Anti-clockwise.
+        [convert_fn(1), factor, convert_fn(0)],
+        [convert_fn(0), convert_fn(1), convert_fn(0)]
+    ])
+    return image_dest_shear_mat, bboxes_shear_mat
+
+
 def _shear(
         image: T,
         bboxes: T,
         labels: T,
         angle_deg: float,
         convert_fn: Callable[..., T],
+        tan_fn: Callable[[T], T],
         shape_fn: Callable[[T], Tuple[int, ...]],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
         expand_dim_fn: Callable[[T, int], T],
@@ -376,7 +420,6 @@ def _shear(
         ones_like_fn: Callable[[T], T],
         stack_fn: Callable[[List[T], int], T],
         concat_fn: Callable[[List[T], int], T],
-        tan_fn: Callable[[T], T],
         matmul_fn: Callable[[T, T], T],
         clip_fn: Callable[[T, T, T], T],
         gather_image_fn: Callable[[T, T], T],
@@ -392,21 +435,9 @@ def _shear(
     labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise, where abs(angle_deg) must be < 90.
     """
-    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
-    factor = tan_fn(ang_rad)
-
-    # Image shear matrix. Clockwise for the destination indices,
-    # so the final image would appear to be sheared anti-clockwise.
-    image_dest_shear_mat = convert_fn([
-        [convert_fn(1), -factor, convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)]
-    ])
-
-    bboxes_shear_mat = convert_fn([  # Anti-clockwise.
-        [convert_fn(1), factor, convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)]
-    ])
-
+    image_dest_shear_mat, bboxes_shear_mat = get_shear_mats(
+        angle_deg, convert_fn, tan_fn
+    )
     return _affine_transform(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
         expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,
@@ -415,6 +446,22 @@ def _shear(
         clip_fn, gather_image_fn, copy_fn, max_fn, min_fn,
         logical_and_fn, boolean_mask_fn
     )
+
+
+def get_translate_mats(
+        translate_height: int,
+        translate_width: int,
+        convert_fn: Callable[..., T]
+) -> Tuple[T, T]:
+    image_dest_translate_mat = convert_fn([
+        [convert_fn(1), convert_fn(0), -convert_fn(translate_width)],
+        [convert_fn(0), convert_fn(1), -convert_fn(translate_height)]
+    ])
+    bboxes_translate_mat = convert_fn([
+        [convert_fn(1), convert_fn(0), convert_fn(translate_width)],
+        [convert_fn(0), convert_fn(1), convert_fn(translate_height)]
+    ])
+    return image_dest_translate_mat, bboxes_translate_mat
 
 
 def _translate(
@@ -452,16 +499,9 @@ def _translate(
     translate_height: in range [-image_height + 1: image_height - 1]
     translate_width: in range [-image_width + 1: image_width - 1]
     """
-    image_dest_translate_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), -convert_fn(translate_width)],
-        [convert_fn(0), convert_fn(1), -convert_fn(translate_height)]
-    ])
-
-    bboxes_translate_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), convert_fn(translate_width)],
-        [convert_fn(0), convert_fn(1), convert_fn(translate_height)]
-    ])
-
+    image_dest_translate_mat, bboxes_translate_mat = get_translate_mats(
+        translate_height, translate_width, convert_fn
+    )
     return _affine_transform(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn,
         expand_dim_fn, squeeze_fn, pad_image_fn, range_fn, round_to_int_fn,

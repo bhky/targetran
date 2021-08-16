@@ -111,9 +111,10 @@ def tf_rotate(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate(
         image, bboxes, labels, angle_deg,
-        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
-        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.ones_like, tf.stack, tf.concat, tf.cos, tf.sin, tf.matmul,
+        _tf_convert, tf.cos, tf.sin, tf.shape, tf.reshape,
+        tf.expand_dims, tf.squeeze, _tf_pad_image, tf.range,
+        _tf_round_to_int, tf.repeat, tf.tile,
+        tf.ones_like, tf.stack, tf.concat, tf.matmul,
         tf.clip_by_value, _tf_gather_image, tf.identity,
         tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
     )
@@ -127,9 +128,9 @@ def tf_shear(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _shear(
         image, bboxes, labels, angle_deg,
-        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
+        _tf_convert, tf.tan, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
         _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.ones_like, tf.stack, tf.concat, tf.tan, tf.matmul, tf.clip_by_value,
+        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
         _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
         tf.logical_and, tf.boolean_mask
     )
