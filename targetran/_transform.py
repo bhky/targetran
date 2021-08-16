@@ -197,7 +197,7 @@ def _affine_transform(
     return new_image, new_bboxes, new_labels
 
 
-def get_flip_left_right_mats(
+def _get_flip_left_right_mats(
     convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_flip_lr_mat = convert_fn([
@@ -242,7 +242,7 @@ def _flip_left_right(
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
     """
-    image_dest_flip_lr_mat, bboxes_flip_lr_mat = get_flip_left_right_mats(
+    image_dest_flip_lr_mat, bboxes_flip_lr_mat = _get_flip_left_right_mats(
         convert_fn
     )
     return _affine_transform(
@@ -255,7 +255,7 @@ def _flip_left_right(
     )
 
 
-def get_flip_up_down_mats(
+def _get_flip_up_down_mats(
     convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_flip_ud_mat = convert_fn([
@@ -300,7 +300,7 @@ def _flip_up_down(
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
     """
-    image_dest_flip_ud_mat, bboxes_flip_ud_mat = get_flip_up_down_mats(
+    image_dest_flip_ud_mat, bboxes_flip_ud_mat = _get_flip_up_down_mats(
         convert_fn
     )
     return _affine_transform(
@@ -313,7 +313,7 @@ def _flip_up_down(
     )
 
 
-def get_rotate_mats(
+def _get_rotate_mats(
         angle_deg: float,
         convert_fn: Callable[..., T],
         cos_fn: Callable[[T], T],
@@ -368,7 +368,7 @@ def _rotate(
     labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise.
     """
-    image_dest_rot_mat, bboxes_rot_mat = get_rotate_mats(
+    image_dest_rot_mat, bboxes_rot_mat = _get_rotate_mats(
         angle_deg, convert_fn, cos_fn, sin_fn
     )
     return _affine_transform(
@@ -381,7 +381,7 @@ def _rotate(
     )
 
 
-def get_shear_mats(
+def _get_shear_mats(
         angle_deg: float,
         convert_fn: Callable[..., T],
         tan_fn: Callable[[T], T]
@@ -435,7 +435,7 @@ def _shear(
     labels: [0, 1, 0, ...]
     angle_deg: goes anti-clockwise, where abs(angle_deg) must be < 90.
     """
-    image_dest_shear_mat, bboxes_shear_mat = get_shear_mats(
+    image_dest_shear_mat, bboxes_shear_mat = _get_shear_mats(
         angle_deg, convert_fn, tan_fn
     )
     return _affine_transform(
@@ -448,7 +448,7 @@ def _shear(
     )
 
 
-def get_translate_mats(
+def _get_translate_mats(
         translate_height: int,
         translate_width: int,
         convert_fn: Callable[..., T]
@@ -499,7 +499,7 @@ def _translate(
     translate_height: in range [-image_height + 1: image_height - 1]
     translate_width: in range [-image_width + 1: image_width - 1]
     """
-    image_dest_translate_mat, bboxes_translate_mat = get_translate_mats(
+    image_dest_translate_mat, bboxes_translate_mat = _get_translate_mats(
         translate_height, translate_width, convert_fn
     )
     return _affine_transform(

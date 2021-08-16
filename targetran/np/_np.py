@@ -26,7 +26,7 @@ from targetran._transform import (
     _get_random_crop_inputs,
     _get_random_size_fractions,
     _crop,
-    _resize,
+    _resize
 )
 
 
