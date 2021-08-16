@@ -269,13 +269,29 @@ class TFCombineAffine(TFRandomTransform):
         super().__init__(_tf_affine_transform, probability, seed)
 
     def _combine_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
-        image_dest_tran_mats, bboxes_tran_mats = tuple(zip(
-            *[tran.get_mats(image) for tran in self._transforms
-              if self._rand_fn() < tran.probability]
+        image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
+            *[(*t.get_mats(image), t.probability) for t in self._transforms]
         ))
-        image_dest_tran_mat = functools.reduce(tf.matmul, image_dest_tran_mats)
+
+        identity_mat = tf.expand_dims(tf.constant([
+            [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
+        ]), axis=0)
+        conditions = tf.reshape(self._rand_fn() < probs, (5, 1, 1))
+        image_dest_tran_mats = tf.where(
+            conditions, image_dest_tran_mats, identity_mat
+        )
+        bboxes_tran_mats = tf.where(
+            conditions, bboxes_tran_mats, identity_mat
+        )
+
+        image_dest_tran_mat = functools.reduce(
+            tf.matmul, tf.unstack(image_dest_tran_mats)
+        )
         # Note the reversed order for the bboxes matrices.
-        bboxes_tran_mat = functools.reduce(tf.matmul, bboxes_tran_mats[::-1])
+        bboxes_tran_mat = functools.reduce(
+            tf.matmul, tf.unstack(bboxes_tran_mats)[::-1]
+        )
+
         return image_dest_tran_mat, bboxes_tran_mat
 
     def __call__(

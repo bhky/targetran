@@ -225,10 +225,21 @@ class CombineAffine(RandomTransform):
         super().__init__(_np_affine_transform, probability, seed)
 
     def _combine_mats(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        image_dest_tran_mats, bboxes_tran_mats = tuple(zip(
-            *[tran.get_mats(image) for tran in self._transforms
-              if self._rand_fn() < tran.probability]
+        image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
+            *[(*t.get_mats(image), t.probability) for t in self._transforms]
         ))
+
+        identity_mat = np.expand_dims(np.array([
+            [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
+        ]), axis=0)
+        conditions = np.reshape(self._rand_fn() < probs, (5, 1, 1))
+        image_dest_tran_mats = np.where(
+            conditions, image_dest_tran_mats, identity_mat
+        )
+        bboxes_tran_mats = np.where(
+            conditions, bboxes_tran_mats, identity_mat
+        )
+
         image_dest_tran_mat = functools.reduce(np.matmul, image_dest_tran_mats)
         # Note the reversed order for the bboxes matrices.
         bboxes_tran_mat = functools.reduce(np.matmul, bboxes_tran_mats[::-1])
