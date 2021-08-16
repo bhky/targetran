@@ -24,8 +24,6 @@ from targetran.tf import (
     TFRandomTranslate
 )
 
-AUTO = tf.data.AUTOTUNE
-
 
 def load_images() -> Dict[str, np.ndarray]:
     """
@@ -147,11 +145,14 @@ def main() -> None:
         TFRandomFlipLeftRight(probability=0.5)
     ], probability=1.0, seed=0)
 
-    # The `repeat` call is for re-using the same samples in this illustration.
+    # Note:
+    # 1. The `repeat` call here is only for re-using samples in this example.
+    # 2. In the `map` call, num_parallel_calls can be set for performance.
+    #    See the docs for TensorFlow Dataset.
     ds = ds \
         .repeat() \
-        .map(TFRandomCrop(probability=1.0, seed=0), num_parallel_calls=AUTO) \
-        .map(affine_transform, num_parallel_calls=AUTO) \
+        .map(TFRandomCrop(probability=1.0, seed=0)) \
+        .map(affine_transform) \
 
     plot(ds, num_rows=2, num_cols=3)
 
