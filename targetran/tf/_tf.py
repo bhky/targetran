@@ -424,12 +424,8 @@ class TFRandomTranslate(TFRandomTransform):
             self.translate_width_fraction_range,
             self._rand_fn, _tf_convert
         )
-        translate_height = _tf_round_to_int(
-            _tf_convert(tf.shape(image)[0]) * height_fraction
-        )
-        translate_width = _tf_round_to_int(
-            _tf_convert(tf.shape(image)[1]) * width_fraction
-        )
+        translate_height = _tf_convert(tf.shape(image)[0]) * height_fraction
+        translate_width = _tf_convert(tf.shape(image)[1]) * width_fraction
         return translate_height, translate_width
 
     def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:

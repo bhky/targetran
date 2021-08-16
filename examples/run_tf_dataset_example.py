@@ -16,6 +16,9 @@ import tensorflow as tf
 
 from targetran.tf import (
     seqs_to_tf_dataset,
+    TFCombineAffine,
+    TFRandomFlipLeftRight,
+    TFRandomFlipUpDown,
     TFRandomRotate,
     TFRandomShear,
     TFRandomCrop,
@@ -138,12 +141,19 @@ def plot(
 def main() -> None:
     ds = make_tf_dataset(load_images(), load_annotations())
 
+    affine_transform = TFCombineAffine([
+        TFRandomRotate(),
+        TFRandomShear(),
+        TFRandomFlipLeftRight(),
+        TFRandomFlipUpDown(),
+        TFRandomTranslate(),
+    ], probability=1.0, seed=0)
+
+    # The `repeat` call is for re-using the same samples in this illustration.
     ds = ds \
+        .repeat() \
         .map(TFRandomCrop(probability=1.0, seed=0), num_parallel_calls=AUTO) \
-        .map(TFRandomTranslate(probability=1.0, seed=0), num_parallel_calls=AUTO) \
-        .map(TFRandomRotate(probability=1.0, seed=0), num_parallel_calls=AUTO) \
-        .map(TFRandomShear(probability=1.0, seed=0), num_parallel_calls=AUTO) \
-        .repeat()  # Re-using the same samples for illustration.
+        .map(affine_transform, num_parallel_calls=AUTO) \
 
     plot(ds, num_rows=2, num_cols=3)
 
