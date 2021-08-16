@@ -144,8 +144,8 @@ def main() -> None:
     affine_transform = TFCombineAffine([
         TFRandomRotate(),
         TFRandomShear(),
-        TFRandomFlipLeftRight(probability=0.5),
-        TFRandomFlipUpDown(probability=0.5),
+        TFRandomFlipLeftRight(probability=0.5, seed=0),
+        TFRandomFlipUpDown(probability=0.5, seed=0),
         TFRandomTranslate(),
     ], probability=1.0, seed=0)
 
