@@ -273,7 +273,8 @@ class TFCombineAffine(TFRandomTransform):
             *[tran.get_mats(image) for tran in self._transforms]
         ))
         image_dest_tran_mat = functools.reduce(tf.matmul, image_dest_tran_mats)
-        bboxes_tran_mat = functools.reduce(tf.matmul, bboxes_tran_mats)
+        # Note the reversed order for the bboxes matrices.
+        bboxes_tran_mat = functools.reduce(tf.matmul, bboxes_tran_mats[::-1])
         return image_dest_tran_mat, bboxes_tran_mat
 
     def __call__(
