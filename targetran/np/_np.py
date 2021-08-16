@@ -2,8 +2,9 @@
 API for Numpy usage.
 """
 
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Sequence, Tuple
 
+import functools
 import numpy as np  # type: ignore
 
 from targetran._functional import (
@@ -18,6 +19,7 @@ from targetran._functional import (
 )
 
 from targetran._transform import (
+    _affine_transform,
     _flip_left_right,
     _flip_up_down,
     _rotate,
@@ -33,6 +35,24 @@ from targetran._transform import (
     _get_shear_mats,
     _get_translate_mats
 )
+
+
+def _np_affine_transform(
+        image: np.ndarray,
+        bboxes: np.ndarray,
+        labels: np.ndarray,
+        image_dest_tran_mat: np.ndarray,
+        bboxes_tran_mat: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    return _affine_transform(
+        image, bboxes, labels,
+        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
+        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
+        np.ones_like, np.stack, np.concatenate,
+        image_dest_tran_mat, bboxes_tran_mat, np.matmul, np.clip,
+        _np_gather_image, np.copy, np.max, np.min,
+        _np_logical_and, _np_boolean_mask
+    )
 
 
 def flip_left_right(
@@ -193,6 +213,39 @@ class RandomTransform:
         return image, bboxes, labels
 
 
+class CombineAffine(RandomTransform):
+
+    def __init__(
+            self,
+            transforms: Sequence[RandomTransform],
+            probability: float = 0.7,
+            seed: Optional[int] = None
+    ) -> None:
+        self._transforms = transforms
+        super().__init__(_np_affine_transform, probability, seed)
+
+    def _combine_mats(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        image_dest_tran_mats, bboxes_tran_mats = tuple(zip(
+            *[tran.get_mats(image) for tran in self._transforms]
+        ))
+        image_dest_tran_mat = functools.reduce(np.matmul, image_dest_tran_mats)
+        bboxes_tran_mat = functools.reduce(np.matmul, bboxes_tran_mats)
+        return image_dest_tran_mat, bboxes_tran_mat
+
+    def __call__(
+            self,
+            image: np.ndarray,
+            bboxes: np.ndarray,
+            labels: np.ndarray,
+            *args: Any,
+            **kwargs: Any
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(image)
+        return super().__call__(
+            image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat
+        )
+
+
 class RandomFlipLeftRight(RandomTransform):
 
     def __init__(
@@ -253,7 +306,7 @@ class RandomRotate(RandomTransform):
 
     def _get_angle_deg(self) -> np.ndarray:
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
-            * self._rand_fn() + self.angle_deg_range[0]
+               * self._rand_fn() + self.angle_deg_range[0]
 
     def get_mats(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         return _get_rotate_mats(
@@ -285,7 +338,7 @@ class RandomShear(RandomTransform):
 
     def _get_angle_deg(self) -> np.ndarray:
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
-            * self._rand_fn() + self.angle_deg_range[0]
+               * self._rand_fn() + self.angle_deg_range[0]
 
     def get_mats(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         return _get_shear_mats(self._get_angle_deg(), _np_convert, np.tan)

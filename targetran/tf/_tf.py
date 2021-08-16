@@ -4,6 +4,7 @@ API for TensorFlow usage.
 
 from typing import Any, Callable, Optional, Sequence, Tuple, TypeVar
 
+import functools
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
@@ -16,6 +17,7 @@ from targetran._functional import (
 )
 
 from targetran._transform import (
+    _affine_transform,
     _flip_left_right,
     _flip_up_down,
     _rotate,
@@ -76,6 +78,24 @@ def seqs_to_tf_dataset(
     # converted to tensors during mapping. Strange TF Dataset behaviour...
     ds = ds.map(lambda i, b, l: (i.to_tensor(), b.to_tensor(), l))
     return ds
+
+
+def _tf_affine_transform(
+        image: tf.Tensor,
+        bboxes: tf.Tensor,
+        labels: tf.Tensor,
+        image_dest_tran_mat: tf.Tensor,
+        bboxes_tran_mat: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    return _affine_transform(
+        image, bboxes, labels,
+        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
+        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        tf.ones_like, tf.stack, tf.concat,
+        image_dest_tran_mat, bboxes_tran_mat, tf.matmul, tf.clip_by_value,
+        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
+        tf.logical_and, tf.boolean_mask
+    )
 
 
 def tf_flip_left_right(
@@ -237,6 +257,39 @@ class TFRandomTransform:
         return image, bboxes, labels
 
 
+class TFCombineAffine(TFRandomTransform):
+
+    def __init__(
+            self,
+            transforms: Sequence[TFRandomTransform],
+            probability: float = 0.7,
+            seed: Optional[int] = None
+    ) -> None:
+        self._transforms = transforms
+        super().__init__(_tf_affine_transform, probability, seed)
+
+    def _combine_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+        image_dest_tran_mats, bboxes_tran_mats = tuple(zip(
+            *[tran.get_mats(image) for tran in self._transforms]
+        ))
+        image_dest_tran_mat = functools.reduce(tf.matmul, image_dest_tran_mats)
+        bboxes_tran_mat = functools.reduce(tf.matmul, bboxes_tran_mats)
+        return image_dest_tran_mat, bboxes_tran_mat
+
+    def __call__(
+            self,
+            image: tf.Tensor,
+            bboxes: tf.Tensor,
+            labels: tf.Tensor,
+            *args: Any,
+            **kwargs: Any
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+        image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(image)
+        return super().__call__(
+            image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat
+        )
+
+
 class TFRandomFlipLeftRight(TFRandomTransform):
 
     def __init__(
@@ -297,7 +350,7 @@ class TFRandomRotate(TFRandomTransform):
 
     def _get_angle_deg(self) -> tf.Tensor:
         return _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
-            * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
+               * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
 
     def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
         return _get_rotate_mats(
@@ -333,7 +386,7 @@ class TFRandomShear(TFRandomTransform):
 
     def _get_angle_deg(self) -> tf.Tensor:
         return _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
-            * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
+               * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
 
     def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
         return _get_shear_mats(self._get_angle_deg(), _tf_convert, tf.tan)

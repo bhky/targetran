@@ -5,6 +5,7 @@ from ._np import (
     shear,
     translate,
     crop,
+    CombineAffine,
     RandomTransform,
     RandomFlipLeftRight,
     RandomFlipUpDown,
