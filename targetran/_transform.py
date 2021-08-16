@@ -314,12 +314,12 @@ def _flip_up_down(
 
 
 def _get_rotate_mats(
-        angle_deg: float,
+        angle_deg: T,
         convert_fn: Callable[..., T],
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T]
 ) -> Tuple[T, T]:
-    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
+    ang_rad = np.pi * angle_deg / 180.0
     # Image rotation matrix. Clockwise for the destination indices,
     # so the final image would appear to be rotated anti-clockwise.
     image_dest_rot_mat = convert_fn([
@@ -337,7 +337,7 @@ def _rotate(
         image: T,
         bboxes: T,
         labels: T,
-        angle_deg: float,
+        angle_deg: T,
         convert_fn: Callable[..., T],
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T],
@@ -382,11 +382,11 @@ def _rotate(
 
 
 def _get_shear_mats(
-        angle_deg: float,
+        angle_deg: T,
         convert_fn: Callable[..., T],
         tan_fn: Callable[[T], T]
 ) -> Tuple[T, T]:
-    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
+    ang_rad = np.pi * angle_deg / 180.0
     factor = tan_fn(ang_rad)
     # Image shear matrix. Clockwise for the destination indices,
     # so the final image would appear to be sheared anti-clockwise.
@@ -405,7 +405,7 @@ def _shear(
         image: T,
         bboxes: T,
         labels: T,
-        angle_deg: float,
+        angle_deg: T,
         convert_fn: Callable[..., T],
         tan_fn: Callable[[T], T],
         shape_fn: Callable[[T], Tuple[int, ...]],
@@ -449,17 +449,17 @@ def _shear(
 
 
 def _get_translate_mats(
-        translate_height: int,
-        translate_width: int,
+        translate_height: T,
+        translate_width: T,
         convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_translate_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), -convert_fn(translate_width)],
-        [convert_fn(0), convert_fn(1), -convert_fn(translate_height)]
+        [convert_fn(1), convert_fn(0), -translate_width],
+        [convert_fn(0), convert_fn(1), -translate_height]
     ])
     bboxes_translate_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), convert_fn(translate_width)],
-        [convert_fn(0), convert_fn(1), convert_fn(translate_height)]
+        [convert_fn(1), convert_fn(0), translate_width],
+        [convert_fn(0), convert_fn(1), translate_height]
     ])
     return image_dest_translate_mat, bboxes_translate_mat
 
@@ -468,8 +468,8 @@ def _translate(
         image: T,
         bboxes: T,
         labels: T,
-        translate_height: int,
-        translate_width: int,
+        translate_height: T,
+        translate_width: T,
         convert_fn: Callable[..., T],
         shape_fn: Callable[[T], Tuple[int, ...]],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
@@ -580,10 +580,10 @@ def _crop(
         image: T,
         bboxes: T,
         labels: T,
-        offset_height: int,
-        offset_width: int,
-        cropped_image_height: int,
-        cropped_image_width: int,
+        offset_height: T,
+        offset_width: T,
+        cropped_image_height: T,
+        cropped_image_width: T,
         convert_fn: Callable[..., T],
         shape_fn: Callable[[T], Tuple[int, ...]],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
@@ -606,11 +606,6 @@ def _crop(
 
     image_shape = shape_fn(image)
     assert len(image_shape) == 3
-
-    offset_height = convert_fn(offset_height)
-    offset_width = convert_fn(offset_width)
-    cropped_image_height = convert_fn(cropped_image_height)
-    cropped_image_width = convert_fn(cropped_image_width)
 
     top = offset_height
     left = offset_width
