@@ -270,7 +270,8 @@ class TFCombineAffine(TFRandomTransform):
 
     def _combine_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
         image_dest_tran_mats, bboxes_tran_mats = tuple(zip(
-            *[tran.get_mats(image) for tran in self._transforms]
+            *[tran.get_mats(image) for tran in self._transforms
+              if self._rand_fn() < tran.probability]
         ))
         image_dest_tran_mat = functools.reduce(tf.matmul, image_dest_tran_mats)
         # Note the reversed order for the bboxes matrices.

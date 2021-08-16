@@ -226,7 +226,8 @@ class CombineAffine(RandomTransform):
 
     def _combine_mats(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         image_dest_tran_mats, bboxes_tran_mats = tuple(zip(
-            *[tran.get_mats(image) for tran in self._transforms]
+            *[tran.get_mats(image) for tran in self._transforms
+              if self._rand_fn() < tran.probability]
         ))
         image_dest_tran_mat = functools.reduce(np.matmul, image_dest_tran_mats)
         # Note the reversed order for the bboxes matrices.
