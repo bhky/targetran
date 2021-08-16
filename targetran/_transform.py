@@ -454,12 +454,12 @@ def _get_translate_mats(
         convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_translate_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), -translate_width],
-        [convert_fn(0), convert_fn(1), -translate_height]
+        [convert_fn(1), convert_fn(0), -convert_fn(translate_width)],
+        [convert_fn(0), convert_fn(1), -convert_fn(translate_height)]
     ])
     bboxes_translate_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), translate_width],
-        [convert_fn(0), convert_fn(1), translate_height]
+        [convert_fn(1), convert_fn(0), convert_fn(translate_width)],
+        [convert_fn(0), convert_fn(1), convert_fn(translate_height)]
     ])
     return image_dest_translate_mat, bboxes_translate_mat
 
