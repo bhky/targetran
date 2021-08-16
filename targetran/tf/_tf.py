@@ -383,11 +383,7 @@ class TFRandomRotate(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        angle_deg = \
-            _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
-            * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
-
-        return super().__call__(image, bboxes, labels, angle_deg)
+        return super().__call__(image, bboxes, labels, self._get_angle_deg())
 
 
 class TFRandomShear(TFRandomTransform):
