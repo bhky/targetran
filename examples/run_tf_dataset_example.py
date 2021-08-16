@@ -141,10 +141,10 @@ def main() -> None:
     ds = make_tf_dataset(load_images(), load_annotations())
 
     affine_transform = TFCombineAffine([
-        TFRandomRotate(probability=1.0, seed=0),
-        TFRandomShear(probability=1.0, seed=0),
-        TFRandomFlipLeftRight(probability=0.5, seed=0),
-        TFRandomTranslate(probability=1.0, seed=0),
+        TFRandomRotate(probability=1.0),
+        TFRandomShear(probability=1.0),
+        TFRandomTranslate(probability=1.0),
+        TFRandomFlipLeftRight(probability=0.5)
     ], probability=1.0, seed=0)
 
     # The `repeat` call is for re-using the same samples in this illustration.
