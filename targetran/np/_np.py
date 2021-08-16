@@ -232,7 +232,7 @@ class CombineAffine(RandomTransform):
         identity_mat = np.expand_dims(np.array([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
-        conditions = np.reshape(self._rand_fn() < probs, (5, 1, 1))
+        conditions = np.reshape(self._rand_fn() < probs, (len(probs), 1, 1))
         image_dest_tran_mats = np.where(
             conditions, image_dest_tran_mats, identity_mat
         )

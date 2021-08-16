@@ -276,7 +276,7 @@ class TFCombineAffine(TFRandomTransform):
         identity_mat = tf.expand_dims(tf.constant([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
-        conditions = tf.reshape(self._rand_fn() < probs, (5, 1, 1))
+        conditions = tf.reshape(self._rand_fn() < probs, (len(probs), 1, 1))
         image_dest_tran_mats = tf.where(
             conditions, image_dest_tran_mats, identity_mat
         )
