@@ -11,6 +11,7 @@ from timeit import default_timer as timer
 import tensorflow as tf
 
 from targetran.tf import (
+    TFCombineAffine,
     TFRandomFlipLeftRight,
     TFRandomRotate,
     TFRandomShear,
@@ -60,12 +61,16 @@ def main() -> None:
         )
     )
 
+    affine_transform = TFCombineAffine([
+        TFRandomFlipLeftRight(),
+        TFRandomRotate(),
+        TFRandomShear(),
+        TFRandomTranslate()
+    ])
+
     ds = ds \
-        .map(TFRandomFlipLeftRight(), num_parallel_calls=AUTO) \
-        .map(TFRandomRotate(), num_parallel_calls=AUTO) \
-        .map(TFRandomShear(), num_parallel_calls=AUTO) \
         .map(TFRandomCrop(), num_parallel_calls=AUTO) \
-        .map(TFRandomTranslate(), num_parallel_calls=AUTO) \
+        .map(affine_transform, num_parallel_calls=AUTO) \
         .map(TFResize(dest_size=(256, 256)), num_parallel_calls=AUTO)
 
     logging_batch_size = 100
