@@ -96,7 +96,7 @@ def _affine_transform(
         image_dest_tran_mat, convert_fn(image_dest_idxes)
     )
     clipped_new_image_dest_idxes = clip_fn(
-        new_image_dest_idxes,
+        new_image_dest_idxes[:2],
         # Note the extra idx for the padded frame.
         convert_fn([
             [-(width // 2) - w_mod], [-(height // 2) - h_mod]
@@ -202,11 +202,13 @@ def _get_flip_left_right_mats(
 ) -> Tuple[T, T]:
     image_dest_flip_lr_mat = convert_fn([
         [convert_fn(-1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)]
+        [convert_fn(0), convert_fn(1), convert_fn(0)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     bboxes_flip_lr_mat = convert_fn([
         [convert_fn(-1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)]
+        [convert_fn(0), convert_fn(1), convert_fn(0)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     return image_dest_flip_lr_mat, bboxes_flip_lr_mat
 
@@ -260,11 +262,13 @@ def _get_flip_up_down_mats(
 ) -> Tuple[T, T]:
     image_dest_flip_ud_mat = convert_fn([
         [convert_fn(1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(-1), convert_fn(0)]
+        [convert_fn(0), convert_fn(-1), convert_fn(0)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     bboxes_flip_ud_mat = convert_fn([
         [convert_fn(1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(-1), convert_fn(0)]
+        [convert_fn(0), convert_fn(-1), convert_fn(0)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     return image_dest_flip_ud_mat, bboxes_flip_ud_mat
 
@@ -324,11 +328,13 @@ def _get_rotate_mats(
     # so the final image would appear to be rotated anti-clockwise.
     image_dest_rot_mat = convert_fn([
         [cos_fn(ang_rad), -sin_fn(ang_rad), convert_fn(0)],
-        [sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)]
+        [sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     bboxes_rot_mat = convert_fn([  # Anti-clockwise.
         [cos_fn(ang_rad), sin_fn(ang_rad), convert_fn(0)],
-        [-sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)]
+        [-sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     return image_dest_rot_mat, bboxes_rot_mat
 
@@ -392,11 +398,13 @@ def _get_shear_mats(
     # so the final image would appear to be sheared anti-clockwise.
     image_dest_shear_mat = convert_fn([
         [convert_fn(1), -factor, convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)]
+        [convert_fn(0), convert_fn(1), convert_fn(0)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     bboxes_shear_mat = convert_fn([  # Anti-clockwise.
         [convert_fn(1), factor, convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)]
+        [convert_fn(0), convert_fn(1), convert_fn(0)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     return image_dest_shear_mat, bboxes_shear_mat
 
@@ -455,11 +463,13 @@ def _get_translate_mats(
 ) -> Tuple[T, T]:
     image_dest_translate_mat = convert_fn([
         [convert_fn(1), convert_fn(0), -convert_fn(translate_width)],
-        [convert_fn(0), convert_fn(1), -convert_fn(translate_height)]
+        [convert_fn(0), convert_fn(1), -convert_fn(translate_height)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     bboxes_translate_mat = convert_fn([
         [convert_fn(1), convert_fn(0), convert_fn(translate_width)],
-        [convert_fn(0), convert_fn(1), convert_fn(translate_height)]
+        [convert_fn(0), convert_fn(1), convert_fn(translate_height)],
+        [convert_fn(0), convert_fn(0), convert_fn(1)]
     ])
     return image_dest_translate_mat, bboxes_translate_mat
 
