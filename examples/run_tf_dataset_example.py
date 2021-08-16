@@ -18,7 +18,6 @@ from targetran.tf import (
     seqs_to_tf_dataset,
     TFCombineAffine,
     TFRandomFlipLeftRight,
-    TFRandomFlipUpDown,
     TFRandomRotate,
     TFRandomShear,
     TFRandomCrop,
@@ -145,7 +144,6 @@ def main() -> None:
         TFRandomRotate(),
         TFRandomShear(),
         TFRandomFlipLeftRight(),
-        TFRandomFlipUpDown(),
         TFRandomTranslate(),
     ], probability=1.0, seed=0)
 
