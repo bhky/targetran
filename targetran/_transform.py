@@ -525,12 +525,12 @@ def _translate(
 def _get_random_size_fractions(
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
-        rand_fn: Callable[..., T],
+        rand: T,
         convert_fn: Callable[..., T],
 ) -> Tuple[T, T]:
     """
     height_fraction_range, width_fraction_range: (-1.0, 1.0)
-    rand_fn: generate array of random numbers in range [0.0, 1.0)
+    rand: array of random numbers in range [0.0, 1.0)
     """
     height_fraction_range = convert_fn(height_fraction_range)
     width_fraction_range = convert_fn(width_fraction_range)
@@ -540,26 +540,24 @@ def _get_random_size_fractions(
     height_fraction_diff = height_fraction_range[1] - min_height_fraction
     width_fraction_diff = width_fraction_range[1] - min_width_fraction
 
-    height_fractions = height_fraction_diff * rand_fn() + min_height_fraction
-    width_fractions = width_fraction_diff * rand_fn() + min_width_fraction
+    height_fractions = height_fraction_diff * rand + min_height_fraction
+    width_fractions = width_fraction_diff * rand + min_width_fraction
 
     return height_fractions, width_fractions
 
 
-def _get_random_crop_inputs(
+def _get_crop_inputs(
         image_height: int,
         image_width: int,
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
-        rand_fn: Callable[..., T],
+        rand: T,
         convert_fn: Callable[..., T],
         round_to_int_fn: Callable[[T], T]
 ) -> Tuple[T, T, T, T]:
     """
     height_fraction_range, width_fraction_range: in range [0.0, 1.0)
-    rand_fn: generate array of random numbers in range [0.0, 1.0)
-    Return: randomized (offset_heights, offset_widths,
-                        cropped_image_heights, cropped_image_widths)
+    rand: array of random numbers in range [0.0, 1.0)
     """
     image_height = convert_fn(image_height)
     image_width = convert_fn(image_width)
@@ -567,17 +565,17 @@ def _get_random_crop_inputs(
     width_fraction_range = convert_fn(width_fraction_range)
 
     height_fractions, width_fractions = _get_random_size_fractions(
-        height_fraction_range, width_fraction_range, rand_fn, convert_fn
+        height_fraction_range, width_fraction_range, rand, convert_fn
     )
 
     cropped_image_heights = image_height * height_fractions
     cropped_image_widths = image_height * width_fractions
 
     offset_heights = round_to_int_fn(
-        (image_height - cropped_image_heights) * rand_fn()
+        (image_height - cropped_image_heights) * rand
     )
     offset_widths = round_to_int_fn(
-        (image_width - cropped_image_widths) * rand_fn()
+        (image_width - cropped_image_widths) * rand
     )
 
     return (

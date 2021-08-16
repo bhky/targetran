@@ -23,7 +23,7 @@ from targetran._transform import (
     _rotate,
     _shear,
     _translate,
-    _get_random_crop_inputs,
+    _get_crop_inputs,
     _get_random_size_fractions,
     _crop,
     _resize,
@@ -179,16 +179,16 @@ def tf_translate(
     )
 
 
-def _tf_get_random_crop_inputs(
+def _tf_get_crop_inputs(
         image_height: int,
         image_width: int,
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
-        rand_fn: Callable[..., tf.Tensor]
+        rand: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
-    return _get_random_crop_inputs(
+    return _get_crop_inputs(
         image_height, image_width, height_fraction_range, width_fraction_range,
-        rand_fn, _tf_convert, _tf_round_to_int
+        rand, _tf_convert, _tf_round_to_int
     )
 
 
@@ -234,9 +234,15 @@ class TFRandomTransform:
         self.probability = probability
         self._rng = tf.random.Generator.from_seed(seed) if seed is not None \
             else tf.random.Generator.from_non_deterministic_state()
-        self._rand_fn: Callable[..., tf.Tensor] = lambda: self._rng.uniform([])
 
-    def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def _rand_fn(self, shape: Tuple[int, ...] = ()) -> tf.Tensor:
+        return self._rng.uniform(shape=shape)
+
+    def get_mats(
+            self,
+            image: tf.Tensor,
+            rand: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         pass
 
     def __call__(
@@ -252,7 +258,7 @@ class TFRandomTransform:
         bboxes = _tf_convert(bboxes)
         labels = _tf_convert(labels)
 
-        if self._rand_fn() < self.probability:
+        if self._rand_fn() < _tf_convert(self.probability):
             return self._tf_fn(image, bboxes, labels, *args, **kwargs)
         return image, bboxes, labels
 
@@ -269,8 +275,10 @@ class TFCombineAffine(TFRandomTransform):
         super().__init__(_tf_affine_transform, probability, seed)
 
     def _combine_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+        rand = self._rand_fn((len(self._transforms),))
         image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
-            *[(*t.get_mats(image), t.probability) for t in self._transforms]
+            *[(*t.get_mats(image, rand[i]), t.probability)
+              for i, t in enumerate(self._transforms)]
         ))
 
         identity_mat = tf.expand_dims(tf.constant([
@@ -317,7 +325,11 @@ class TFRandomFlipLeftRight(TFRandomTransform):
     ) -> None:
         super().__init__(tf_flip_left_right, probability, seed)
 
-    def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def get_mats(
+            self,
+            image: tf.Tensor,
+            rand: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         return _get_flip_left_right_mats(_tf_convert)
 
     def __call__(
@@ -340,7 +352,11 @@ class TFRandomFlipUpDown(TFRandomTransform):
     ) -> None:
         super().__init__(tf_flip_up_down, probability, seed)
 
-    def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def get_mats(
+            self,
+            image: tf.Tensor,
+            rand: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         return _get_flip_up_down_mats(_tf_convert)
 
     def __call__(
@@ -366,13 +382,17 @@ class TFRandomRotate(TFRandomTransform):
         assert angle_deg_range[0] < angle_deg_range[1]
         self.angle_deg_range = angle_deg_range
 
-    def _get_angle_deg(self) -> tf.Tensor:
+    def _get_angle_deg(self, rand: tf.Tensor) -> tf.Tensor:
         return _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
-               * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
+               * rand + _tf_convert(self.angle_deg_range[0])
 
-    def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def get_mats(
+            self,
+            image: tf.Tensor,
+            rand: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         return _get_rotate_mats(
-            self._get_angle_deg(), _tf_convert, tf.cos, tf.sin
+            self._get_angle_deg(rand), _tf_convert, tf.cos, tf.sin
         )
 
     def __call__(
@@ -383,7 +403,9 @@ class TFRandomRotate(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        return super().__call__(image, bboxes, labels, self._get_angle_deg())
+        return super().__call__(
+            image, bboxes, labels, self._get_angle_deg(self._rand_fn())
+        )
 
 
 class TFRandomShear(TFRandomTransform):
@@ -398,12 +420,16 @@ class TFRandomShear(TFRandomTransform):
         assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
-    def _get_angle_deg(self) -> tf.Tensor:
+    def _get_angle_deg(self, rand: tf.Tensor) -> tf.Tensor:
         return _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
-               * self._rand_fn() + _tf_convert(self.angle_deg_range[0])
+               * rand + _tf_convert(self.angle_deg_range[0])
 
-    def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
-        return _get_shear_mats(self._get_angle_deg(), _tf_convert, tf.tan)
+    def get_mats(
+            self,
+            image: tf.Tensor,
+            rand: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
+        return _get_shear_mats(self._get_angle_deg(rand), _tf_convert, tf.tan)
 
     def __call__(
             self,
@@ -413,7 +439,9 @@ class TFRandomShear(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        return super().__call__(image, bboxes, labels, self._get_angle_deg())
+        return super().__call__(
+            image, bboxes, labels, self._get_angle_deg(self._rand_fn())
+        )
 
 
 class TFRandomTranslate(TFRandomTransform):
@@ -431,20 +459,25 @@ class TFRandomTranslate(TFRandomTransform):
 
     def _get_translate_height_and_width(
             self,
-            image: tf.Tensor
+            image: tf.Tensor,
+            rand: tf.Tensor
     ) -> Tuple[tf.Tensor, tf.Tensor]:
         height_fraction, width_fraction = _get_random_size_fractions(
             self.translate_height_fraction_range,
             self.translate_width_fraction_range,
-            self._rand_fn, _tf_convert
+            rand, _tf_convert
         )
         translate_height = _tf_convert(tf.shape(image)[0]) * height_fraction
         translate_width = _tf_convert(tf.shape(image)[1]) * width_fraction
         return translate_height, translate_width
 
-    def get_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def get_mats(
+            self,
+            image: tf.Tensor,
+            rand: tf.Tensor
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         translate_height, translate_width = \
-            self._get_translate_height_and_width(image)
+            self._get_translate_height_and_width(image, rand)
         return _get_translate_mats(
             translate_height, translate_width, _tf_convert
         )
@@ -458,7 +491,7 @@ class TFRandomTranslate(TFRandomTransform):
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         translate_height, translate_width = \
-            self._get_translate_height_and_width(image)
+            self._get_translate_height_and_width(image, self._rand_fn())
         return super().__call__(
             image, bboxes, labels, translate_height, translate_width
         )
@@ -486,11 +519,11 @@ class TFRandomCrop(TFRandomTransform):
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         offset_height, offset_width, cropped_height, cropped_width = \
-            _tf_get_random_crop_inputs(
+            _tf_get_crop_inputs(
                 tf.shape(image)[0], tf.shape(image)[1],
                 self.crop_height_fraction_range,
                 self.crop_width_fraction_range,
-                self._rand_fn
+                self._rand_fn()
             )
 
         return super().__call__(
