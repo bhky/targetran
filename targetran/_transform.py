@@ -506,8 +506,8 @@ def _translate(
     image: [h, w, c]
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
-    translate_height: in range [-image_height + 1: image_height - 1]
-    translate_width: in range [-image_width + 1: image_width - 1]
+    translate_height: in range (-image_height, image_height)
+    translate_width: in range (-image_width, image_width)
     """
     image_dest_translate_mat, bboxes_translate_mat = _get_translate_mats(
         translate_height, translate_width, convert_fn
@@ -605,8 +605,8 @@ def _crop(
     image: [h, w, c]
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
-    offset_height: in range [0, image_height - 1]
-    offset_width: in range [0, image_width - 1]
+    offset_height: in range [0, image_height)
+    offset_width: in range [0, image_width)
     """
     image, bboxes, labels = _sanitise(
         image, bboxes, labels, convert_fn, reshape_fn
