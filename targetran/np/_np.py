@@ -141,11 +141,11 @@ def _np_get_crop_inputs(
         image_width: int,
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
-        rand: np.ndarray
+        rand_fn: Callable[..., np.ndarray]
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     return _get_crop_inputs(
         image_height, image_width, height_fraction_range, width_fraction_range,
-        rand, _np_convert, _np_round_to_int
+        rand_fn, _np_convert, _np_round_to_int
     )
 
 
@@ -197,7 +197,7 @@ class RandomTransform:
     def get_mats(
             self,
             image: np.ndarray,
-            rand: np.ndarray
+            rand_fn: Callable[..., np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
         pass
 
@@ -231,16 +231,15 @@ class CombineAffine(RandomTransform):
         super().__init__(_np_affine_transform, probability, seed)
 
     def _combine_mats(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        rand = self._rand_fn((2 * len(self._transforms),))
         image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
-            *[(*t.get_mats(image, rand[i]), t.probability)
+            *[(*t.get_mats(image, self._rand_fn), t.probability)
               for i, t in enumerate(self._transforms)]
         ))
 
         identity_mat = np.expand_dims(np.array([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
-        conditions = np.reshape(rand[len(probs):] < probs, (len(probs), 1, 1))
+        conditions = np.reshape(self._rand_fn() < probs, (len(probs), 1, 1))
         image_dest_tran_mats = np.where(
             conditions, image_dest_tran_mats, identity_mat
         )
@@ -279,7 +278,7 @@ class RandomFlipLeftRight(RandomTransform):
     def get_mats(
             self,
             image: np.ndarray,
-            rand: np.ndarray
+            rand_fn: Callable[..., np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
         return _get_flip_left_right_mats(_np_convert)
 
@@ -306,7 +305,7 @@ class RandomFlipUpDown(RandomTransform):
     def get_mats(
             self,
             image: np.ndarray,
-            rand: np.ndarray
+            rand_fn: Callable[..., np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
         return _get_flip_up_down_mats(_np_convert)
 
@@ -333,17 +332,17 @@ class RandomRotate(RandomTransform):
         assert angle_deg_range[0] < angle_deg_range[1]
         self.angle_deg_range = angle_deg_range
 
-    def _get_angle_deg(self, rand: np.ndarray) -> np.ndarray:
+    def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
-               * rand + self.angle_deg_range[0]
+               * rand_fn() + self.angle_deg_range[0]
 
     def get_mats(
             self,
             image: np.ndarray,
-            rand: np.ndarray
+            rand_fn: Callable[..., np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
         return _get_rotate_mats(
-            self._get_angle_deg(rand), _np_convert, np.cos, np.sin
+            self._get_angle_deg(rand_fn), _np_convert, np.cos, np.sin
         )
 
     def __call__(
@@ -355,7 +354,7 @@ class RandomRotate(RandomTransform):
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return super().__call__(
-            image, bboxes, labels, self._get_angle_deg(self._rand_fn())
+            image, bboxes, labels, self._get_angle_deg(self._rand_fn)
         )
 
 
@@ -371,16 +370,16 @@ class RandomShear(RandomTransform):
         assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
-    def _get_angle_deg(self, rand: np.ndarray) -> np.ndarray:
+    def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
-               * rand + self.angle_deg_range[0]
+               * rand_fn() + self.angle_deg_range[0]
 
     def get_mats(
             self,
             image: np.ndarray,
-            rand: np.ndarray
+            rand_fn: Callable[..., np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
-        return _get_shear_mats(self._get_angle_deg(rand), _np_convert, np.tan)
+        return _get_shear_mats(self._get_angle_deg(rand_fn), _np_convert, np.tan)
 
     def __call__(
             self,
@@ -391,7 +390,7 @@ class RandomShear(RandomTransform):
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return super().__call__(
-            image, bboxes, labels, self._get_angle_deg(self._rand_fn())
+            image, bboxes, labels, self._get_angle_deg(self._rand_fn)
         )
 
 
@@ -411,12 +410,12 @@ class RandomTranslate(RandomTransform):
     def _get_translate_height_and_width(
             self,
             image: np.ndarray,
-            rand: np.ndarray
+            rand_fn: Callable[..., np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
         height_fraction, width_fraction = _get_random_size_fractions(
             self.translate_height_fraction_range,
             self.translate_width_fraction_range,
-            rand, _np_convert
+            rand_fn, _np_convert
         )
         translate_height = _np_round_to_int(
             np.shape(image)[0] * height_fraction
@@ -429,10 +428,10 @@ class RandomTranslate(RandomTransform):
     def get_mats(
             self,
             image: np.ndarray,
-            rand: np.ndarray
+            rand_fn: Callable[..., np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
         translate_height, translate_width = \
-            self._get_translate_height_and_width(image, rand)
+            self._get_translate_height_and_width(image, rand_fn)
         return _get_translate_mats(
             translate_height, translate_width, _np_convert
         )
@@ -446,7 +445,7 @@ class RandomTranslate(RandomTransform):
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         translate_height, translate_width = \
-            self._get_translate_height_and_width(image, self._rand_fn())
+            self._get_translate_height_and_width(image, self._rand_fn)
         return super().__call__(
             image, bboxes, labels, translate_height, translate_width
         )
@@ -478,7 +477,7 @@ class RandomCrop(RandomTransform):
                 np.shape(image)[0], np.shape(image)[1],
                 self.crop_height_fraction_range,
                 self.crop_width_fraction_range,
-                self._rand_fn()
+                self._rand_fn
             )
 
         return super().__call__(
