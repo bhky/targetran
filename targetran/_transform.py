@@ -569,7 +569,7 @@ def _get_crop_inputs(
     )
 
     cropped_image_heights = image_height * height_fractions
-    cropped_image_widths = image_height * width_fractions
+    cropped_image_widths = image_width * width_fractions
 
     offset_heights = round_to_int_fn(
         (image_height - cropped_image_heights) * rand
