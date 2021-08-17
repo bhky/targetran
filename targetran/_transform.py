@@ -198,7 +198,7 @@ def _affine_transform(
 
 
 def _get_flip_left_right_mats(
-    convert_fn: Callable[..., T]
+        convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_flip_lr_mat = convert_fn([
         [convert_fn(-1), convert_fn(0), convert_fn(0)],
@@ -258,7 +258,7 @@ def _flip_left_right(
 
 
 def _get_flip_up_down_mats(
-    convert_fn: Callable[..., T]
+        convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_flip_ud_mat = convert_fn([
         [convert_fn(1), convert_fn(0), convert_fn(0)],

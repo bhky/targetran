@@ -152,7 +152,7 @@ def main() -> None:
     ds = ds \
         .repeat() \
         .map(TFRandomCrop(probability=1.0, seed=0)) \
-        .map(affine_transform) \
+        .map(affine_transform)
 
     plot(ds, num_rows=2, num_cols=3)
 
