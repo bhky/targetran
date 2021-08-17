@@ -2,9 +2,9 @@
 API for TensorFlow usage.
 """
 
+import functools
 from typing import Any, Callable, Optional, Sequence, Tuple, TypeVar
 
-import functools
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
@@ -15,7 +15,6 @@ from targetran._functional import (
     _tf_pad_image,
     _tf_gather_image
 )
-
 from targetran._transform import (
     _affine_transform,
     _flip_left_right,

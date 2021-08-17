@@ -15,7 +15,6 @@ from .np import (
     translate,
     crop
 )
-
 from .tf import (
     to_tf,
     tf_flip_left_right,

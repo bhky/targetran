@@ -2,9 +2,9 @@
 API for Numpy usage.
 """
 
+import functools
 from typing import Any, Callable, Optional, Sequence, Tuple
 
-import functools
 import numpy as np  # type: ignore
 
 from targetran._functional import (
@@ -17,7 +17,6 @@ from targetran._functional import (
     _np_pad_image,
     _np_gather_image
 )
-
 from targetran._transform import (
     _affine_transform,
     _flip_left_right,

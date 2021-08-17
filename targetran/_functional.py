@@ -4,9 +4,9 @@ Functional helper utilities.
 
 from typing import Any, Tuple
 
+import cv2  # type: ignore
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
-import cv2  # type: ignore
 
 
 # Numpy.

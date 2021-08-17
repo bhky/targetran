@@ -3,10 +3,9 @@
 TensorFlow Dataset timing.
 """
 
-from typing import Iterator, Tuple
-
 import os
 from timeit import default_timer as timer
+from typing import Iterator, Tuple
 
 import tensorflow as tf
 

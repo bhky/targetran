@@ -3,11 +3,10 @@
 TensorFlow Dataset example.
 """
 
-from typing import Dict, List, Tuple
-
-import os
 import glob
 import json
+import os
+from typing import Dict, List, Tuple
 
 import cv2
 import matplotlib.pylab as plt
