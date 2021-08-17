@@ -294,12 +294,12 @@ class TFCombineAffine(TFRandomTransform):
             conditions, bboxes_tran_mats, self._identity_mat
         )
 
-        # Note the reversed order for the image dest matrices.
         image_dest_tran_mat = functools.reduce(
-            tf.matmul, tf.unstack(image_dest_tran_mats)[::-1]
+            tf.matmul, tf.unstack(image_dest_tran_mats)
         )
+        # Note the reversed order for the bboxes tran matrices.
         bboxes_tran_mat = functools.reduce(
-            tf.matmul, tf.unstack(bboxes_tran_mats)
+            tf.matmul, tf.unstack(bboxes_tran_mats)[::-1]
         )
         return image_dest_tran_mat, bboxes_tran_mat
 
