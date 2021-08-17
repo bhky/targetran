@@ -372,7 +372,7 @@ def _rotate(
     image: [h, w, c]
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
-    angle_deg: goes anti-clockwise.
+    angle_deg: positive means anti-clockwise.
     """
     image_dest_rot_mat, bboxes_rot_mat = _get_rotate_mats(
         angle_deg, convert_fn, cos_fn, sin_fn
@@ -441,7 +441,7 @@ def _shear(
     image: [h, w, c]
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
-    angle_deg: goes anti-clockwise, where abs(angle_deg) must be < 90.
+    angle_deg: positive means anti-clockwise, where abs(angle_deg) must be < 90.
     """
     image_dest_shear_mat, bboxes_shear_mat = _get_shear_mats(
         angle_deg, convert_fn, tan_fn
