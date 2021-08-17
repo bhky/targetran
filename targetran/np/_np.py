@@ -250,9 +250,13 @@ class CombineAffine(RandomTransform):
             conditions, bboxes_tran_mats, self._identity_mat
         )
 
-        image_dest_tran_mat = functools.reduce(np.matmul, image_dest_tran_mats)
-        # Note the reversed order for the bboxes matrices.
-        bboxes_tran_mat = functools.reduce(np.matmul, bboxes_tran_mats[::-1])
+        # Note the reversed order for the image dest matrices.
+        image_dest_tran_mat = functools.reduce(
+            np.matmul, image_dest_tran_mats[::-1]
+        )
+        bboxes_tran_mat = functools.reduce(
+            np.matmul, bboxes_tran_mats
+        )
         return image_dest_tran_mat, bboxes_tran_mat
 
     def __call__(
