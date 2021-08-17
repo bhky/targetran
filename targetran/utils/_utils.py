@@ -28,7 +28,7 @@ def image_only(
     # Only the image will be transformed.
     def fn(image: T, *args: Any) -> Any:
         transformed_image = tran_fn(image, [], [])[0]
-        if not len(args):
+        if len(args) == 0:
             return transformed_image
         return (transformed_image, *args)
 
