@@ -337,8 +337,12 @@ class RandomRotate(RandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
+        if not angle_deg_range[0] < angle_deg_range[1]:
+            raise ValueError(
+                "The angle_deg_range should be provided as (min_deg, max_deg), "
+                "where min_deg < max_deg."
+            )
         super().__init__(rotate, probability, seed)
-        assert angle_deg_range[0] < angle_deg_range[1]
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
@@ -375,8 +379,12 @@ class RandomShear(RandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
+        if not -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0:
+            raise ValueError(
+                "The angle_deg_range should be provided as (min_deg, max_deg), "
+                "where -90.0 < min_deg < max_deg < 90.0."
+            )
         super().__init__(shear, probability, seed)
-        assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
@@ -403,6 +411,19 @@ class RandomShear(RandomTransform):
         )
 
 
+def _check_fraction_range(
+        fraction_range: Tuple[float, float],
+        min_value: float,
+        max_value: float,
+        name: str
+) -> None:
+    if not min_value < fraction_range[0] < fraction_range[1] < max_value:
+        raise ValueError(
+            f"The {name} should be provided as (min_fraction, max_fraction), "
+            f"where {min_value} < min_fraction < max_fraction < {max_value}."
+        )
+
+
 class RandomTranslate(RandomTransform):
 
     def __init__(
@@ -412,6 +433,14 @@ class RandomTranslate(RandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
+        _check_fraction_range(
+            translate_height_fraction_range, -1.0, 1.0,
+            "translate_height_fraction_range"
+        )
+        _check_fraction_range(
+            translate_width_fraction_range, -1.0, 1.0,
+            "translate_width_fraction_range"
+        )
         super().__init__(translate, probability, seed)
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
@@ -469,6 +498,12 @@ class RandomCrop(RandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
+        _check_fraction_range(
+            crop_height_fraction_range, 0.0, 1.0, "crop_height_fraction_range"
+        )
+        _check_fraction_range(
+            crop_width_fraction_range, 0.0, 1.0, "crop_width_fraction_range"
+        )
         super().__init__(crop, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
