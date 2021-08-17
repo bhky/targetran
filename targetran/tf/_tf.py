@@ -270,8 +270,11 @@ class TFCombineAffine(TFRandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
-        self._transforms = transforms
         super().__init__(_tf_affine_transform, probability, seed)
+        self._transforms = transforms
+        self._identity_mat = tf.expand_dims(tf.constant([
+            [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
+        ]), axis=0)
 
     def _combine_mats(
             self,
@@ -283,15 +286,12 @@ class TFCombineAffine(TFRandomTransform):
               for i, t in enumerate(self._transforms)]
         ))
 
-        identity_mat = tf.expand_dims(tf.constant([
-            [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
-        ]), axis=0)
         conditions = tf.reshape(rand_fn() < probs, (len(probs), 1, 1))
         image_dest_tran_mats = tf.where(
-            conditions, image_dest_tran_mats, identity_mat
+            conditions, image_dest_tran_mats, self._identity_mat
         )
         bboxes_tran_mats = tf.where(
-            conditions, bboxes_tran_mats, identity_mat
+            conditions, bboxes_tran_mats, self._identity_mat
         )
 
         image_dest_tran_mat = functools.reduce(

@@ -226,8 +226,11 @@ class CombineAffine(RandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
-        self._transforms = transforms
         super().__init__(_np_affine_transform, probability, seed)
+        self._transforms = transforms
+        self._identity_mat = np.expand_dims(np.array([
+            [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
+        ]), axis=0)
 
     def _combine_mats(
             self,
@@ -239,15 +242,12 @@ class CombineAffine(RandomTransform):
               for i, t in enumerate(self._transforms)]
         ))
 
-        identity_mat = np.expand_dims(np.array([
-            [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
-        ]), axis=0)
         conditions = np.reshape(rand_fn() < probs, (len(probs), 1, 1))
         image_dest_tran_mats = np.where(
-            conditions, image_dest_tran_mats, identity_mat
+            conditions, image_dest_tran_mats, self._identity_mat
         )
         bboxes_tran_mats = np.where(
-            conditions, bboxes_tran_mats, identity_mat
+            conditions, bboxes_tran_mats, self._identity_mat
         )
 
         image_dest_tran_mat = functools.reduce(np.matmul, image_dest_tran_mats)
