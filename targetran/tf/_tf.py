@@ -274,16 +274,20 @@ class TFCombineAffine(TFRandomTransform):
         self._transforms = transforms
         super().__init__(_tf_affine_transform, probability, seed)
 
-    def _combine_mats(self, image: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def _combine_mats(
+            self,
+            image: tf.Tensor,
+            rand_fn: Callable[..., tf.Tensor]
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
-            *[(*t.get_mats(image, self._rand_fn), t.probability)
+            *[(*t.get_mats(image, rand_fn), t.probability)
               for i, t in enumerate(self._transforms)]
         ))
 
         identity_mat = tf.expand_dims(tf.constant([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
-        conditions = tf.reshape(self._rand_fn() < probs, (len(probs), 1, 1))
+        conditions = tf.reshape(rand_fn() < probs, (len(probs), 1, 1))
         image_dest_tran_mats = tf.where(
             conditions, image_dest_tran_mats, identity_mat
         )
@@ -309,7 +313,9 @@ class TFCombineAffine(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(image)
+        image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(
+            image, self._rand_fn
+        )
         return super().__call__(
             image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat
         )

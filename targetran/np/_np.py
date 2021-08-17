@@ -230,16 +230,20 @@ class CombineAffine(RandomTransform):
         self._transforms = transforms
         super().__init__(_np_affine_transform, probability, seed)
 
-    def _combine_mats(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _combine_mats(
+            self,
+            image: np.ndarray,
+            rand_fn: Callable[..., np.ndarray]
+    ) -> Tuple[np.ndarray, np.ndarray]:
         image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
-            *[(*t.get_mats(image, self._rand_fn), t.probability)
+            *[(*t.get_mats(image, rand_fn), t.probability)
               for i, t in enumerate(self._transforms)]
         ))
 
         identity_mat = np.expand_dims(np.array([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
-        conditions = np.reshape(self._rand_fn() < probs, (len(probs), 1, 1))
+        conditions = np.reshape(rand_fn() < probs, (len(probs), 1, 1))
         image_dest_tran_mats = np.where(
             conditions, image_dest_tran_mats, identity_mat
         )
@@ -260,7 +264,9 @@ class CombineAffine(RandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(image)
+        image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(
+            image, self._rand_fn
+        )
         return super().__call__(
             image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat
         )
