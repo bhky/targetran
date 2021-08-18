@@ -7,6 +7,12 @@ from typing import Any, Callable, Optional, Sequence, Tuple
 
 import numpy as np  # type: ignore
 
+from targetran._check import (
+    _check_shear_input,
+    _check_translate_input,
+    _check_crop_input,
+    _check_fraction_range
+)
 from targetran._functional import (
     _np_convert,
     _np_range,
@@ -105,8 +111,11 @@ def shear(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
-        angle_deg: float
+        angle_deg: float,
+        check_input: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    if check_input:
+        _check_shear_input(angle_deg)
     return _shear(
         image, bboxes, labels, _np_convert(angle_deg),
         _np_convert, np.tan, np.shape, np.reshape, np.expand_dims, np.squeeze,
@@ -122,8 +131,11 @@ def translate(
         bboxes: np.ndarray,
         labels: np.ndarray,
         translate_height: int,
-        translate_width: int
+        translate_width: int,
+        check_input: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    if check_input:
+        _check_translate_input(image.shape, translate_height, translate_width)
     return _translate(
         image, bboxes, labels,
         _np_convert(translate_height), _np_convert(translate_width),
@@ -155,8 +167,11 @@ def crop(
         offset_height: int,
         offset_width: int,
         cropped_image_height: int,
-        cropped_image_width: int
+        cropped_image_width: int,
+        check_input: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    if check_input:
+        _check_crop_input(image.shape, offset_height, offset_width)
     return _crop(
         image, bboxes, labels,
         _np_convert(offset_height), _np_convert(offset_width),
@@ -407,20 +422,7 @@ class RandomShear(RandomTransform):
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return super().__call__(
-            image, bboxes, labels, self._get_angle_deg(self._rand_fn)
-        )
-
-
-def _check_fraction_range(
-        fraction_range: Tuple[float, float],
-        min_value: float,
-        max_value: float,
-        name: str
-) -> None:
-    if not min_value < fraction_range[0] < fraction_range[1] < max_value:
-        raise ValueError(
-            f"The {name} should be provided as (min_fraction, max_fraction), "
-            f"where {min_value} < min_fraction < max_fraction < {max_value}."
+            image, bboxes, labels, self._get_angle_deg(self._rand_fn), False
         )
 
 
@@ -485,7 +487,7 @@ class RandomTranslate(RandomTransform):
         translate_height, translate_width = \
             self._get_translate_height_and_width(image, self._rand_fn)
         return super().__call__(
-            image, bboxes, labels, translate_height, translate_width
+            image, bboxes, labels, translate_height, translate_width, False
         )
 
 
@@ -526,7 +528,7 @@ class RandomCrop(RandomTransform):
 
         return super().__call__(
             image, bboxes, labels,
-            offset_height, offset_width, cropped_height, cropped_width
+            offset_height, offset_width, cropped_height, cropped_width, False
         )
 
 

@@ -19,7 +19,7 @@ def _sanitise(
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
 ) -> Tuple[T, T, T]:
     """
-    Do assertions and try to convert input to the expected format.
+    Try to convert input to the expected format.
     """
     if len(shape_fn(image)) != 3:
         raise ValueError(
@@ -460,29 +460,6 @@ def _shear(
     )
 
 
-def _check_translate_input(
-        image: T,
-        translate_height: T,
-        translate_width: T,
-        shape_fn: Callable[[T], Tuple[int, ...]],
-) -> None:
-    image_shape = shape_fn(image)
-    height_cond = -image_shape[0] < translate_height < image_shape[0]
-    width_cond = -image_shape[1] < translate_width < image_shape[1]
-    if not height_cond:
-        raise ValueError(
-            "The translate_height has to be inside the open range "
-            "(-image_height, image_height). In this case that means "
-            f"{-image_shape[0]} < translate_height < {image_shape[0]}."
-        )
-    if not width_cond:
-        raise ValueError(
-            "The translate_width has to be inside the open range "
-            "(-image_width, image_width). In this case that means "
-            f"{-image_shape[1]} < translate_width < {image_shape[1]}."
-        )
-
-
 def _get_translate_mats(
         translate_height: T,
         translate_width: T,
@@ -536,7 +513,6 @@ def _translate(
     translate_height: in range (-image_height, image_height)
     translate_width: in range (-image_width, image_width)
     """
-    _check_translate_input(image, translate_height, translate_width, shape_fn)
     image_dest_translate_mat, bboxes_translate_mat = _get_translate_mats(
         translate_height, translate_width, convert_fn
     )
@@ -612,30 +588,6 @@ def _get_crop_inputs(
     )
 
 
-def _check_crop_input(
-        image: T,
-        offset_height: T,
-        offset_width: T,
-        convert_fn: Callable[..., T],
-        shape_fn: Callable[[T], Tuple[int, ...]]
-) -> None:
-    image_shape = shape_fn(image)
-    height_cond = convert_fn(0) <= offset_height < image_shape[0]
-    width_cond = convert_fn(0) <= offset_width < image_shape[1]
-    if not height_cond:
-        raise ValueError(
-            "The offset_height has to be inside the half-open range "
-            "[0, image_height). In this case that means "
-            f"0 <= offset_height < {image_shape[0]}."
-        )
-    if not width_cond:
-        raise ValueError(
-            "The translate_width has to be inside the half-open range "
-            "[0, image_width). In this case that means "
-            f"0 <= offset_width < {image_shape[1]}."
-        )
-
-
 def _crop(
         image: T,
         bboxes: T,
@@ -663,7 +615,6 @@ def _crop(
     image, bboxes, labels = _sanitise(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn
     )
-    _check_crop_input(image, offset_height, offset_width, convert_fn, shape_fn)
 
     top = offset_height
     left = offset_width

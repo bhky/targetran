@@ -8,6 +8,13 @@ from typing import Any, Callable, Optional, Sequence, Tuple, TypeVar
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
+
+from targetran._check import (
+    _check_shear_input,
+    _check_translate_input,
+    _check_crop_input,
+    _check_fraction_range
+)
 from targetran._functional import (
     _tf_convert,
     _tf_round_to_int,
@@ -148,8 +155,11 @@ def tf_shear(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
-        angle_deg: float
+        angle_deg: float,
+        check_input: bool = True
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    if check_input:
+        _check_shear_input(angle_deg)
     return _shear(
         image, bboxes, labels, _tf_convert(angle_deg),
         _tf_convert, tf.tan, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
@@ -165,8 +175,13 @@ def tf_translate(
         bboxes: tf.Tensor,
         labels: tf.Tensor,
         translate_height: int,
-        translate_width: int
+        translate_width: int,
+        check_input: bool = True
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    if check_input:
+        _check_translate_input(
+            image.get_shape(), translate_height, translate_width
+        )
     return _translate(
         image, bboxes, labels,
         _tf_convert(translate_height), _tf_convert(translate_width),
@@ -198,8 +213,11 @@ def tf_crop(
         offset_height: int,
         offset_width: int,
         cropped_image_height: int,
-        cropped_image_width: int
+        cropped_image_width: int,
+        check_input: bool = True
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    if check_input:
+        _check_crop_input(image.get_shape(), offset_height, offset_width)
     return _crop(
         image, bboxes, labels,
         _tf_convert(offset_height), _tf_convert(offset_width),
@@ -419,8 +437,12 @@ class TFRandomShear(TFRandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
+        if not -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0:
+            raise ValueError(
+                "The angle_deg_range should be provided as (min_deg, max_deg), "
+                "where -90.0 < min_deg < max_deg < 90.0."
+            )
         super().__init__(tf_shear, probability, seed)
-        assert -90.0 < angle_deg_range[0] < angle_deg_range[1] < 90.0
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., tf.Tensor]) -> tf.Tensor:
@@ -445,7 +467,7 @@ class TFRandomShear(TFRandomTransform):
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         return super().__call__(
-            image, bboxes, labels, self._get_angle_deg(self._rand_fn)
+            image, bboxes, labels, self._get_angle_deg(self._rand_fn), False
         )
 
 
@@ -458,6 +480,14 @@ class TFRandomTranslate(TFRandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
+        _check_fraction_range(
+            translate_height_fraction_range, -1.0, 1.0,
+            "translate_height_fraction_range"
+        )
+        _check_fraction_range(
+            translate_width_fraction_range, -1.0, 1.0,
+            "translate_width_fraction_range"
+        )
         super().__init__(tf_translate, probability, seed)
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
@@ -498,7 +528,7 @@ class TFRandomTranslate(TFRandomTransform):
         translate_height, translate_width = \
             self._get_translate_height_and_width(image, self._rand_fn)
         return super().__call__(
-            image, bboxes, labels, translate_height, translate_width
+            image, bboxes, labels, translate_height, translate_width, False
         )
 
 
@@ -511,6 +541,12 @@ class TFRandomCrop(TFRandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
+        _check_fraction_range(
+            crop_height_fraction_range, 0.0, 1.0, "crop_height_fraction_range"
+        )
+        _check_fraction_range(
+            crop_width_fraction_range, 0.0, 1.0, "crop_width_fraction_range"
+        )
         super().__init__(tf_crop, probability, seed)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
@@ -533,7 +569,7 @@ class TFRandomCrop(TFRandomTransform):
 
         return super().__call__(
             image, bboxes, labels,
-            offset_height, offset_width, cropped_height, cropped_width
+            offset_height, offset_width, cropped_height, cropped_width, False
         )
 
 
