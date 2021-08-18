@@ -2,7 +2,7 @@
 Sanity checks.
 """
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 
 def _check_shear_input(angle_deg: float) -> None:
@@ -54,14 +54,23 @@ def _check_crop_input(
         )
 
 
-def _check_fraction_range(
-        fraction_range: Tuple[float, float],
-        min_value: float,
-        max_value: float,
-        name: str
+def _check_input_range(
+        input_range: Tuple[float, float],
+        limit_open_range: Optional[Tuple[float, float]],
+        input_name: str
 ) -> None:
-    if not min_value < fraction_range[0] < fraction_range[1] < max_value:
+    if limit_open_range is None:
+        if not input_range[0] < input_range[1]:
+            raise ValueError(
+                f"The {input_name} should be provided as "
+                f"(min_fraction, max_fraction), "
+                f"where min_fraction < max_fraction."
+            )
+        return
+    min_value, max_value = limit_open_range
+    if not min_value < input_range[0] < input_range[1] < max_value:
         raise ValueError(
-            f"The {name} should be provided as (min_fraction, max_fraction), "
+            f"The {input_name} should be provided as "
+            f"(min_fraction, max_fraction), "
             f"where {min_value} < min_fraction < max_fraction < {max_value}."
         )
