@@ -205,14 +205,14 @@ def _get_flip_left_right_mats(
         convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_flip_lr_mat = convert_fn([
-        [convert_fn(-1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [-1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
     ])
     bboxes_flip_lr_mat = convert_fn([
-        [convert_fn(-1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [-1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
     ])
     return image_dest_flip_lr_mat, bboxes_flip_lr_mat
 
@@ -265,14 +265,14 @@ def _get_flip_up_down_mats(
         convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_flip_ud_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(-1), convert_fn(0)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [1, 0, 0],
+        [0, -1, 0],
+        [0, 0, 1]
     ])
     bboxes_flip_ud_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), convert_fn(0)],
-        [convert_fn(0), convert_fn(-1), convert_fn(0)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [1, 0, 0],
+        [0, -1, 0],
+        [0, 0, 1]
     ])
     return image_dest_flip_ud_mat, bboxes_flip_ud_mat
 
