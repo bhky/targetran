@@ -177,7 +177,7 @@ def main() -> None:
         RandomShear(probability=1.0),
         RandomTranslate(probability=1.0),
         RandomFlipLeftRight(probability=0.5)
-    ], probability=1.0, seed=0)
+    ], probability=1.0, seed=2)
 
     transforms = Compose([
         RandomCrop(probability=1.0, seed=1),
