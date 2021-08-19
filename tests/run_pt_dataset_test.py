@@ -39,7 +39,7 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
     return image_list, bboxes_list, labels_list
 
 
-class TestDataset(Dataset):
+class PTDataset(Dataset):
 
     def __init__(
             self,
@@ -83,7 +83,7 @@ def main() -> None:
 
     print("-------- Random transform --------")
 
-    ds = TestDataset(image_list, bboxes_list, labels_list, transforms)
+    ds = PTDataset(image_list, bboxes_list, labels_list, transforms)
 
     for sample in ds:
         image, bboxes, labels = sample
