@@ -150,7 +150,7 @@ def main() -> None:
     #    See the docs for TensorFlow Dataset.
     ds = ds \
         .repeat() \
-        .map(TFRandomCrop(probability=1.0, seed=0)) \
+        .map(TFRandomCrop(probability=1.0, seed=1)) \
         .map(affine_transform)
 
     plot(ds, num_rows=2, num_cols=3)
