@@ -75,7 +75,9 @@ def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
 
 
 class PTDataset(Dataset):
-
+    """
+    A very simple PyTorch Dataset.
+    """
     def __init__(
             self,
             image_list: Sequence[np.ndarray],
