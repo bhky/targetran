@@ -103,7 +103,7 @@ def plot(
     """
     fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
 
-    for n, sample in enumerate(ds.take(num_rows * num_cols)):
+    for i, sample in enumerate(ds.take(num_rows * num_cols)):
 
         image, bboxes, labels = [tensor.numpy() for tensor in sample]
         image = image.astype(np.int32)
@@ -123,9 +123,9 @@ def plot(
             )
 
         if num_rows == 1 or num_cols == 1:
-            ax = axes[n]
+            ax = axes[i]
         else:
-            ax = axes[n % num_rows][n % num_cols]
+            ax = axes[i % num_rows][i % num_cols]
 
         ax.imshow(image)
         ax.set_axis_off()
