@@ -7,35 +7,35 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   sodipodi:docname="targetran_logo.svg"
-   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   id="svg8"
-   version="1.1"
-   viewBox="0 0 210 297"
+   width="210mm"
    height="297mm"
-   width="210mm">
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="targetran_logo.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
-     inkscape:snap-global="true"
-     inkscape:window-maximized="1"
-     inkscape:window-y="27"
-     inkscape:window-x="0"
-     inkscape:window-height="1016"
-     inkscape:window-width="1920"
-     showgrid="false"
-     inkscape:document-rotation="0"
-     inkscape:current-layer="layer1"
-     inkscape:document-units="mm"
-     inkscape:cy="560"
-     inkscape:cx="390.71429"
-     inkscape:zoom="1.4"
-     inkscape:pageshadow="2"
-     inkscape:pageopacity="0.0"
-     borderopacity="1.0"
-     bordercolor="#666666"
+     id="base"
      pagecolor="#ffffff"
-     id="base" />
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="390.71429"
+     inkscape:cy="560"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="true" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -44,53 +44,53 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     id="layer1"
+     inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     inkscape:label="Layer 1">
+     id="layer1">
     <rect
-       inkscape:export-ydpi="600"
-       inkscape:export-xdpi="600"
-       style="fill:#000080;stroke-width:0.264583"
-       y="106.4851"
-       x="63.394611"
-       height="84.196732"
+       id="rect10"
        width="116.44089"
-       id="rect10" />
+       height="84.196732"
+       x="63.394611"
+       y="106.4851"
+       style="fill:#000080;stroke-width:0.264583"
+       inkscape:export-xdpi="69.803658"
+       inkscape:export-ydpi="69.803658" />
     <rect
-       inkscape:export-ydpi="600"
-       inkscape:export-xdpi="600"
-       y="151.2459"
-       x="78.996101"
-       height="8.635519"
-       width="56.56638"
+       style="fill:none;stroke:#00ffff;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
        id="rect16"
-       style="fill:none;stroke:#00ffff;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5" />
+       width="56.56638"
+       height="8.635519"
+       x="78.996101"
+       y="151.2459"
+       inkscape:export-xdpi="69.803658"
+       inkscape:export-ydpi="69.803658" />
     <rect
-       inkscape:export-ydpi="600"
-       inkscape:export-xdpi="600"
-       style="fill:none;stroke:#ff0000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect16-0"
-       width="35.55183"
-       height="6.1247802"
+       y="156.37485"
        x="128.17122"
-       y="156.37485" />
+       height="6.1247802"
+       width="35.55183"
+       id="rect16-0"
+       style="fill:none;stroke:#ff0000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:export-xdpi="69.803658"
+       inkscape:export-ydpi="69.803658" />
     <text
-       inkscape:export-ydpi="600"
-       inkscape:export-xdpi="600"
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:17.6389px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="80.427017"
+       id="text14"
        y="154.04668"
-       id="text14"><tspan
-         sodipodi:role="line"
-         id="tspan12"
-         x="80.427017"
+       x="80.427017"
+       style="font-style:normal;font-weight:normal;font-size:17.6389px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       xml:space="preserve"
+       inkscape:export-xdpi="69.803658"
+       inkscape:export-ydpi="69.803658"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.6389px;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';fill:#ffffff;stroke-width:0.264583"
          y="154.04668"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.6389px;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';fill:#ffffff;stroke-width:0.264583">Targetran</tspan></text>
+         x="80.427017"
+         id="tspan12"
+         sodipodi:role="line">Targetran</tspan></text>
   </g>
 </svg>
