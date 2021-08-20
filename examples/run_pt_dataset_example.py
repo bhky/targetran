@@ -133,7 +133,7 @@ def plot(
         ds: Dataset,
         num_rows: int,
         num_cols: int,
-        figure_size_inches: Tuple[float, float] = (9.5, 7.5)
+        figure_size_inches: Tuple[float, float] = (7.5, 5.5)
 ) -> None:
     """
     Plot samples of image, bboxes, and the corresponding labels.
