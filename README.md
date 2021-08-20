@@ -6,6 +6,7 @@
   model training. 
 - Simple Python API to transform both the images and 
   the target rectangular bounding-boxes.
+- Dataset-idiomatic implementation for TensorFlow and PyTorch.
 
 ![example](docs/example.png)
 
