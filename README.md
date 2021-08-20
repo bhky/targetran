@@ -6,3 +6,7 @@
   model training. 
 - Simple Python API to transform both the images and 
   the target rectangular bounding-boxes.
+
+![example](docs/example.png)
+
+# Usage
