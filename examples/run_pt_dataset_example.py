@@ -175,6 +175,7 @@ def plot(
 
 
 def main() -> None:
+    # The affine transformations can be combined for better performance.
     affine_transform = CombineAffine([
         RandomRotate(probability=1.0),
         RandomShear(probability=1.0),

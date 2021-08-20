@@ -138,6 +138,7 @@ def plot(
 def main() -> None:
     ds = make_tf_dataset(load_images(), load_annotations())
 
+    # The affine transformations can be combined for better performance.
     affine_transform = TFCombineAffine([
         TFRandomRotate(probability=1.0),
         TFRandomShear(probability=1.0),
@@ -147,7 +148,8 @@ def main() -> None:
 
     # Note:
     # 1. The `repeat` call here is only for re-using samples in this example.
-    # 2. In the `map` call, num_parallel_calls can be set for performance.
+    # 2. In the `map` call, parameter `num_parallel_calls` can be set to,
+    #    e.g., tf.data.AUTOTUNE, for better performance.
     #    See the docs for TensorFlow Dataset.
     ds = ds \
         .repeat() \
