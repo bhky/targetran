@@ -96,7 +96,7 @@ def plot(
         ds: tf.data.Dataset,
         num_rows: int,
         num_cols: int,
-        figure_size_inches: Tuple[float, float] = (7.5, 5.5)
+        figure_size_inches: Tuple[float, float] = (7.5, 4.5)
 ) -> None:
     """
     Plot samples of image, bboxes, and the corresponding labels.
