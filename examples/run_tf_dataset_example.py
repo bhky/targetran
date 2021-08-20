@@ -20,7 +20,8 @@ from targetran.tf import (
     TFRandomRotate,
     TFRandomShear,
     TFRandomCrop,
-    TFRandomTranslate
+    TFRandomTranslate,
+    TFResize
 )
 
 
@@ -96,7 +97,7 @@ def plot(
         ds: tf.data.Dataset,
         num_rows: int,
         num_cols: int,
-        figure_size_inches: Tuple[float, float] = (8.0, 4.5)
+        figure_size_inches: Tuple[float, float] = (7.0, 4.5)
 ) -> None:
     """
     Plot samples of image, bboxes, and the corresponding labels.
@@ -114,7 +115,7 @@ def plot(
             cv2.rectangle(
                 image, (x_min, y_min), (x_min + width, y_min + height),
                 color=(0, 0, 255),  # Blue.
-                thickness=3
+                thickness=2
             )
             cv2.putText(
                 image, str(int(label)), (x_min, y_min - 5),
@@ -151,7 +152,8 @@ def main() -> None:
     ds = ds \
         .repeat() \
         .map(TFRandomCrop(probability=1.0, seed=1)) \
-        .map(affine_transform)
+        .map(affine_transform) \
+        .map(TFResize((640, 640)))
 
     plot(ds, num_rows=2, num_cols=3)
 

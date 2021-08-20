@@ -19,7 +19,8 @@ from targetran.np import (
     RandomRotate,
     RandomShear,
     RandomCrop,
-    RandomTranslate
+    RandomTranslate,
+    Resize
 )
 from targetran.utils import Compose
 
@@ -133,7 +134,7 @@ def plot(
         ds: Dataset,
         num_rows: int,
         num_cols: int,
-        figure_size_inches: Tuple[float, float] = (8.0, 4.5)
+        figure_size_inches: Tuple[float, float] = (7.0, 4.5)
 ) -> None:
     """
     Plot samples of image, bboxes, and the corresponding labels.
@@ -153,7 +154,7 @@ def plot(
             cv2.rectangle(
                 image, (x_min, y_min), (x_min + width, y_min + height),
                 color=(0, 0, 255),  # Blue.
-                thickness=3
+                thickness=2
             )
             cv2.putText(
                 image, str(int(label)), (x_min, y_min - 5),
@@ -183,7 +184,8 @@ def main() -> None:
 
     transforms = Compose([
         RandomCrop(probability=1.0, seed=1),
-        affine_transform
+        affine_transform,
+        Resize((640, 640))
     ])
 
     ds = make_pt_dataset(load_images(), load_annotations(), transforms)
