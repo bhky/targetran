@@ -1,3 +1,5 @@
+![logo](logo/targetran_logo.png)
+
 # Targetran
 
 Targetran is a data augmentation library useful for object detection model 
