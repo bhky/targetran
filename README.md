@@ -37,13 +37,13 @@ image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
 # 
 # In case an image has no bboxes, an empty array should be provided.
 bboxes_list = [
-    np.array([
-        [214, 223, 10, 11],  # Image with 2 bboxes.
+    np.array([  # Image with 2 bboxes.
+        [214, 223, 10, 11],
         [345, 230, 21, 9],
     ]),
     np.array([]),  # Empty array for image with no bboxes.
-    np.array([
-        [104, 151, 22, 10],  # Image with 3 bboxes.
+    np.array([  # Image with 3 bboxes.
+        [104, 151, 22, 10],
         [99, 132, 20, 15],
         [340, 220, 31, 12],
     ]),
