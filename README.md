@@ -202,3 +202,17 @@ transforms = Compose([
 ds = PTDataset(image_list, bboxes_list, labels_list, transforms=transforms)
 ```
 
+# API
+
+## Classes
+
+- `RandomTransform`, `TFRandomTransform`
+- `RandomFlipLeftRight`, `TFRandomFlipLeftRight`
+- `RandomFlipUpDown`, `TFRandomFlipUpDown`
+- `RandomRotate`, `TFRandomRotate`
+- `RandomShear`, `TFRandomShear`
+- `RandomTranslate`, `TFRandomTranslate`
+- `RandomCrop`, `TFRandomCrop`
+- `Resize`, `TFResize`
+
+## Functions
