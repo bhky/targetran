@@ -252,7 +252,7 @@ class CombineAffine(RandomTransform):
                 f"{[t.name for t in not_affine_trans]}"
             )
         super().__init__(
-            _np_affine_transform, probability, seed, self.__name__, True
+            _np_affine_transform, probability, seed, "CombineAffine", True
         )
         self._transforms = transforms
         self._identity_mat = np.expand_dims(np.array([
@@ -310,7 +310,7 @@ class RandomFlipLeftRight(RandomTransform):
             seed: Optional[int] = None
     ) -> None:
         super().__init__(
-            flip_left_right, probability, seed, self.__name__, True
+            flip_left_right, probability, seed, "RandomFlipLeftRight", True
         )
 
     def get_mats(
@@ -339,7 +339,7 @@ class RandomFlipUpDown(RandomTransform):
             seed: Optional[int] = None
     ) -> None:
         super().__init__(
-            flip_up_down, probability, seed, self.__name__, True
+            flip_up_down, probability, seed, "RandomFlipUpDown", True
         )
 
     def get_mats(
@@ -369,7 +369,7 @@ class RandomRotate(RandomTransform):
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, None, "angle_deg_range")
-        super().__init__(rotate, probability, seed, self.__name__, True)
+        super().__init__(rotate, probability, seed, "RandomRotate", True)
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
@@ -407,7 +407,7 @@ class RandomShear(RandomTransform):
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, (-90.0, 90.0), "angle_deg_range")
-        super().__init__(shear, probability, seed, self.__name__, True)
+        super().__init__(shear, probability, seed, "RandomShear", True)
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
@@ -451,7 +451,7 @@ class RandomTranslate(RandomTransform):
             translate_width_fraction_range, (-1.0, 1.0),
             "translate_width_fraction_range"
         )
-        super().__init__(translate, probability, seed, self.__name__, True)
+        super().__init__(translate, probability, seed, "RandomTranslate", True)
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
 
@@ -514,7 +514,7 @@ class RandomCrop(RandomTransform):
         _check_input_range(
             crop_width_fraction_range, (0.0, 1.0), "crop_width_fraction_range"
         )
-        super().__init__(crop, probability, seed, self.__name__, False)
+        super().__init__(crop, probability, seed, "RandomCrop", False)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 
@@ -544,7 +544,7 @@ class Resize:
 
     def __init__(self, dest_size: Tuple[int, int]) -> None:
         self.dest_size = dest_size
-        self.name = self.__name__
+        self.name = "Resize"
         self.is_affine = False
 
     def __call__(

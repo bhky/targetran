@@ -295,11 +295,11 @@ class TFCombineAffine(TFRandomTransform):
         not_affine_trans = filter(lambda t: not t.is_affine, transforms)
         if not_affine_trans:
             raise ValueError(
-                f"Non-affine transforms cannot be included in CombineAffine: "
+                f"Non-affine transforms cannot be included in TFCombineAffine: "
                 f"{[t.name for t in not_affine_trans]}"
             )
         super().__init__(
-            _tf_affine_transform, probability, seed, self.__name__, True
+            _tf_affine_transform, probability, seed, "TFCombineAffine", True
         )
         self._transforms = transforms
         self._identity_mat = tf.expand_dims(tf.constant([
@@ -357,7 +357,7 @@ class TFRandomFlipLeftRight(TFRandomTransform):
             seed: Optional[int] = None
     ) -> None:
         super().__init__(
-            tf_flip_left_right, probability, seed, self.__name__, True
+            tf_flip_left_right, probability, seed, "TFRandomFlipLeftRight", True
         )
 
     def get_mats(
@@ -386,7 +386,7 @@ class TFRandomFlipUpDown(TFRandomTransform):
             seed: Optional[int] = None
     ) -> None:
         super().__init__(
-            tf_flip_up_down, probability, seed, self.__name__, True
+            tf_flip_up_down, probability, seed, "TFRandomFlipUpDown", True
         )
 
     def get_mats(
@@ -416,7 +416,7 @@ class TFRandomRotate(TFRandomTransform):
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, None, "angle_deg_range")
-        super().__init__(tf_rotate, probability, seed, self.__name__, True)
+        super().__init__(tf_rotate, probability, seed, "TFRandomRotate", True)
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., tf.Tensor]) -> tf.Tensor:
@@ -454,7 +454,7 @@ class TFRandomShear(TFRandomTransform):
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, (-90.0, 90.0), "angle_deg_range")
-        super().__init__(tf_shear, probability, seed, self.__name__, True)
+        super().__init__(tf_shear, probability, seed, "TFRandomShear", True)
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., tf.Tensor]) -> tf.Tensor:
@@ -500,7 +500,9 @@ class TFRandomTranslate(TFRandomTransform):
             translate_width_fraction_range, (-1.0, 1.0),
             "translate_width_fraction_range"
         )
-        super().__init__(tf_translate, probability, seed, self.__name__, True)
+        super().__init__(
+            tf_translate, probability, seed, "TFRandomTranslate", True
+        )
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
 
@@ -559,7 +561,7 @@ class TFRandomCrop(TFRandomTransform):
         _check_input_range(
             crop_width_fraction_range, (0.0, 1.0), "crop_width_fraction_range"
         )
-        super().__init__(tf_crop, probability, seed, self.__name__, False)
+        super().__init__(tf_crop, probability, seed, "TFRandomCrop", False)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 
@@ -589,7 +591,7 @@ class TFResize:
 
     def __init__(self, dest_size: Tuple[int, int]) -> None:
         self.dest_size = dest_size
-        self.name = self.__name__
+        self.name = "TFResize"
         self.is_affine = False
 
     def __call__(
