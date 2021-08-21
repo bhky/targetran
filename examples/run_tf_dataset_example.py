@@ -139,6 +139,7 @@ def main() -> None:
     ds = make_tf_dataset(load_images(), load_annotations())
 
     # The affine transformations can be combined for better performance.
+    # Note that cropping and resizing are not affine.
     affine_transform = TFCombineAffine([
         TFRandomRotate(probability=1.0),
         TFRandomShear(probability=1.0),
