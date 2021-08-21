@@ -18,9 +18,9 @@
 
 For object detection model training, which is the primary usage here, 
 the following data are needed:
-- images
-- bounding-box representations for each image
-- bounding-box labels for each image
+- images;
+- bounding-box representations for each image;
+- bounding-box labels for each image.
 
 Some dummy data are created for illustration. Please note the required format.
 ```python
