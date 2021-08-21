@@ -247,7 +247,7 @@ class CombineAffine(RandomTransform):
     ) -> None:
         not_affine_trans = filter(lambda t: not t.is_affine, transforms)
         if not not_affine_trans:
-            raise ValueError(
+            raise AssertionError(
                 f"Non-affine transforms cannot be included in CombineAffine: "
                 f"{[t.name for t in not_affine_trans]}"
             )
