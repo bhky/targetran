@@ -146,11 +146,7 @@ def main() -> None:
         TFRandomFlipLeftRight(probability=0.5)
     ], probability=1.0, seed=0)
 
-    # Note:
-    # 1. The `repeat` call here is only for re-using samples in this example.
-    # 2. In the `map` call, parameter `num_parallel_calls` can be set to,
-    #    e.g., tf.data.AUTOTUNE, for better performance.
-    #    See the docs for TensorFlow Dataset.
+    # The `repeat` call here is only for re-using samples in this illustration.
     ds = ds \
         .repeat() \
         .map(TFRandomCrop(probability=1.0, seed=1)) \
