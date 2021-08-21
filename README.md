@@ -82,7 +82,7 @@ from targetran.tf import (
 
 # Convert the above data sequences into a TensorFlow Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
-# it returns a tuple of tensors: (image, bboxes, labels)
+# it returns a tuple of tensors: (image, bboxes, labels).
 ds = seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
 
 # The affine transformations can be combined for better performance.
@@ -186,7 +186,7 @@ transforms = Compose([
 
 # Convert the above data sequences into a PyTorch Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
-# it returns a tuple of arrays: (image, bboxes, labels)
+# it returns a tuple of arrays: (image, bboxes, labels).
 ds = PTDataset(image_list, bboxes_list, labels_list, transforms=transforms)
 ```
 
