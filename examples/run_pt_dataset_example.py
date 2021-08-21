@@ -80,6 +80,7 @@ class PTDataset(Dataset):
     A very simple PyTorch Dataset.
     As per common practice, transforms are done on Numpy arrays.
     """
+
     def __init__(
             self,
             image_list: Sequence[np.ndarray],
