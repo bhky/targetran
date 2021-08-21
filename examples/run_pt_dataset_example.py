@@ -78,6 +78,7 @@ def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
 class PTDataset(Dataset):
     """
     A very simple PyTorch Dataset.
+    As per common practice, transforms are done on Numpy arrays.
     """
     def __init__(
             self,
