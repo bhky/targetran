@@ -21,19 +21,19 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
         np.array([
             [214, 223, 10, 11],
             [345, 230, 21, 9],
-        ], dtype=np.float32),
-        np.array([], dtype=np.float32).reshape(-1, 4),
+        ]),
+        np.array([]),
         np.array([
             [104, 151, 22, 10],
             [99, 132, 20, 15],
             [340, 220, 31, 12],
-        ], dtype=np.float32),
+        ]),
     ]
 
     labels_list = [
-        np.array([0, 1], dtype=np.float32),
-        np.array([], dtype=np.float32),
-        np.array([2, 3, 0], dtype=np.float32),
+        np.array([0, 1]),
+        np.array([]),
+        np.array([2, 3, 0]),
     ]
 
     return image_list, bboxes_list, labels_list

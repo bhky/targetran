@@ -38,24 +38,24 @@ bboxes_list = [
     np.array([
         [214, 223, 10, 11],  # Image with 2 bboxes.
         [345, 230, 21, 9],
-    ], dtype=np.float32),
-    np.array([], dtype=np.float32).reshape(-1, 4),  # Empty array for image with no bboxes.
+    ]),
+    np.array([]),  # Empty array for image with no bboxes.
     np.array([
         [104, 151, 22, 10],  # Image with 3 bboxes.
         [99, 132, 20, 15],
         [340, 220, 31, 12],
-    ], dtype=np.float32),
+    ]),
 ]
 
 # Labels for the bboxes are also given as a sequence of Numpy arrays (or TF tensors).
 # The number of bboxes and labels should match, and again an empty array indicates no bboxes/labels.
 labels_list = [
-    np.array([0, 1], dtype=np.float32),  # 2 labels.
-    np.array([], dtype=np.float32),  # No labels.
-    np.array([2, 3, 0], dtype=np.float32),  # 3 labels.
+    np.array([0, 1]),  # 2 labels.
+    np.array([]),  # No labels.
+    np.array([2, 3, 0]),  # 3 labels.
 ]
 
-# During operation, all the data values are to be converted float32.
+# During operation, all the data values will be converted to float32.
 ```
 
 With the data ready, the usage of Targetran with TensorFlow and Pytorch 

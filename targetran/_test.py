@@ -31,36 +31,36 @@ ORIGINAL_IMAGE_LIST = [
         [[4], [5], [6]],
         [[7], [8], [9]],
         [[10], [11], [12]]
-    ], dtype=np.float32),
+    ]),
     np.array([
         [[11], [12], [13]],
         [[14], [15], [16]],
         [[17], [18], [19]],
         [[20], [21], [22]]
-    ], dtype=np.float32),
+    ]),
     np.array([
         [[21], [22], [23]],
         [[24], [25], [26]],
         [[27], [28], [29]],
         [[30], [31], [32]]
-    ], dtype=np.float32),
+    ]),
 ]
 
 ORIGINAL_BBOXES_LIST = [
     np.array([
         [1, 0, 2, 2],
         [0, 1, 3, 2],
-    ], dtype=np.float32),
+    ]),
     np.array([
         [0, 0, 2, 3],
-    ], dtype=np.float32),
-    np.array([], dtype=np.float32).reshape(-1, 4),
+    ]),
+    np.array([]),
 ]
 
 ORIGINAL_LABELS_LIST = [
-    np.array([0, 1], dtype=np.float32),
-    np.array([2], dtype=np.float32),
-    np.array([], dtype=np.float32),
+    np.array([0, 1]),
+    np.array([2]),
+    np.array([]),
 ]
 
 (
