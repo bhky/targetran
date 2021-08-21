@@ -16,13 +16,13 @@
 
 ## Data format
 
-For object detection training, which is the primary usage here, 
-one will typically have the following data:
+For object detection model training, which is the primary usage here, 
+the following data are needed:
 - images
-- bounding-boxes for each image
-- label for each bounding-box
+- bounding-box representations for each image
+- bounding-box labels for each image
 
-Some dummy data is created for illustration. Please note the required format.
+Some dummy data are created for illustration. Please note the required format.
 ```python
 import numpy as np
 
@@ -60,10 +60,15 @@ labels_list = [
 # During operation, all the data values will be converted to float32.
 ```
 
-With the data ready, the usage of Targetran with TensorFlow and Pytorch 
-is presented below.
+## Design principles
 
-## TensorFlow Dataset
+- Bounding-boxes will always be rectangular with sides parallel to the image frame.
+- After transformation, each resulting bounding-box is determined by the smallest 
+  rectangle (with sides parallel to the image frame) enclosing the original transformed bounding-box.
+- After transformation, resulting bounding-boxes with their centroids outside the 
+  image frame will be removed, together with the corresponding labels.
+
+## TensorFlow Dataset usage
 
 ```python
 import tensorflow as tf
@@ -106,7 +111,7 @@ ds = ds \
 # e.g., tf.data.AUTOTUNE, for better performance. See docs for TensorFlow Dataset.
 ```
 
-## PyTorch Dataset
+## PyTorch Dataset usage
 
 ```python
 from typing import Optional, Sequence, Tuple
