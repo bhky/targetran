@@ -79,6 +79,8 @@ from targetran.tf import (
 )
 
 # Convert the above data sequences into a TensorFlow Dataset.
+# Users can have their own way to create the Dataset, as long as for each iteration 
+# it returns a tuple of tensors: (image, bboxes, labels)
 ds = seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
 
 # The affine transformations can be combined for better performance.
@@ -98,8 +100,6 @@ ds = ds \
     .map(affine_transform, num_parallel_calls=auto_tune) \
     .map(TFResize((256, 256)), num_parallel_calls=auto_tune)
 
-# In the `map` call, parameter `num_parallel_calls` can be set to,
-# e.g., tf.data.AUTOTUNE, for better performance. 
-# See the docs for TensorFlow Dataset.
+# In the Dataset `map` call, the parameter `num_parallel_calls` can be set to,
+# e.g., tf.data.AUTOTUNE, for better performance. See docs for TensorFlow Dataset.
 ```
-
