@@ -25,7 +25,7 @@ the following data are needed.
   - each bounding-box is given as `[top_left_x, top_left_y, width, height]`;
   - empty array/tensor means no bounding-boxes (and labels) for that image.
 - `labels_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`):
-  - bounding-box labels associated with an image;
+  - each array/tensor represents the bounding-box labels associated with an image;
   - empty array/tensor means no labels (and bounding-boxes) for that image.
 
 Some dummy data are created below for illustration. Please note the required format.
