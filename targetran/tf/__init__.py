@@ -15,5 +15,5 @@ from ._tf import (
     TFRandomShear,
     TFRandomTranslate,
     TFRandomCrop,
-    TFResize
+    TFResize,
 )

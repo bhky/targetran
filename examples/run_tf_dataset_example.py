@@ -21,7 +21,7 @@ from targetran.tf import (
     TFRandomShear,
     TFRandomCrop,
     TFRandomTranslate,
-    TFResize
+    TFResize,
 )
 
 
@@ -144,7 +144,7 @@ def main() -> None:
         TFRandomRotate(probability=1.0),
         TFRandomShear(probability=1.0),
         TFRandomTranslate(probability=1.0),
-        TFRandomFlipLeftRight(probability=0.5)
+        TFRandomFlipLeftRight(probability=0.5),
     ], probability=1.0, seed=0)
 
     # The `repeat` call here is only for re-using samples in this illustration.

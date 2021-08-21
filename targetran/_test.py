@@ -13,7 +13,7 @@ from .np import (
     rotate,
     shear,
     translate,
-    crop
+    crop,
 )
 from .tf import (
     to_tf,
@@ -22,7 +22,7 @@ from .tf import (
     tf_rotate,
     tf_shear,
     tf_translate,
-    tf_crop
+    tf_crop,
 )
 
 ORIGINAL_IMAGE_LIST = [

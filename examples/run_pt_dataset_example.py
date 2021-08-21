@@ -20,7 +20,7 @@ from targetran.np import (
     RandomShear,
     RandomCrop,
     RandomTranslate,
-    Resize
+    Resize,
 )
 from targetran.utils import Compose
 
@@ -183,13 +183,13 @@ def main() -> None:
         RandomRotate(probability=1.0),
         RandomShear(probability=1.0),
         RandomTranslate(probability=1.0),
-        RandomFlipLeftRight(probability=0.5)
+        RandomFlipLeftRight(probability=0.5),
     ], probability=1.0, seed=2)
 
     transforms = Compose([
         RandomCrop(probability=1.0, seed=1),
         affine_transform,
-        Resize((640, 640))
+        Resize((640, 640)),
     ])
 
     ds = make_pt_dataset(load_images(), load_annotations(), transforms)

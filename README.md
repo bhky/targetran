@@ -121,7 +121,7 @@ from targetran.np import (
     RandomShear,
     RandomCrop,
     RandomTranslate,
-    Resize
+    Resize,
 )
 from targetran.utils import Compose
 
@@ -170,7 +170,7 @@ affine_transform = CombineAffine([
     RandomRotate(),
     RandomShear(),
     RandomTranslate(),
-    RandomFlipLeftRight()
+    RandomFlipLeftRight(),
 ])
 
 # The `Compose` here is similar to that from the torchvision package, except 
@@ -179,7 +179,7 @@ affine_transform = CombineAffine([
 transforms = Compose([
     RandomCrop(),
     affine_transform,
-    Resize((256, 256))
+    Resize((256, 256)),
 ])
 
 ds = PTDataset(image_list, bboxes_list, labels_list, transforms=transforms)

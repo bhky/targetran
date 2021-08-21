@@ -16,7 +16,7 @@ from targetran.tf import (
     TFRandomShear,
     TFRandomCrop,
     TFRandomTranslate,
-    TFResize
+    TFResize,
 )
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"

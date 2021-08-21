@@ -11,7 +11,7 @@ from targetran._check import (
     _check_shear_input,
     _check_translate_input,
     _check_crop_input,
-    _check_input_range
+    _check_input_range,
 )
 from targetran._functional import (
     _np_convert,
@@ -21,7 +21,7 @@ from targetran._functional import (
     _np_boolean_mask,
     _np_logical_and,
     _np_pad_image,
-    _np_gather_image
+    _np_gather_image,
 )
 from targetran._transform import (
     _affine_transform,
@@ -38,7 +38,7 @@ from targetran._transform import (
     _get_flip_up_down_mats,
     _get_rotate_mats,
     _get_shear_mats,
-    _get_translate_mats
+    _get_translate_mats,
 )
 
 

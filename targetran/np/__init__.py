@@ -13,5 +13,5 @@ from ._np import (
     RandomShear,
     RandomTranslate,
     RandomCrop,
-    Resize
+    Resize,
 )

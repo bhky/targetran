@@ -13,14 +13,14 @@ from targetran._check import (
     _check_shear_input,
     _check_translate_input,
     _check_crop_input,
-    _check_input_range
+    _check_input_range,
 )
 from targetran._functional import (
     _tf_convert,
     _tf_round_to_int,
     _tf_resize_image,
     _tf_pad_image,
-    _tf_gather_image
+    _tf_gather_image,
 )
 from targetran._transform import (
     _affine_transform,
@@ -37,7 +37,7 @@ from targetran._transform import (
     _get_flip_up_down_mats,
     _get_rotate_mats,
     _get_shear_mats,
-    _get_translate_mats
+    _get_translate_mats,
 )
 
 T = TypeVar("T", np.ndarray, tf.Tensor)
