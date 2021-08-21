@@ -14,6 +14,8 @@
 
 # Usage
 
+## Data format
+
 For object detection training, which is the primary usage here, 
 one will typically have the following data:
 - images
@@ -61,7 +63,7 @@ labels_list = [
 With the data ready, the usage of Targetran with TensorFlow and Pytorch 
 is presented below.
 
-## TensorFlow
+## TensorFlow Dataset
 
 ```python
 import tensorflow as tf
@@ -103,3 +105,83 @@ ds = ds \
 # In the Dataset `map` call, the parameter `num_parallel_calls` can be set to,
 # e.g., tf.data.AUTOTUNE, for better performance. See docs for TensorFlow Dataset.
 ```
+
+## PyTorch Dataset
+
+```python
+from typing import Optional, Sequence, Tuple
+
+import numpy as np
+from torch.utils.data import Dataset
+
+from targetran.np import (
+    CombineAffine,
+    RandomFlipLeftRight,
+    RandomRotate,
+    RandomShear,
+    RandomCrop,
+    RandomTranslate,
+    Resize
+)
+from targetran.utils import Compose
+
+
+class PTDataset(Dataset):
+    """
+    A very simple PyTorch Dataset.
+    As per common practice, transforms are done on Numpy arrays.
+    """
+    
+    def __init__(
+            self,
+            image_list: Sequence[np.ndarray],
+            bboxes_list: Sequence[np.ndarray],
+            labels_list: Sequence[np.ndarray],
+            transforms: Optional[Compose]
+    ) -> None:
+        self.image_list = image_list
+        self.bboxes_list = bboxes_list
+        self.labels_list = labels_list
+        self.transforms = transforms
+
+    def __len__(self) -> int:
+        return len(self.image_list)
+
+    def __getitem__(
+            self,
+            idx: int
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if self.transforms:
+            return self.transforms(
+                self.image_list[idx],
+                self.bboxes_list[idx],
+                self.labels_list[idx]
+            )
+        return (
+            self.image_list[idx],
+            self.bboxes_list[idx],
+            self.labels_list[idx]
+        )
+
+
+# The affine transformations can be combined for better performance.
+# Note that cropping and resizing are not affine.
+affine_transform = CombineAffine([
+    RandomRotate(),
+    RandomShear(),
+    RandomTranslate(),
+    RandomFlipLeftRight()
+])
+
+# The `Compose` here is similar to that from the torchvision package, except 
+# that here it also supports callables with multiple inputs and outputs needed
+# for objection detection tasks, i.e., (image, bboxes, labels).
+transforms = Compose([
+    RandomCrop(),
+    affine_transform,
+    Resize((256, 256))
+])
+
+ds = PTDataset(image_list, bboxes_list, labels_list, transforms=transforms)
+```
+
