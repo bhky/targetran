@@ -19,7 +19,8 @@
 For object detection model training, which is the primary usage here, 
 the following data are needed.
 - `image_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, 3)`):
-  - input images with 3 channels in channel-last format.
+  - images with 3 channels in channel-last format;
+  - image sizes can be different.
 - `bboxes_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
   - each `bboxes` array/tensor represents the bounding-boxes associated with an image;
   - each `bboxes` is given as `[top_left_x, top_left_y, width, height]`;
