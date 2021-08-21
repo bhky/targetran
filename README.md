@@ -82,6 +82,7 @@ from targetran.tf import (
 ds = seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
 
 # The affine transformations can be combined for better performance.
+# Note that cropping and resizing are not affine.
 affine_transform = TFCombineAffine([
     TFRandomRotate(),
     TFRandomShear(),
