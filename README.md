@@ -17,12 +17,18 @@
 ## Data format
 
 For object detection model training, which is the primary usage here, 
-the following data are needed:
-- images;
-- bounding-box representations for each image;
-- bounding-box labels for each image.
+the following data are needed.
+- `image_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, 3)`):
+  - input images with 3 channels in channel-last format.
+- `bboxes_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
+  - each array/tensor represents the bounding-boxes associated with an image;
+  - each bounding-box is given as `[top_left_x, top_left_y, width, height]`;
+  - empty array/tensor means no bounding-boxes (and labels) for that image.
+- `labels_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`):
+  - bounding-box labels associated with an image;
+  - empty array/tensor means no labels (and bounding-boxes) for that image.
 
-Some dummy data are created for illustration. Please note the required format.
+Some dummy data are created below for illustration. Please note the required format.
 ```python
 import numpy as np
 
