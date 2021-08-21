@@ -200,10 +200,14 @@ class RandomTransform:
             np_fn: Callable[..., Tuple[np.ndarray, np.ndarray, np.ndarray]],
             probability: float,
             seed: Optional[int],
+            name: str,
+            is_affine: bool
     ) -> None:
         self._np_fn = np_fn
         self.probability = probability
         self._rng = np.random.default_rng(seed=seed)
+        self.name = name
+        self.is_affine = is_affine
 
     def _rand_fn(self, shape: Tuple[int, ...] = ()) -> np.ndarray:
         return self._rng.random(shape)
@@ -241,7 +245,15 @@ class CombineAffine(RandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
-        super().__init__(_np_affine_transform, probability, seed)
+        not_affine_trans = filter(lambda t: not t.is_affine, transforms)
+        if not_affine_trans:
+            raise ValueError(
+                f"Non-affine transforms cannot be included in CombineAffine: "
+                f"{[t.name for t in not_affine_trans]}"
+            )
+        super().__init__(
+            _np_affine_transform, probability, seed, self.__name__, True
+        )
         self._transforms = transforms
         self._identity_mat = np.expand_dims(np.array([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
@@ -297,7 +309,9 @@ class RandomFlipLeftRight(RandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
-        super().__init__(flip_left_right, probability, seed)
+        super().__init__(
+            flip_left_right, probability, seed, self.__name__, True
+        )
 
     def get_mats(
             self,
@@ -324,7 +338,9 @@ class RandomFlipUpDown(RandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
-        super().__init__(flip_up_down, probability, seed)
+        super().__init__(
+            flip_up_down, probability, seed, self.__name__, True
+        )
 
     def get_mats(
             self,
@@ -353,7 +369,7 @@ class RandomRotate(RandomTransform):
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, None, "angle_deg_range")
-        super().__init__(rotate, probability, seed)
+        super().__init__(rotate, probability, seed, self.__name__, True)
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
@@ -391,7 +407,7 @@ class RandomShear(RandomTransform):
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, (-90.0, 90.0), "angle_deg_range")
-        super().__init__(shear, probability, seed)
+        super().__init__(shear, probability, seed, self.__name__, True)
         self.angle_deg_range = angle_deg_range
 
     def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
@@ -435,7 +451,7 @@ class RandomTranslate(RandomTransform):
             translate_width_fraction_range, (-1.0, 1.0),
             "translate_width_fraction_range"
         )
-        super().__init__(translate, probability, seed)
+        super().__init__(translate, probability, seed, self.__name__, True)
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
 
@@ -498,7 +514,7 @@ class RandomCrop(RandomTransform):
         _check_input_range(
             crop_width_fraction_range, (0.0, 1.0), "crop_width_fraction_range"
         )
-        super().__init__(crop, probability, seed)
+        super().__init__(crop, probability, seed, self.__name__, False)
         self.crop_height_fraction_range = crop_height_fraction_range
         self.crop_width_fraction_range = crop_width_fraction_range
 
@@ -528,6 +544,8 @@ class Resize:
 
     def __init__(self, dest_size: Tuple[int, int]) -> None:
         self.dest_size = dest_size
+        self.name = self.__name__
+        self.is_affine = False
 
     def __call__(
             self,
