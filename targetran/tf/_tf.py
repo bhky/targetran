@@ -292,7 +292,7 @@ class TFCombineAffine(TFRandomTransform):
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
-        not_affine_trans = filter(lambda t: not t.is_affine, transforms)
+        not_affine_trans = list(filter(lambda t: not t.is_affine, transforms))
         if not_affine_trans:
             raise AssertionError(
                 f"Non-affine transforms cannot be included in TFCombineAffine: "
