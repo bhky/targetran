@@ -117,6 +117,7 @@ from torch.utils.data import Dataset
 from targetran.np import (
     CombineAffine,
     RandomFlipLeftRight,
+    RandomFlipUpDown,
     RandomRotate,
     RandomShear,
     RandomCrop,
@@ -171,6 +172,7 @@ affine_transform = CombineAffine([
     RandomShear(),
     RandomTranslate(),
     RandomFlipLeftRight(),
+    RandomFlipUpDown(),
 ])
 
 # The `Compose` here is similar to that from the torchvision package, except 
