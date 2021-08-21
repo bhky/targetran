@@ -50,7 +50,7 @@ bboxes_list = [
 ]
 
 # Labels for the bboxes are also given as a sequence of Numpy arrays (or TF tensors).
-# The number of bboxes and labels should match, and again an empty array indicates no bboxes/labels.
+# The number of bboxes and labels should match. An empty array indicates no bboxes/labels.
 labels_list = [
     np.array([0, 1]),  # 2 labels.
     np.array([]),  # No labels.
