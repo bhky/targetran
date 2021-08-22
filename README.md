@@ -210,7 +210,7 @@ There are three modules: the Numpy transformation tools are from `targetran.np`,
 the TensorFlow transformation tools are from `targetran.tf`, and some general
 helper utilities are from `targetran.utils`.
 
-### Classes
+### Transformation classes
 
 Each transformation class comes in a pair, with one operating 
 on `np.ndarray` and the other on `tf.Tensor`. For the latter, the class names 
@@ -227,9 +227,9 @@ The return format is a tuple: `(image, bboxes, labels)`.
 
 Please see the [data format](#data-format) section for usage instructions.
 
-### Functions
+### Transformation functions
 
-There are also a pure functional counterpart for each class, 
+There are also a pure functional counterpart for each transformation class, 
 e.g., `rotate` and `tf_rotate` for `np.ndarray` and `tf.Tensor`, 
 to which one could provide exact transformation parameters.
 
