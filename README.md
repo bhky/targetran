@@ -17,14 +17,14 @@
 ## Data format
 
 For object detection model training, which is the primary usage here, the following data are needed.
-- `image_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, num_channels)`):
+- `image_seq` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, num_channels)`):
   - images in channel-last format;
   - image sizes can be different.
-- `bboxes_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
+- `bboxes_seq` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
   - each `bboxes` array/tensor provides the bounding-boxes associated with an image;
   - each single bounding-box is represented by `[top_left_x, top_left_y, width, height]`;
   - empty array/tensor means no bounding-boxes (and labels) for that image.
-- `labels_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`):
+- `labels_seq` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`):
   - each `labels` array/tensor provides the bounding-box labels associated with an image;
   - empty array/tensor means no labels (and bounding-boxes) for that image.
 
@@ -34,7 +34,7 @@ import numpy as np
 
 # Each image could have different sizes, but they must follow the channel-last format, 
 # i.e., (image_height, image_width, num_channels).
-image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
+image_seq = [np.random.rand(480, 512, 3) for _ in range(3)]
 
 # The bounding-boxes (bboxes) are given as a sequence of NumPy arrays (or TF tensors).
 # Each array contains the bounding-bboxes for one corresponding image.
@@ -42,7 +42,7 @@ image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
 # Each bbox is represented by [top_left_x, top_left_y, width, height].
 # 
 # In case an image has no bboxes, an empty array should be provided.
-bboxes_list = [
+bboxes_seq = [
     np.array([  # Image with 2 bboxes.
         [214, 223, 10, 11],
         [345, 230, 21, 9],
@@ -57,7 +57,7 @@ bboxes_list = [
 
 # Labels for the bboxes are also given as a sequence of NumPy arrays (or TF tensors).
 # The number of bboxes and labels should match. An empty array indicates no bboxes/labels.
-labels_list = [
+labels_seq = [
     np.array([0, 1]),  # 2 labels.
     np.array([]),  # No labels.
     np.array([2, 3, 0]),  # 3 labels.
@@ -94,7 +94,7 @@ from targetran.tf import (
 # Convert the above data sequences into a TensorFlow Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
 # it returns a tuple of tensors for a single image: (image, bboxes, labels).
-ds = seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
+ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 # The affine transformations can be combined for better performance.
 # Note that cropping and resizing are not affine.
@@ -146,18 +146,18 @@ class PTDataset(Dataset):
     
     def __init__(
             self,
-            image_list: Sequence[np.ndarray],
-            bboxes_list: Sequence[np.ndarray],
-            labels_list: Sequence[np.ndarray],
+            image_seq: Sequence[np.ndarray],
+            bboxes_seq: Sequence[np.ndarray],
+            labels_seq: Sequence[np.ndarray],
             transforms: Optional[Compose]
     ) -> None:
-        self.image_list = image_list
-        self.bboxes_list = bboxes_list
-        self.labels_list = labels_list
+        self.image_seq = image_seq
+        self.bboxes_seq = bboxes_seq
+        self.labels_seq = labels_seq
         self.transforms = transforms
 
     def __len__(self) -> int:
-        return len(self.image_list)
+        return len(self.image_seq)
 
     def __getitem__(
             self,
@@ -165,14 +165,14 @@ class PTDataset(Dataset):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.transforms:
             return self.transforms(
-                self.image_list[idx],
-                self.bboxes_list[idx],
-                self.labels_list[idx]
+                self.image_seq[idx],
+                self.bboxes_seq[idx],
+                self.labels_seq[idx]
             )
         return (
-            self.image_list[idx],
-            self.bboxes_list[idx],
-            self.labels_list[idx]
+            self.image_seq[idx],
+            self.bboxes_seq[idx],
+            self.labels_seq[idx]
         )
 
 
@@ -198,7 +198,7 @@ transforms = Compose([
 # Convert the above data sequences into a PyTorch Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
 # it returns a tuple of arrays for a single image: (image, bboxes, labels).
-ds = PTDataset(image_list, bboxes_list, labels_list, transforms=transforms)
+ds = PTDataset(image_seq, bboxes_seq, labels_seq, transforms=transforms)
 ```
 
 ## Image classification
