@@ -106,7 +106,7 @@ class TestTransform(unittest.TestCase):
         ]
         expected_labels_list = ORIGINAL_LABELS_LIST
 
-        # Numpy.
+        # NumPy.
         for i in range(len(ORIGINAL_IMAGE_LIST)):
             image, bboxes, labels = flip_left_right(
                 ORIGINAL_IMAGE_LIST[i],
@@ -185,7 +185,7 @@ class TestTransform(unittest.TestCase):
         ]
         expected_labels_list = ORIGINAL_LABELS_LIST
 
-        # Numpy.
+        # NumPy.
         for i in range(len(ORIGINAL_IMAGE_LIST)):
             image, bboxes, labels = flip_up_down(
                 ORIGINAL_IMAGE_LIST[i],
@@ -279,7 +279,7 @@ class TestTransform(unittest.TestCase):
         ]
         expected_labels_list = original_labels_list
 
-        # Numpy.
+        # NumPy.
         for i in range(len(original_image_list)):
             image, bboxes, labels = rotate(
                 original_image_list[i],
@@ -349,7 +349,7 @@ class TestTransform(unittest.TestCase):
         ], dtype=np.float32)
         expected_labels = original_labels
 
-        # Numpy.
+        # NumPy.
         _, bboxes, labels = shear(
             dummy_image, original_bboxes, original_labels,
             angle_deg
@@ -419,7 +419,7 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32),
         ]
 
-        # Numpy.
+        # NumPy.
         for i in range(len(ORIGINAL_IMAGE_LIST)):
             image, bboxes, labels = translate(
                 ORIGINAL_IMAGE_LIST[i],
@@ -507,7 +507,7 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32),
         ]
 
-        # Numpy.
+        # NumPy.
         for i in range(len(dummy_image_list)):
             _, bboxes, labels = crop(
                 dummy_image_list[i],

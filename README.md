@@ -36,7 +36,7 @@ import numpy as np
 # i.e., (image_height, image_width, num_channels).
 image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
 
-# The bounding-boxes (bboxes) are given as a sequence of Numpy arrays (or TF tensors).
+# The bounding-boxes (bboxes) are given as a sequence of NumPy arrays (or TF tensors).
 # Each array contains the bounding-bboxes for one corresponding image.
 #
 # Each bbox is represented by [top_left_x, top_left_y, width, height].
@@ -55,7 +55,7 @@ bboxes_list = [
     ]),
 ]
 
-# Labels for the bboxes are also given as a sequence of Numpy arrays (or TF tensors).
+# Labels for the bboxes are also given as a sequence of NumPy arrays (or TF tensors).
 # The number of bboxes and labels should match. An empty array indicates no bboxes/labels.
 labels_list = [
     np.array([0, 1]),  # 2 labels.
@@ -141,7 +141,7 @@ from targetran.utils import Compose
 class PTDataset(Dataset):
     """
     A very simple PyTorch Dataset.
-    As per common practice, transforms are done on Numpy arrays.
+    As per common practice, transforms are done on NumPy arrays.
     """
     
     def __init__(
@@ -205,7 +205,7 @@ ds = PTDataset(image_list, bboxes_list, labels_list, transforms=transforms)
 
 ## Overview
 
-There are three modules: the Numpy transformation tools are from `targetran.np`,
+There are three modules: the NumPy transformation tools are from `targetran.np`,
 the TensorFlow transformation tools are from `targetran.tf`, and some general
 helper utilities are from `targetran.utils`.
 

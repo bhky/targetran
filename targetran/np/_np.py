@@ -1,5 +1,5 @@
 """
-API for Numpy usage.
+API for NumPy usage.
 """
 
 import functools

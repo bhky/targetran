@@ -9,7 +9,7 @@ import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
 
-# Numpy.
+# NumPy.
 
 def _np_convert(x: Any) -> np.ndarray:
     if isinstance(x, np.ndarray):
