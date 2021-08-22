@@ -83,18 +83,18 @@ class PTDataset(Dataset):
 
     def __init__(
             self,
-            image_list: Sequence[np.ndarray],
-            bboxes_list: Sequence[np.ndarray],
-            labels_list: Sequence[np.ndarray],
+            image_seq: Sequence[np.ndarray],
+            bboxes_seq: Sequence[np.ndarray],
+            labels_seq: Sequence[np.ndarray],
             transforms: Optional[Compose]
     ) -> None:
-        self.image_list = image_list
-        self.bboxes_list = bboxes_list
-        self.labels_list = labels_list
+        self.image_seq = image_seq
+        self.bboxes_seq = bboxes_seq
+        self.labels_seq = labels_seq
         self.transforms = transforms
 
     def __len__(self) -> int:
-        return len(self.image_list)
+        return len(self.image_seq)
 
     def __getitem__(
             self,
@@ -102,14 +102,14 @@ class PTDataset(Dataset):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.transforms:
             return self.transforms(
-                self.image_list[idx],
-                self.bboxes_list[idx],
-                self.labels_list[idx]
+                self.image_seq[idx],
+                self.bboxes_seq[idx],
+                self.labels_seq[idx]
             )
         return (
-            self.image_list[idx],
-            self.bboxes_list[idx],
-            self.labels_list[idx]
+            self.image_seq[idx],
+            self.bboxes_seq[idx],
+            self.labels_seq[idx]
         )
 
 
