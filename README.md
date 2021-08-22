@@ -250,7 +250,7 @@ have a `TF*` prefix, e.g., `RandomRotate` and `TFRandomRotate`.
 The transformation classes are callables that accept input parameters from 
 a single image:
 
-- `image` (`np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, num_channels)`);
+- `image` (`np.ndarray` or `tf.Tensor` of shape `(height, width, num_channels)`);
 - `bboxes` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty);
 - `labels` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`, can be empty).
 
