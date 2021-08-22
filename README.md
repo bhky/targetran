@@ -17,7 +17,7 @@
 ## Data format
 
 For object detection model training, which is the primary usage here, 
-the following data are needed.
+the following data are needed for a dataset.
 - `image_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, 3)`):
   - images with 3 channels in channel-last format;
   - image sizes can be different.
@@ -94,7 +94,7 @@ from targetran.tf import (
 
 # Convert the above data sequences into a TensorFlow Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
-# it returns a tuple of tensors: (image, bboxes, labels).
+# it returns a tuple of tensors for a single image: (image, bboxes, labels).
 ds = seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
 
 # The affine transformations can be combined for better performance.
@@ -198,21 +198,86 @@ transforms = Compose([
 
 # Convert the above data sequences into a PyTorch Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
-# it returns a tuple of arrays: (image, bboxes, labels).
+# it returns a tuple of arrays for a single image: (image, bboxes, labels).
 ds = PTDataset(image_list, bboxes_list, labels_list, transforms=transforms)
 ```
 
 # API
 
-## Classes
+## Overview
 
-- `RandomTransform`, `TFRandomTransform`
-- `RandomFlipLeftRight`, `TFRandomFlipLeftRight`
-- `RandomFlipUpDown`, `TFRandomFlipUpDown`
-- `RandomRotate`, `TFRandomRotate`
-- `RandomShear`, `TFRandomShear`
-- `RandomTranslate`, `TFRandomTranslate`
-- `RandomCrop`, `TFRandomCrop`
-- `Resize`, `TFResize`
+There are three modules: the Numpy transformation tools are from `targetran.np`,
+the TensorFlow transformation tools are from `targetran.tf`, and some general
+helper utilities are from `targetran.utils`.
 
-## Functions
+### Classes
+
+Each transformation class comes in a pair, with one operating 
+on `np.ndarray` and the other on `tf.Tensor`. For the latter, the class names 
+have a `TF*` prefix, e.g., `RandomRotate` and `TFRandomRotate`.
+
+The transformation classes are callables that accept input parameters from 
+a single image:
+
+- `image` (`np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, 3)`);
+- `bboxes` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty);
+- `labels` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`, can be empty).
+
+The return format is a tuple of `(image, bboxes, labels)`.
+
+Please see the [data format](#data-format) section for usage instructions.
+
+### Functions
+
+There are also a pure functional counterpart for each class, 
+e.g., `rotate` and `tf_rotate`, to which one could provide exact 
+transformation parameters.
+
+The input format is `(image, bboxes, labels, ...)` where each function
+expects different additional input parameters. The return format is still
+`(image, bboxes, labels)`.
+
+
+## Full list
+
+`targetran.np`
+- `CombineAffine`
+- `RandomFlipLeftRight`
+- `RandomFlipUpDown`
+- `RandomRotate`
+- `RandomShear`
+- `RandomTranslate`
+- `RandomCrop`
+- `Resize`
+- `flip_left_right`
+- `flip_up_down`
+- `rotate`
+- `shear`
+- `translate`
+- `crop`
+
+`targetran.tf`
+- `TFCombineAffine`
+- `TFRandomFlipLeftRight`
+- `TFRandomFlipUpDown`
+- `TFRandomRotate`
+- `TFRandomShear`
+- `TFRandomTranslate`
+- `TFRandomCrop`
+- `TFResize`
+- `to_tf`
+- `seqs_to_tf_dataset`
+- `tf_flip_left_right`
+- `tf_flip_up_down`
+- `tf_rotate`
+- `tf_shear`
+- `tf_translate`
+- `tf_crop`
+
+`targetran.utils`
+- `Compose`
+- `collate_fn`
+- `image_only`
+
+# Manual
+
