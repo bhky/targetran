@@ -74,7 +74,7 @@ labels_list = [
 - After transformation, resulting bounding-boxes with their centroids outside the 
   image frame will be removed, together with the corresponding labels.
 
-## TensorFlow Dataset usage
+## TensorFlow Dataset
 
 ```python
 import tensorflow as tf
@@ -117,7 +117,7 @@ ds = ds \
 # e.g., tf.data.AUTOTUNE, for better performance. See docs for TensorFlow Dataset.
 ```
 
-## PyTorch Dataset usage
+## PyTorch Dataset
 
 ```python
 from typing import Optional, Sequence, Tuple
@@ -199,6 +199,38 @@ transforms = Compose([
 # Users can have their own way to create the Dataset, as long as for each iteration 
 # it returns a tuple of arrays for a single image: (image, bboxes, labels).
 ds = PTDataset(image_list, bboxes_list, labels_list, transforms=transforms)
+```
+
+## Image classification
+
+While the tools here are primarily designed for object detection tasks, they can 
+also be used for image classification in which only the images are to be transformed,
+e.g., given a dataset that returns `(image, label)` samples, or even only `image` samples. 
+The `image_only` function can be used to convert a transformation class for this purpose.
+
+If the dataset returns a tuple `(image, ...)` duration iteration, only the `image`
+will be transformed, other parameters that followed such as `(..., label, weight)` 
+will be returned untouched.
+
+If the dataset returns `image` only (not a tuple), then only the transformed `image` will be returned. 
+```python
+from targetran.utils import image_only
+```
+```python
+# TensorFlow.
+ds = ds \
+    .map(image_only(TFRandomCrop())) \
+    .map(image_only(affine_transform)) \
+    .map(image_only(TFResize((256, 256))))
+```
+```python
+# PyTorch.
+transforms = Compose([
+    image_only(RandomCrop()),
+    image_only(affine_transform),
+    image_only(Resize((256, 256))),
+])
+ds = PTDataset(..., transforms=transforms)
 ```
 
 # API
