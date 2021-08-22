@@ -121,7 +121,7 @@ ds = ds \
 # Since the array/tensor shape of each sample could be different, conventional
 # way of batching may not work. Users will have to consider their own use cases.
 # One possibly useful way is the padded-batch.
-ds = ds.padded_batch(batch_size=32, padding_values=-1.0)
+ds = ds.padded_batch(batch_size=2, padding_values=-1.0)
 ```
 
 ## PyTorch Dataset
@@ -216,7 +216,7 @@ ds = PTDataset(image_seq, bboxes_seq, labels_seq, transforms=transforms)
 from torch.utils.data import DataLoader
 from targetran.utils import collate_fn
 
-data_loader = DataLoader(ds, batch_size=32, collate_fn=collate_fn)
+data_loader = DataLoader(ds, batch_size=2, collate_fn=collate_fn)
 ```
 
 ## Image classification
