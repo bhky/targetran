@@ -93,7 +93,7 @@ from targetran.tf import (
 
 # Convert the above data sequences into a TensorFlow Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
-# it returns a tuple of tensors for a single image: (image, bboxes, labels).
+# it returns a tuple of tensors for a single sample: (image, bboxes, labels).
 ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 # The affine transformations can be combined for better performance.
@@ -115,6 +115,13 @@ ds = ds \
 
 # In the Dataset `map` call, the parameter `num_parallel_calls` can be set to,
 # e.g., tf.data.AUTOTUNE, for better performance. See docs for TensorFlow Dataset.
+```
+```python
+# Batching:
+# Since the array/tensor shape of each sample could be different, conventional
+# way of batching may not work. Users will have to consider their own use cases.
+# One possibly useful way is the padded-batch.
+ds = ds.padded_batch(batch_size=32, padding_values=-1.0)
 ```
 
 ## PyTorch Dataset
@@ -197,8 +204,19 @@ transforms = Compose([
 
 # Convert the above data sequences into a PyTorch Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
-# it returns a tuple of arrays for a single image: (image, bboxes, labels).
+# it returns a tuple of arrays for a single sample: (image, bboxes, labels).
 ds = PTDataset(image_seq, bboxes_seq, labels_seq, transforms=transforms)
+```
+```python
+# Batching:
+# In PyTorch, it is common to use a Dataset with a DataLoader, which provides
+# batching functionality. However, since the array/tensor shape of each sample 
+# could be different, the default batching may not work. Targetran provides
+# a `collate_fn` that helps producing batches of (image_seq, bboxes_seq, labels_seq).
+from torch.utils.data import DataLoader
+from targetran.utils import collate_fn
+
+data_loader = DataLoader(ds, batch_size=32, collate_fn=collate_fn)
 ```
 
 ## Image classification
@@ -248,7 +266,7 @@ on `np.ndarray` and the other on `tf.Tensor`. For the latter, the class names
 have a `TF*` prefix, e.g., `RandomRotate` and `TFRandomRotate`.
 
 The transformation classes are callables that accept input parameters from 
-a single image:
+a single sample consists of:
 
 - `image` (`np.ndarray` or `tf.Tensor` of shape `(height, width, num_channels)`);
 - `bboxes` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty);
