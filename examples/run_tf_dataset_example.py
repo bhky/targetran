@@ -156,6 +156,16 @@ def main() -> None:
 
     plot(ds, num_rows=2, num_cols=3)
 
+    # Example of using the dataset with padded-batching.
+    ds = ds.padded_batch(2, padding_values=np.nan)
+
+    for batch in ds.take(5):
+        image_batch, bboxes_batch, labels_batch = batch
+        print("--------------")
+        print(f"transformed image-batch shape: {image_batch.get_shape()}")
+        print(f"transformed bboxes-batch shape: {bboxes_batch.get_shape()}")
+        print(f"transformed labels-batch shape: {bboxes_batch.get_shape()}")
+
 
 if __name__ == "__main__":
     main()

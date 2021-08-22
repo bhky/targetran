@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import cv2
 import matplotlib.pylab as plt
 import numpy as np
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 from targetran.np import (
     CombineAffine,
@@ -22,7 +22,7 @@ from targetran.np import (
     RandomTranslate,
     Resize,
 )
-from targetran.utils import Compose
+from targetran.utils import Compose, collate_fn
 
 
 def load_images() -> Dict[str, np.ndarray]:
@@ -195,6 +195,15 @@ def main() -> None:
     ds = make_pt_dataset(load_images(), load_annotations(), transforms)
 
     plot(ds, num_rows=2, num_cols=3)
+
+    # Example of batching with DataLoader and collate_fn.
+    data_loader = DataLoader(ds, batch_size=2, collate_fn=collate_fn)
+
+    for batch in data_loader:
+        image_seq, bboxes_seq, labels_seq = batch
+        print(f"transformed image-seq size: {len(image_seq)}")
+        print(f"transformed bboxes-seq size: {len(bboxes_seq)}")
+        print(f"transformed labels-seq size: {len(labels_seq)}")
 
 
 if __name__ == "__main__":
