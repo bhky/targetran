@@ -17,7 +17,7 @@
 ## Data format
 
 For object detection model training, which is the primary usage here, 
-the following data are needed for a dataset.
+the following data are needed.
 - `image_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, 3)`):
   - images with 3 channels in channel-last format;
   - image sizes can be different.
@@ -223,15 +223,15 @@ a single image:
 - `bboxes` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty);
 - `labels` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`, can be empty).
 
-The return format is a tuple of `(image, bboxes, labels)`.
+The return format is a tuple: `(image, bboxes, labels)`.
 
 Please see the [data format](#data-format) section for usage instructions.
 
 ### Functions
 
 There are also a pure functional counterpart for each class, 
-e.g., `rotate` and `tf_rotate`, to which one could provide exact 
-transformation parameters.
+e.g., `rotate` and `tf_rotate` for `np.ndarray` and `tf.Tensor`, 
+to which one could provide exact transformation parameters.
 
 The input format is `(image, bboxes, labels, ...)` where each function
 expects different additional input parameters. The return format is still
