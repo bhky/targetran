@@ -22,7 +22,7 @@ For object detection model training, which is the primary usage here, the follow
   - image sizes can be different.
 - `bboxes_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
   - each `bboxes` array/tensor represents the bounding-boxes associated with an image;
-  - each `bboxes` is given as `[top_left_x, top_left_y, width, height]`;
+  - each single bounding-box is given as `[top_left_x, top_left_y, width, height]`;
   - empty array/tensor means no bounding-boxes (and labels) for that image.
 - `labels_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`):
   - each `labels` array/tensor represents the bounding-box labels associated with an image;
