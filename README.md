@@ -228,7 +228,7 @@ Please see the [data format](#data-format) section for usage instructions.
 
 ### Transformation functions
 
-There are also a pure functional counterpart for each transformation class, 
+Each transformation class also has a pure functional counterpart, 
 e.g., `rotate` and `tf_rotate` for `np.ndarray` and `tf.Tensor`, 
 to which one could provide exact transformation parameters.
 
