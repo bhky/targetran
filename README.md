@@ -16,10 +16,9 @@
 
 ## Data format
 
-For object detection model training, which is the primary usage here, 
-the following data are needed.
-- `image_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, 3)`):
-  - images with 3 channels in channel-last format;
+For object detection model training, which is the primary usage here, the following data are needed.
+- `image_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, num_channels)`):
+  - images in channel-last format;
   - image sizes can be different.
 - `bboxes_list` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
   - each `bboxes` array/tensor represents the bounding-boxes associated with an image;
@@ -33,8 +32,8 @@ Some dummy data are created below for illustration. Please note the required for
 ```python
 import numpy as np
 
-# Each image could have different sizes, but they must all have 3 channels.
-# The channel-last format is used, i.e., (image_height, image_width, num_channels).
+# Each image could have different sizes, but they must follow the channel-last format, 
+# i.e., (image_height, image_width, num_channels).
 image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
 
 # The bounding-boxes (bboxes) are given as a sequence of Numpy arrays (or TF tensors).
@@ -219,7 +218,7 @@ have a `TF*` prefix, e.g., `RandomRotate` and `TFRandomRotate`.
 The transformation classes are callables that accept input parameters from 
 a single image:
 
-- `image` (`np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, 3)`);
+- `image` (`np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, num_channels)`);
 - `bboxes` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty);
 - `labels` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`, can be empty).
 
