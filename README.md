@@ -17,12 +17,12 @@
 ## Data format
 
 For object detection model training, which is the primary usage here, the following data are needed.
-- `image_seq` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(image_height, image_width, num_channels)`):
+- `image_seq` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(height, width, num_channels)`):
   - images in channel-last format;
   - image sizes can be different.
 - `bboxes_seq` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
   - each `bboxes` array/tensor provides the bounding-boxes associated with an image;
-  - each single bounding-box is represented by `[top_left_x, top_left_y, width, height]`;
+  - each single bounding-box is represented by `[top_left_x, top_left_y, bbox_width, bbox_height]`;
   - empty array/tensor means no bounding-boxes (and labels) for that image.
 - `labels_seq` (Sequence of `np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`):
   - each `labels` array/tensor provides the bounding-box labels associated with an image;
@@ -33,13 +33,13 @@ Some dummy data are created below for illustration. Please note the required for
 import numpy as np
 
 # Each image could have different sizes, but they must follow the channel-last format, 
-# i.e., (image_height, image_width, num_channels).
+# i.e., (height, width, num_channels).
 image_seq = [np.random.rand(480, 512, 3) for _ in range(3)]
 
 # The bounding-boxes (bboxes) are given as a sequence of NumPy arrays (or TF tensors).
 # Each array contains the bounding-bboxes for one corresponding image.
 #
-# Each bbox is represented by [top_left_x, top_left_y, width, height].
+# Each bbox is represented by [top_left_x, top_left_y, bbox_width, bbox_height].
 # 
 # In case an image has no bboxes, an empty array should be provided.
 bboxes_seq = [
