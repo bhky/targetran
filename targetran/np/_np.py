@@ -212,7 +212,7 @@ class RandomTransform:
     def _rand_fn(self, shape: Tuple[int, ...] = ()) -> np.ndarray:
         return self._rng.random(shape)
 
-    def get_mats(
+    def _get_mats(
             self,
             image: np.ndarray,
             rand_fn: Callable[..., np.ndarray]
@@ -265,7 +265,7 @@ class CombineAffine(RandomTransform):
             rand_fn: Callable[..., np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
         image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
-            *[(*t.get_mats(image, rand_fn), t.probability)
+            *[(*t._get_mats(image, rand_fn), t.probability)
               for i, t in enumerate(self._transforms)]
         ))
 
@@ -313,7 +313,7 @@ class RandomFlipLeftRight(RandomTransform):
             flip_left_right, probability, seed, "RandomFlipLeftRight", True
         )
 
-    def get_mats(
+    def _get_mats(
             self,
             image: np.ndarray,
             rand_fn: Callable[..., np.ndarray]
@@ -342,7 +342,7 @@ class RandomFlipUpDown(RandomTransform):
             flip_up_down, probability, seed, "RandomFlipUpDown", True
         )
 
-    def get_mats(
+    def _get_mats(
             self,
             image: np.ndarray,
             rand_fn: Callable[..., np.ndarray]
@@ -376,7 +376,7 @@ class RandomRotate(RandomTransform):
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
                * rand_fn() + self.angle_deg_range[0]
 
-    def get_mats(
+    def _get_mats(
             self,
             image: np.ndarray,
             rand_fn: Callable[..., np.ndarray]
@@ -414,7 +414,7 @@ class RandomShear(RandomTransform):
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
                * rand_fn() + self.angle_deg_range[0]
 
-    def get_mats(
+    def _get_mats(
             self,
             image: np.ndarray,
             rand_fn: Callable[..., np.ndarray]
@@ -473,7 +473,7 @@ class RandomTranslate(RandomTransform):
         )
         return translate_height, translate_width
 
-    def get_mats(
+    def _get_mats(
             self,
             image: np.ndarray,
             rand_fn: Callable[..., np.ndarray]

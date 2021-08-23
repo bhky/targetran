@@ -259,7 +259,7 @@ class TFRandomTransform:
     def _rand_fn(self, shape: Tuple[int, ...] = ()) -> tf.Tensor:
         return self._rng.uniform(shape=shape)
 
-    def get_mats(
+    def _get_mats(
             self,
             image: tf.Tensor,
             rand_fn: Callable[..., tf.Tensor]
@@ -312,7 +312,7 @@ class TFCombineAffine(TFRandomTransform):
             rand_fn: Callable[..., tf.Tensor]
     ) -> Tuple[tf.Tensor, tf.Tensor]:
         image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
-            *[(*t.get_mats(image, rand_fn), t.probability)
+            *[(*t._get_mats(image, rand_fn), t.probability)
               for i, t in enumerate(self._transforms)]
         ))
 
@@ -360,7 +360,7 @@ class TFRandomFlipLeftRight(TFRandomTransform):
             tf_flip_left_right, probability, seed, "TFRandomFlipLeftRight", True
         )
 
-    def get_mats(
+    def _get_mats(
             self,
             image: tf.Tensor,
             rand_fn: Callable[..., tf.Tensor]
@@ -389,7 +389,7 @@ class TFRandomFlipUpDown(TFRandomTransform):
             tf_flip_up_down, probability, seed, "TFRandomFlipUpDown", True
         )
 
-    def get_mats(
+    def _get_mats(
             self,
             image: tf.Tensor,
             rand_fn: Callable[..., tf.Tensor]
@@ -423,7 +423,7 @@ class TFRandomRotate(TFRandomTransform):
         return _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
                * rand_fn() + _tf_convert(self.angle_deg_range[0])
 
-    def get_mats(
+    def _get_mats(
             self,
             image: tf.Tensor,
             rand_fn: Callable[..., tf.Tensor]
@@ -461,7 +461,7 @@ class TFRandomShear(TFRandomTransform):
         return _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
                * rand_fn() + _tf_convert(self.angle_deg_range[0])
 
-    def get_mats(
+    def _get_mats(
             self,
             image: tf.Tensor,
             rand_fn: Callable[..., tf.Tensor]
@@ -520,7 +520,7 @@ class TFRandomTranslate(TFRandomTransform):
         translate_width = _tf_convert(tf.shape(image)[1]) * width_fraction
         return translate_height, translate_width
 
-    def get_mats(
+    def _get_mats(
             self,
             image: tf.Tensor,
             rand_fn: Callable[..., tf.Tensor]
