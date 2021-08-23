@@ -7,6 +7,7 @@ from ._tf import (
     tf_shear,
     tf_translate,
     tf_crop,
+    tf_resize,
     TFCombineAffine,
     TFRandomTransform,
     TFRandomFlipLeftRight,
