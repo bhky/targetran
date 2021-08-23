@@ -18,8 +18,8 @@ class Compose:
         return args
 
 
-def collate_fn(batch_: Sequence[Tuple[Any, ...]]) -> Tuple[Sequence[Any], ...]:
-    return tuple(zip(*batch_))
+def collate_fn(batch: Sequence[Tuple[Any, ...]]) -> Tuple[Sequence[Any], ...]:
+    return tuple(zip(*batch))
 
 
 def image_only(
