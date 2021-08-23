@@ -349,7 +349,7 @@ expects different additional input parameters. The return format is still
 `targetran.utils`
 - [`Compose`](#compose)
 - [`collate_fn`](#collate_fn)
-- [`image_only`]
+- [`image_only`](#image_only)
 
 ## Manual
 
