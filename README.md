@@ -398,7 +398,7 @@ Randomly translate the input image.
 ### `CombineAffine`, `TFCombineAffine`
 Combine the random affine transformations to improve performance.
 - `__init__` parameters
-  - `transforms` (Sequence of affine transform class objects): Available options are from below.
+  - `transforms` (Sequence of affine transform class objects): Accepted options are from below.
     - `RandomFlipLeftRight`/`TFRandomFlipLeftRight`
     - `RandomFlipUpDown`/`TFRandomFlipUpDown`
     - `RandomRotate`/`TFRandomRotate`
