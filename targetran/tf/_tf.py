@@ -15,7 +15,7 @@ from targetran._check import (
     _check_crop_input,
     _check_input_range,
 )
-from targetran._functional import (
+from targetran._tf_functional import (
     _tf_convert,
     _tf_round_to_int,
     _tf_resize_image,

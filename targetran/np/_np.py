@@ -13,7 +13,7 @@ from targetran._check import (
     _check_crop_input,
     _check_input_range,
 )
-from targetran._functional import (
+from targetran._np_functional import (
     _np_convert,
     _np_range,
     _np_round_to_int,
