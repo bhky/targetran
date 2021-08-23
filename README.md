@@ -376,7 +376,7 @@ Randomly flip the input image vertically (up to down).
 ### `RandomRotate`, `TFRandomRotate`
 Randomly rotate the input image about the centre.
 - `__init__` parameters
-  - `angle_deg_range` (`Tuple[float, float]`, default `(-15.0, 15.0)`):
+  - `angle_deg_range` (`Tuple[float, float]`, default `(-20.0, 20.0)`):
     The lower and upper limits (both exclusive) of the rotation angle in degrees.
     Positive values means anti-clockwise, and vice versa. 
   - `probability` (`float`, default `0.7`): Probability to apply the transformation.
@@ -389,7 +389,7 @@ Randomly rotate the input image about the centre.
 ### `RandomShear`, `TFRandomShear`
 Randomly shear the input image horizontally about the centre.
 - `__init__` parameters
-  - `angle_deg_range` (`Tuple[float, float]`, default `(-15.0, 15.0)`):
+  - `angle_deg_range` (`Tuple[float, float]`, default `(-20.0, 20.0)`):
     The lower and upper limits (both exclusive) of the shear angle in degrees.
     Positive values means anti-clockwise, and vice versa.
     Both values should be greater than `-90.0` and less than `90.0`.

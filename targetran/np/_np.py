@@ -364,7 +364,7 @@ class RandomRotate(RandomTransform):
 
     def __init__(
             self,
-            angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
+            angle_deg_range: Tuple[float, float] = (-20.0, 20.0),
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
@@ -402,7 +402,7 @@ class RandomShear(RandomTransform):
 
     def __init__(
             self,
-            angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
+            angle_deg_range: Tuple[float, float] = (-20.0, 20.0),
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
