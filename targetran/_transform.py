@@ -2,11 +2,12 @@
 Image and target transform utilities.
 """
 
-from typing import Callable, List, Tuple, TypeVar
+from typing import Any, Callable, List, Tuple, TypeVar
 
 import numpy as np  # type: ignore
 
-T = TypeVar("T")
+# This roughly means anything that is ndarray-like.
+T = TypeVar("T", np.ndarray, Any)
 
 
 def _sanitise(
@@ -564,8 +565,6 @@ def _get_crop_inputs(
     """
     image_height = convert_fn(image_height)
     image_width = convert_fn(image_width)
-    height_fraction_range = convert_fn(height_fraction_range)
-    width_fraction_range = convert_fn(width_fraction_range)
 
     height_fractions, width_fractions = _get_random_size_fractions(
         height_fraction_range, width_fraction_range, rand_fn, convert_fn
