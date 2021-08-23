@@ -37,7 +37,7 @@ The best way to install Targetran is from PyPI:
 ```shell
 python3 -m pip install --upgrade targetran
 ```
-Alternatively, to obtain the latest version in this repository:
+Alternatively, to obtain the latest version from this repository:
 ```shell
 git clone https://github.com/bhky/targetran.git
 cd targetran
