@@ -550,20 +550,22 @@ class TFRandomCrop(TFRandomTransform):
 
     def __init__(
             self,
-            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
-            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            cropped_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            cropped_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(
-            crop_height_fraction_range, (0.0, 1.0), "crop_height_fraction_range"
+            cropped_height_fraction_range, (0.0, 1.0),
+            "crop_height_fraction_range"
         )
         _check_input_range(
-            crop_width_fraction_range, (0.0, 1.0), "crop_width_fraction_range"
+            cropped_width_fraction_range, (0.0, 1.0),
+            "crop_width_fraction_range"
         )
         super().__init__(tf_crop, probability, seed, "TFRandomCrop", False)
-        self.crop_height_fraction_range = crop_height_fraction_range
-        self.crop_width_fraction_range = crop_width_fraction_range
+        self.cropped_height_fraction_range = cropped_height_fraction_range
+        self.cropped_width_fraction_range = cropped_width_fraction_range
 
     def __call__(
             self,
@@ -576,8 +578,8 @@ class TFRandomCrop(TFRandomTransform):
         offset_height, offset_width, cropped_height, cropped_width = \
             _tf_get_crop_inputs(
                 tf.shape(image)[0], tf.shape(image)[1],
-                self.crop_height_fraction_range,
-                self.crop_width_fraction_range,
+                self.cropped_height_fraction_range,
+                self.cropped_width_fraction_range,
                 self._rand_fn
             )
 

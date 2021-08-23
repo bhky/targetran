@@ -503,20 +503,22 @@ class RandomCrop(RandomTransform):
 
     def __init__(
             self,
-            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
-            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            cropped_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            cropped_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(
-            crop_height_fraction_range, (0.0, 1.0), "crop_height_fraction_range"
+            cropped_height_fraction_range, (0.0, 1.0),
+            "cropped_height_fraction_range"
         )
         _check_input_range(
-            crop_width_fraction_range, (0.0, 1.0), "crop_width_fraction_range"
+            cropped_width_fraction_range, (0.0, 1.0),
+            "cropped_width_fraction_range"
         )
         super().__init__(crop, probability, seed, "RandomCrop", False)
-        self.crop_height_fraction_range = crop_height_fraction_range
-        self.crop_width_fraction_range = crop_width_fraction_range
+        self.cropped_height_fraction_range = cropped_height_fraction_range
+        self.cropped_width_fraction_range = cropped_width_fraction_range
 
     def __call__(
             self,
@@ -529,8 +531,8 @@ class RandomCrop(RandomTransform):
         offset_height, offset_width, cropped_height, cropped_width = \
             _np_get_crop_inputs(
                 np.shape(image)[0], np.shape(image)[1],
-                self.crop_height_fraction_range,
-                self.crop_width_fraction_range,
+                self.cropped_height_fraction_range,
+                self.cropped_width_fraction_range,
                 self._rand_fn
             )
 
