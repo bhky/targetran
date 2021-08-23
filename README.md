@@ -12,6 +12,21 @@
 
 (Figure produced by the example code [here](examples/run_tf_dataset_example.py).)
 
+# Table of contents
+
+- [Usage](#usage)
+  - [Data format](#data-format)
+  - [Design principles](#design-principles)
+  - [TensorFlow Dataset](#tensorflow-dataset)
+  - [PyTorch Dataset](#pytorch-dataset)
+  - [Image classification](#image-classification)
+- [API](#api)
+  - [Overview](#overview)
+    - [Transformation classes](#transformation-classes)
+    - [Transformation functions](#transformation-functions)
+  - [Full list](#full-list)
+  - [Manual](#manual)
+
 # Usage
 
 ## Data format
@@ -297,7 +312,7 @@ expects different additional input parameters. The return format is still
 - [`RandomTranslate`](#randomtranslate-tfrandomtranslate)
 - [`CombineAffine`](#combineaffine-tfcombineaffine)
 - [`RandomCrop`](#randomcrop-tfrandomcrop)
-- `Resize`
+- [`Resize`](#resize-tfresize)
 - `flip_left_right`
 - `flip_up_down`
 - `rotate`
@@ -313,7 +328,7 @@ expects different additional input parameters. The return format is still
 - [`TFRandomTranslate`](#randomtranslate-tfrandomtranslate)
 - [`TFCombineAffine`](#combineaffine-tfcombineaffine)
 - [`TFRandomCrop`](#randomcrop-tfrandomcrop)
-- `TFResize`
+- [`TFResize`](#resize-tfresize)
 - `to_tf`
 - `seqs_to_tf_dataset`
 - `tf_flip_left_right`
@@ -328,7 +343,7 @@ expects different additional input parameters. The return format is still
 - `collate_fn`
 - `image_only`
 
-# Manual
+## Manual
 
 ### `RandomFlipLeftRight`, `TFRandomFlipLeftRight`
 Randomly flip the input image horizontally (left to right).
@@ -424,6 +439,15 @@ Get a random crop of the input image.
       Both values should be greater than `0.0` and less than `1.0`.
   - `probability` (`float`, default `0.7`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
+- `__call__` parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `Resize`, `TFResize`
+Resize the input image.
+- `__init__` parameters
+  - `dest_size` (`Tuple[int, int]`): Destination image size given as (height, width).
 - `__call__` parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
 - `__call__` returns
