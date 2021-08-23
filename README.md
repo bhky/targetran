@@ -562,8 +562,7 @@ To be used with the `DataLoader` from PyTorch for batching.
   - Tuple of sequences.
 
 ### `image_only`
-Convert a transformation class to transform the image only, mainly for 
-image classification usage. 
+Convert a transformation class to transform the input image only.
 Please see [image classification](#image-classification).
 - Parameters
   - `tran_fn`: Transformation class object.
