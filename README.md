@@ -289,7 +289,8 @@ The transformation classes are callables that accept input parameters from
 a single sample consists of:
 
 - `image` (`np.ndarray` or `tf.Tensor` of shape `(height, width, num_channels)`);
-- `bboxes` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty);
+- `bboxes` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty), 
+  where each row is `[top_left_x, top_left_y, bbox_width, bbox_height]`;
 - `labels` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`, can be empty).
 
 The return format is a tuple: `(image, bboxes, labels)`.
