@@ -319,12 +319,13 @@ expects different additional input parameters. The return format is still
 - [`CombineAffine`](#combineaffine-tfcombineaffine)
 - [`RandomCrop`](#randomcrop-tfrandomcrop)
 - [`Resize`](#resize-tfresize)
-- `flip_left_right`
-- `flip_up_down`
-- `rotate`
-- `shear`
-- `translate`
-- `crop`
+- [`flip_left_right`](#flip_left_right-tf_flip_left_right)
+- [`flip_up_down`](#flip_up_down-tf_flip_up_down)
+- [`rotate`](#rotate-tf_rotate)
+- [`shear`](#shear-tf_shear)
+- [`translate`](#translate-tf_translate)
+- [`crop`](#crop-tf_crop)
+- [`resize`](#resize-tf_resize)
 
 `targetran.tf`
 - [`TFRandomFlipLeftRight`](#randomflipleftright-tfrandomflipleftright)
@@ -335,14 +336,15 @@ expects different additional input parameters. The return format is still
 - [`TFCombineAffine`](#combineaffine-tfcombineaffine)
 - [`TFRandomCrop`](#randomcrop-tfrandomcrop)
 - [`TFResize`](#resize-tfresize)
-- `to_tf`
-- `seqs_to_tf_dataset`
-- `tf_flip_left_right`
-- `tf_flip_up_down`
-- `tf_rotate`
-- `tf_shear`
-- `tf_translate`
-- `tf_crop`
+- [`to_tf`](#to_tf)
+- [`seqs_to_tf_dataset`](#seqs_to_tf_dataset)
+- [`tf_flip_left_right`](#flip_left_right-tf_flip_left_right)
+- [`tf_flip_up_down`](#flip_up_down-tf_flip_up_down)
+- [`tf_rotate`](#rotate-tf_rotate)
+- [`tf_shear`](#shear-tf_shear)
+- [`tf_translate`](#translate-tf_translate)
+- [`tf_crop`](#crop-tf_crop)
+- [`tf_resize`](#resize-tf_resize)
 
 `targetran.utils`
 - `Compose`
@@ -457,4 +459,87 @@ Resize the input image.
 - `__call__` parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
 - `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `to_tf`
+Convert array sequences to TensorFlow (eager) tensor sequences.
+- Parameters
+  - `image_seq`, `bboxes_seq`, `labels_seq`: Please refer to the [data format](#data-format).
+- Returns
+  - Tuple of tensors: `(image_seq, bboxes_seq, labels_seq)`.
+
+### `seqs_to_tf_dataset`
+Convert array sequences to a TensorFlow Dataset.
+- Parameters
+  - `image_seq`, `bboxes_seq`, `labels_seq`: Please refer to the [data format](#data-format).
+- Returns
+  - `tf.data.Dataset` instance.
+
+### `flip_left_right`, `tf_flip_left_right`
+Flip the input image horizontally (left to right).
+- Parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- Returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `flip_up_down`, `tf_flip_up_down`
+Flip the input image vertically (up to down).
+- Parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- Returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `rotate`, `tf_rotate`
+Rotate the input image about the centre.
+- Parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+  - `angle_deg` (`float`): Rotation angle in degrees. 
+    A positive value means anti-clockwise, and vice versa.
+- Returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `shear`, `tf_shear`
+Shear the input image horizontally about the centre.
+- Parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+  - `angle_deg` (`float`): 
+    Shear angle in degrees, must be greater than `-90.0` and less than `90.0`. 
+    A positive value means anti-clockwise, and vice versa.
+- Returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+  
+### `translate`, `tf_translate`
+Translate the input image.
+- Parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+  - `translate_height` (`int`): Vertical translation in pixels,
+    with its absolute value smaller than the image height.
+    A positive value means moving downwards, and vice versa.
+  - `translate_width` (`int`): Horizontal translation in pixels.
+    with its absolute value smaller than the image width.
+    A positive value means moving rightwards, and vice versa.
+- Returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+  
+### `crop`, `tf_crop`
+Get a crop of the input image.
+- Parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+  - `offset_height` (`int`): Offset height of the cropped image in pixels,
+    must be greater than `0` and less than the image height.
+  - `offset_width` (`int`): Offset width of the cropped image in pixels,
+    must be greater than `0` and less than the image width.
+  - `cropped_image_height` (`int`): 
+    In pixels, naturally bounded by the original image height.
+  - `cropped_image_width` (`int`): 
+    In pixels, naturally bounded by the original image width.
+- Returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `resize`, `tf_resize`
+Resize the input image. The same as `Resize`/`TFResize` but in functional form.
+- Parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+  - `dest_size` (`Tuple[int, int]`): Destination image size given as (height, width).
+- Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
