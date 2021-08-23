@@ -14,6 +14,7 @@
 
 # Table of contents
 
+- [Installation](#installation)
 - [Usage](#usage)
   - [Data format](#data-format)
   - [Design principles](#design-principles)
@@ -27,6 +28,21 @@
     - [Transformation functions](#transformation-functions)
   - [Full list](#full-list)
   - [Manual](#manual)
+
+# Installation
+
+Python 3 is required.
+
+The best way to install Targetran is from PyPI:
+```shell
+python3 -m pip install --upgrade targetran
+```
+Alternatively, to obtain the latest version in this repository:
+```shell
+git clone https://github.com/bhky/targetran.git
+cd targetran
+python3 -m pip install .
+```
 
 # Usage
 
