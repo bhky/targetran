@@ -290,12 +290,12 @@ expects different additional input parameters. The return format is still
 ## Full list
 
 `targetran.np`
-- `CombineAffine`
 - `RandomFlipLeftRight`
 - `RandomFlipUpDown`
 - `RandomRotate`
 - `RandomShear`
 - `RandomTranslate`
+- `CombineAffine`
 - `RandomCrop`
 - `Resize`
 - `flip_left_right`
@@ -306,12 +306,12 @@ expects different additional input parameters. The return format is still
 - `crop`
 
 `targetran.tf`
-- `TFCombineAffine`
 - `TFRandomFlipLeftRight`
 - `TFRandomFlipUpDown`
 - `TFRandomRotate`
 - `TFRandomShear`
 - `TFRandomTranslate`
+- `TFCombineAffine`
 - `TFRandomCrop`
 - `TFResize`
 - `to_tf`
@@ -330,3 +330,85 @@ expects different additional input parameters. The return format is still
 
 # Manual
 
+### `RandomFlipLeftRight`, `TFRandomFlipLeftRight`
+Randomly flip the input image horizontally (left to right).
+- `__init__` parameters
+  - `probability` (`float`, default `0.7`): Probability to apply the transformation.
+  - `seed` (`Optional[int]`, default `None`): Random seed.
+- `__call__` parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `RandomFlipUpDown`, `TFRandomFlipUpDown`
+Randomly flip the input image vertically (up to down).
+- `__init__` parameters
+  - `probability` (`float`, default `0.7`): Probability to apply the transformation.
+  - `seed` (`Optional[int]`, default `None`): Random seed.
+- `__call__` parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `RandomRotate`, `TFRandomRotate`
+Randomly rotate the input image about the centre.
+- `__init__` parameters
+  - `angle_deg_range` (`Tuple[float, float]`, default `(-15.0, 15.0)`):
+    The lower and upper limits (both exclusive) of the rotation angle in degrees.
+    Positive values means anti-clockwise, and vice versa. 
+  - `probability` (`float`, default `0.7`): Probability to apply the transformation.
+  - `seed` (`Optional[int]`, default `None`): Random seed.
+- `__call__` parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `RandomShear`, `TFRandomShear`
+Randomly shear the input image horizontally about the centre.
+- `__init__` parameters
+  - `angle_deg_range` (`Tuple[float, float]`, default `(-15.0, 15.0)`):
+    The lower and upper limits (both exclusive) of the shear angle in degrees.
+    Positive values means anti-clockwise, and vice versa.
+    Both values should be greater than `-90.0` and less than `90.0`.
+  - `probability` (`float`, default `0.7`): Probability to apply the transformation.
+  - `seed` (`Optional[int]`, default `None`): Random seed.
+- `__call__` parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+  
+### `RandomTranslate`, `TFRandomTranslate`
+Randomly translate the input image.
+- `__init__` parameters
+  - `translate_height_fraction_range` (`Tuple[float, float]`, default `(-0.2, 0.2)`):
+    The lower and upper limits (both exclusive) of the vertical translation, 
+    given as fractions of the image height. 
+    Both values should be greater than `-1.0` and less than `1.0`.
+  - `translate_width_fraction_range` (`Tuple[float, float]`, default `(-0.2, 0.2)`):
+      The lower and upper limits (both exclusive) of the horizontal translation, 
+      given as fractions of the image width. 
+      Both values should be greater than `-1.0` and less than `1.0`.
+  - `probability` (`float`, default `0.7`): Probability to apply the transformation.
+  - `seed` (`Optional[int]`, default `None`): Random seed.
+- `__call__` parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `RandomCrop`, `TFRandomCrop`
+Get a random crop of the input image.
+- `__init__` parameters
+  - `crop_height_fraction_range` (`Tuple[float, float]`, default `(0.7, 0.9)`):
+    The lower and upper limits (both exclusive) of the cropped image height, 
+    given as fractions of the original image height. 
+    Both values should be greater than `0.0` and less than `1.0`.
+  - `crop_width_fraction_range` (`Tuple[float, float]`, default `(0.7, 0.9)`):
+      The lower and upper limits (both exclusive) of the cropped image width, 
+      given as fractions of the original image width. 
+      Both values should be greater than `0.0` and less than `1.0`.
+  - `probability` (`float`, default `0.7`): Probability to apply the transformation.
+  - `seed` (`Optional[int]`, default `None`): Random seed.
+- `__call__` parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
