@@ -290,13 +290,13 @@ expects different additional input parameters. The return format is still
 ## Full list
 
 `targetran.np`
-- `RandomFlipLeftRight`
-- `RandomFlipUpDown`
-- `RandomRotate`
-- `RandomShear`
-- `RandomTranslate`
-- `CombineAffine`
-- `RandomCrop`
+- [`RandomFlipLeftRight`](#randomflipleftright-tfrandomflipleftright)
+- [`RandomFlipUpDown`](#randomflipupdown-tfrandomflipupdown)
+- [`RandomRotate`](#randomrotate-tfrandomrotate)
+- [`RandomShear`](#randomshear-tfrandomshear)
+- [`RandomTranslate`](#randomtranslate-tfrandomtranslate)
+- [`CombineAffine`](#combineaffine-tfcombineaffine)
+- [`RandomCrop`](#randomcrop-tfrandomcrop)
 - `Resize`
 - `flip_left_right`
 - `flip_up_down`
@@ -306,13 +306,13 @@ expects different additional input parameters. The return format is still
 - `crop`
 
 `targetran.tf`
-- `TFRandomFlipLeftRight`
-- `TFRandomFlipUpDown`
-- `TFRandomRotate`
-- `TFRandomShear`
-- `TFRandomTranslate`
-- `TFCombineAffine`
-- `TFRandomCrop`
+- [`TFRandomFlipLeftRight`](#randomflipleftright-tfrandomflipleftright)
+- [`TFRandomFlipUpDown`](#randomflipupdown-tfrandomflipupdown)
+- [`TFRandomRotate`](#randomrotate-tfrandomrotate)
+- [`TFRandomShear`](#randomshear-tfrandomshear)
+- [`TFRandomTranslate`](#randomtranslate-tfrandomtranslate)
+- [`TFCombineAffine`](#combineaffine-tfcombineaffine)
+- [`TFRandomCrop`](#randomcrop-tfrandomcrop)
 - `TFResize`
 - `to_tf`
 - `seqs_to_tf_dataset`
@@ -389,6 +389,22 @@ Randomly translate the input image.
       given as fractions of the image width. 
       Both values should be greater than `-1.0` and less than `1.0`.
   - `probability` (`float`, default `0.7`): Probability to apply the transformation.
+  - `seed` (`Optional[int]`, default `None`): Random seed.
+- `__call__` parameters
+  - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
+- `__call__` returns
+  - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `CombineAffine`, `TFCombineAffine`
+Combine the random affine transformations to improve performance.
+- `__init__` parameters
+  - `transforms` (Sequence of affine transform class objects): Available options are from below.
+    - `RandomFlipLeftRight`/`TFRandomFlipLeftRight`
+    - `RandomFlipUpDown`/`TFRandomFlipUpDown`
+    - `RandomRotate`/`TFRandomRotate`
+    - `RandomShear`/`TFRandomShear`
+    - `RandomTranslate`/`TFRandomTranslate`
+  - `probability` (`float`, default `0.7`): Probability to apply the combined transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
