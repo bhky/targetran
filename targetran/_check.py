@@ -64,14 +64,13 @@ def _check_input_range(
         if not input_range[0] < input_range[1]:
             raise ValueError(
                 f"The {input_name} should be provided as "
-                f"(min_fraction, max_fraction), "
-                f"where min_fraction < max_fraction."
+                f"(min_value, max_value), where min_value < max_value."
             )
         return
-    min_value, max_value = limit_open_interval
-    if not min_value < input_range[0] < input_range[1] < max_value:
+    lower_limit, upper_limit = limit_open_interval
+    if not lower_limit < input_range[0] < input_range[1] < upper_limit:
         raise ValueError(
             f"The {input_name} should be provided as "
-            f"(min_fraction, max_fraction), "
-            f"where {min_value} < min_fraction < max_fraction < {max_value}."
+            f"(min_value, max_value), "
+            f"where {lower_limit} < min_value < max_value < {upper_limit}."
         )
