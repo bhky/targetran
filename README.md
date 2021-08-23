@@ -347,9 +347,9 @@ expects different additional input parameters. The return format is still
 - [`tf_resize`](#resize-tf_resize)
 
 `targetran.utils`
-- `Compose`
-- `collate_fn`
-- `image_only`
+- [`Compose`](#compose)
+- [`collate_fn`](#collate_fn)
+- [`image_only`]
 
 ## Manual
 
@@ -543,3 +543,30 @@ Resize the input image. The same as `Resize`/`TFResize` but in functional form.
   - `dest_size` (`Tuple[int, int]`): Destination image size given as (height, width).
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
+
+### `Compose`
+Make a composition of the given callables.
+- `__init__` parameters
+  - `fns`: Sequence of callables that have the same input and return format, 
+    e.g., the transformation classes.
+- `__call__` parameters
+  - Same format as the given callables.
+- `__call__` returns
+  - Same format as the given callables.
+
+### `collate_fn`
+To be used with the `DataLoader` from PyTorch for batching.
+- Parameters
+  - `batch`: Sequence of tuples.
+- Returns
+  - Tuple of sequences.
+
+### `image_only`
+Convert a transformation class to transform the image only, mainly for 
+image classification usage. 
+Please see [image classification](#image-classification).
+- Parameters
+  - `tran_fn`: Transformation class object.
+- Returns
+  - Callable that performs the given transformation only to the input image
+    while returning other input parameters untouched.
