@@ -2,3 +2,4 @@ matplotlib
 numpy>=1.14.0
 opencv-python
 tensorflow>=2.0.0
+torch>=1.7.0
