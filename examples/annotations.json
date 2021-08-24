@@ -1,0 +1,75 @@
+[
+  {
+    "image_id": "ducks_01",
+    "annotations": [
+      {
+        "label": 1,
+        "top_left_x": 419,
+        "top_left_y": 404,
+        "width": 238,
+        "height": 94
+      },
+      {
+        "label": 0,
+        "top_left_x": 665,
+        "top_left_y": 524,
+        "width": 137,
+        "height": 151
+      },
+      {
+        "label": 0,
+        "top_left_x": 737,
+        "top_left_y": 391,
+        "width": 237,
+        "height": 87
+      }
+    ]
+  },
+  {
+    "image_id": "ducks_02",
+    "annotations": [
+      {
+        "label": 0,
+        "top_left_x": 222,
+        "top_left_y": 372,
+        "width": 126,
+        "height": 54
+      },
+      {
+        "label": 1,
+        "top_left_x": 182,
+        "top_left_y": 431,
+        "width": 139,
+        "height": 56
+      },
+      {
+        "label": 0,
+        "top_left_x": 332,
+        "top_left_y": 479,
+        "width": 138,
+        "height": 55
+      },
+      {
+        "label": 1,
+        "top_left_x": 832,
+        "top_left_y": 655,
+        "width": 162,
+        "height": 62
+      },
+      {
+        "label": 1,
+        "top_left_x": 1144,
+        "top_left_y": 662,
+        "width": 79,
+        "height": 61
+      },
+      {
+        "label": 0,
+        "top_left_x": 1075,
+        "top_left_y": 744,
+        "width": 148,
+        "height": 54
+      }
+    ]
+  }
+]

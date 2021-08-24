@@ -5,3 +5,6 @@ __pycache__
 *.csv
 data/
 tmp/
+scripts/
+dist/
+targetran.egg-info/
