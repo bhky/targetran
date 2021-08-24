@@ -78,7 +78,12 @@ def main() -> None:
 
     transforms = Compose([
         targetran.np.RandomRotate(probability=1.0),
-        targetran.np.RandomFlipUpDown(probability=1.0)
+        targetran.np.RandomShear(probability=1.0),
+        targetran.np.RandomTranslate(probability=1.0),
+        targetran.np.RandomFlipUpDown(probability=1.0),
+        targetran.np.RandomFlipLeftRight(probability=1.0),
+        targetran.np.RandomCrop(probability=1.0),
+        targetran.np.Resize((256, 256)),
     ])
 
     print("-------- Random transform --------")

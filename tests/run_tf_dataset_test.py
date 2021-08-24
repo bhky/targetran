@@ -6,7 +6,6 @@ TensorFlow Dataset test.
 from typing import Sequence, Tuple
 
 import numpy as np
-import tensorflow as tf
 
 import targetran.tf
 
@@ -41,15 +40,7 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
 def main() -> None:
     image_list, bboxes_list, labels_list = make_np_data()
 
-    tf_image_list, tf_bboxes_list, tf_labels_list = targetran.tf.to_tf(
-        image_list, bboxes_list, labels_list
-    )
-
-    ds = tf.data.Dataset.zip((
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_list)),
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_bboxes_list)),
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_labels_list))
-    ))
+    ds = targetran.tf.seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
 
     print("-------- Raw data --------")
 
@@ -62,10 +53,39 @@ def main() -> None:
 
     print("-------- Random transform --------")
 
-    ds = ds.map(lambda i, b, l: (i.to_tensor(), b.to_tensor(), l))
     ds = ds \
         .map(targetran.tf.TFRandomRotate(probability=1.0)) \
-        .map(targetran.tf.TFRandomFlipUpDown(probability=1.0))
+        .map(targetran.tf.TFRandomShear(probability=1.0)) \
+        .map(targetran.tf.TFRandomTranslate(probability=1.0)) \
+        .map(targetran.tf.TFRandomFlipUpDown(probability=1.0)) \
+        .map(targetran.tf.TFRandomFlipLeftRight(probability=1.0)) \
+        .map(targetran.tf.TFRandomCrop(probability=1.0))
+
+    for sample in ds:
+        image, bboxes, labels = sample
+        print(f"transformed image shape: {image.get_shape()}")
+        print(f"transformed bboxes shape: {bboxes.get_shape()}")
+        print(f"transformed bboxes: {bboxes.numpy().tolist()}")
+        print(f"transformed labels shape: {labels.get_shape()}")
+        print(f"transformed labels: {labels.numpy().tolist()}")
+        print("=========")
+
+    print("-------- Random transform with combine-affine --------")
+
+    ds = targetran.tf.seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
+
+    affine_transforms = targetran.tf.TFCombineAffine([
+         targetran.tf.TFRandomRotate(probability=1.0),
+         targetran.tf.TFRandomShear(probability=1.0),
+         targetran.tf.TFRandomTranslate(probability=1.0),
+         targetran.tf.TFRandomFlipUpDown(probability=1.0),
+         targetran.tf.TFRandomFlipLeftRight(probability=1.0),
+    ], probability=1.0)
+
+    ds = ds \
+        .map(targetran.tf.TFRandomCrop(probability=1.0)) \
+        .map(affine_transforms) \
+        .map(targetran.tf.TFResize((256, 256)))
 
     for sample in ds:
         image, bboxes, labels = sample
