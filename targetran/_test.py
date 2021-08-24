@@ -25,7 +25,7 @@ from .tf import (
     tf_crop,
 )
 
-ORIGINAL_IMAGE_LIST = [
+ORIGINAL_IMAGE_SEQ = [
     np.array([
         [[1], [2], [3]],
         [[4], [5], [6]],
@@ -46,7 +46,7 @@ ORIGINAL_IMAGE_LIST = [
     ]),
 ]
 
-ORIGINAL_BBOXES_LIST = [
+ORIGINAL_BBOXES_SEQ = [
     np.array([
         [1, 0, 2, 2],
         [0, 1, 3, 2],
@@ -57,16 +57,16 @@ ORIGINAL_BBOXES_LIST = [
     np.array([]),
 ]
 
-ORIGINAL_LABELS_LIST = [
+ORIGINAL_LABELS_SEQ = [
     np.array([0, 1]),
     np.array([2]),
     np.array([]),
 ]
 
 (
-    TF_ORIGINAL_IMAGE_LIST, TF_ORIGINAL_BBOXES_LIST, TF_ORIGINAL_LABELS_LIST
+    TF_ORIGINAL_IMAGE_SEQ, TF_ORIGINAL_BBOXES_SEQ, TF_ORIGINAL_LABELS_SEQ
 ) = to_tf(
-    ORIGINAL_IMAGE_LIST, ORIGINAL_BBOXES_LIST, ORIGINAL_LABELS_LIST
+    ORIGINAL_IMAGE_SEQ, ORIGINAL_BBOXES_SEQ, ORIGINAL_LABELS_SEQ
 )
 
 
@@ -74,7 +74,7 @@ class TestTransform(unittest.TestCase):
 
     def test_flip_left_right(self) -> None:
 
-        expected_image_list = [
+        expected_image_seq = [
             np.array([
                 [[3], [2], [1]],
                 [[6], [5], [4]],
@@ -94,7 +94,7 @@ class TestTransform(unittest.TestCase):
                 [[32], [31], [30]]
             ], dtype=np.float32),
         ]
-        expected_bboxes_list = [
+        expected_bboxes_seq = [
             np.array([
                 [0, 0, 2, 2],
                 [0, 1, 3, 2],
@@ -104,56 +104,56 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
-        expected_labels_list = ORIGINAL_LABELS_LIST
+        expected_labels_seq = ORIGINAL_LABELS_SEQ
 
         # NumPy.
-        for i in range(len(ORIGINAL_IMAGE_LIST)):
+        for i in range(len(ORIGINAL_IMAGE_SEQ)):
             image, bboxes, labels = flip_left_right(
-                ORIGINAL_IMAGE_LIST[i],
-                ORIGINAL_BBOXES_LIST[i],
-                ORIGINAL_LABELS_LIST[i]
+                ORIGINAL_IMAGE_SEQ[i],
+                ORIGINAL_BBOXES_SEQ[i],
+                ORIGINAL_LABELS_SEQ[i]
             )
             self.assertTrue(
-                np.array_equal(expected_image_list[i], image)
+                np.array_equal(expected_image_seq[i], image)
             )
             self.assertTrue(
-                np.array_equal(expected_bboxes_list[i], bboxes)
+                np.array_equal(expected_bboxes_seq[i], bboxes)
             )
             self.assertTrue(
-                np.array_equal(expected_labels_list[i], labels)
+                np.array_equal(expected_labels_seq[i], labels)
             )
 
         # TF.
         (
-            tf_expected_image_list,
-            tf_expected_bboxes_list,
-            tf_expected_labels_list
+            tf_expected_image_seq,
+            tf_expected_bboxes_seq,
+            tf_expected_labels_seq
         ) = to_tf(
-            expected_image_list, expected_bboxes_list, expected_labels_list
+            expected_image_seq, expected_bboxes_seq, expected_labels_seq
         )
-        for i in range(len(TF_ORIGINAL_LABELS_LIST)):
+        for i in range(len(TF_ORIGINAL_LABELS_SEQ)):
             tf_image, tf_bboxes, tf_labels = tf_flip_left_right(
-                TF_ORIGINAL_IMAGE_LIST[i],
-                TF_ORIGINAL_BBOXES_LIST[i],
-                TF_ORIGINAL_LABELS_LIST[i]
+                TF_ORIGINAL_IMAGE_SEQ[i],
+                TF_ORIGINAL_BBOXES_SEQ[i],
+                TF_ORIGINAL_LABELS_SEQ[i]
             )
             self.assertTrue(
-                np.array_equal(tf_expected_image_list[i].numpy(),
+                np.array_equal(tf_expected_image_seq[i].numpy(),
                                tf_image.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_bboxes_list[i].numpy(),
+                np.array_equal(tf_expected_bboxes_seq[i].numpy(),
                                tf_bboxes.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_labels_list[i].numpy(),
+                np.array_equal(tf_expected_labels_seq[i].numpy(),
                                tf_labels.numpy())
             )
 
     def test_flip_up_down(self) -> None:
 
         # Noted the shifted pixel.
-        expected_image_list = [
+        expected_image_seq = [
             np.array([
                 [[7], [8], [9]],
                 [[4], [5], [6]],
@@ -173,7 +173,7 @@ class TestTransform(unittest.TestCase):
                 [[0], [0], [0]]
             ], dtype=np.float32),
         ]
-        expected_bboxes_list = [
+        expected_bboxes_seq = [
             np.array([
                 [1, 1, 2, 2],
                 [0, 0, 3, 2],
@@ -183,55 +183,55 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
-        expected_labels_list = ORIGINAL_LABELS_LIST
+        expected_labels_seq = ORIGINAL_LABELS_SEQ
 
         # NumPy.
-        for i in range(len(ORIGINAL_IMAGE_LIST)):
+        for i in range(len(ORIGINAL_IMAGE_SEQ)):
             image, bboxes, labels = flip_up_down(
-                ORIGINAL_IMAGE_LIST[i],
-                ORIGINAL_BBOXES_LIST[i],
-                ORIGINAL_LABELS_LIST[i]
+                ORIGINAL_IMAGE_SEQ[i],
+                ORIGINAL_BBOXES_SEQ[i],
+                ORIGINAL_LABELS_SEQ[i]
             )
             self.assertTrue(
-                np.array_equal(expected_image_list[i], image)
+                np.array_equal(expected_image_seq[i], image)
             )
             self.assertTrue(
-                np.array_equal(expected_bboxes_list[i], bboxes)
+                np.array_equal(expected_bboxes_seq[i], bboxes)
             )
             self.assertTrue(
-                np.array_equal(expected_labels_list[i], labels)
+                np.array_equal(expected_labels_seq[i], labels)
             )
 
         # TF.
         (
-            tf_expected_image_list,
-            tf_expected_bboxes_list,
-            tf_expected_labels_list
+            tf_expected_image_seq,
+            tf_expected_bboxes_seq,
+            tf_expected_labels_seq
         ) = to_tf(
-            expected_image_list, expected_bboxes_list, expected_labels_list
+            expected_image_seq, expected_bboxes_seq, expected_labels_seq
         )
-        for i in range(len(TF_ORIGINAL_LABELS_LIST)):
+        for i in range(len(TF_ORIGINAL_LABELS_SEQ)):
             tf_image, tf_bboxes, tf_labels = tf_flip_up_down(
-                TF_ORIGINAL_IMAGE_LIST[i],
-                TF_ORIGINAL_BBOXES_LIST[i],
-                TF_ORIGINAL_LABELS_LIST[i]
+                TF_ORIGINAL_IMAGE_SEQ[i],
+                TF_ORIGINAL_BBOXES_SEQ[i],
+                TF_ORIGINAL_LABELS_SEQ[i]
             )
             self.assertTrue(
-                np.array_equal(tf_expected_image_list[i].numpy(),
+                np.array_equal(tf_expected_image_seq[i].numpy(),
                                tf_image.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_bboxes_list[i].numpy(),
+                np.array_equal(tf_expected_bboxes_seq[i].numpy(),
                                tf_bboxes.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_labels_list[i].numpy(),
+                np.array_equal(tf_expected_labels_seq[i].numpy(),
                                tf_labels.numpy())
             )
 
     def test_rotate(self) -> None:
 
-        original_image_list = [
+        original_image_seq = [
             np.array([
                 [[1], [2], [3], [4]],
                 [[5], [6], [7], [8]],
@@ -243,14 +243,14 @@ class TestTransform(unittest.TestCase):
                 [[21], [22], [23], [24]]
             ], dtype=np.float32),
         ]
-        original_bboxes_list = [
+        original_bboxes_seq = [
             np.array([
                 [1, 0, 2, 2],
                 [0, 1, 3, 2],
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
-        original_labels_list = [
+        original_labels_seq = [
             np.array([1, 2], dtype=np.float32),
             np.array([], dtype=np.float32),
         ]
@@ -258,7 +258,7 @@ class TestTransform(unittest.TestCase):
         angles_deg = [90.0, 180.0]
 
         # Noted the shifted pixel.
-        expected_image_list = [
+        expected_image_seq = [
             np.array([
                 [[3], [7], [11], [0]],
                 [[2], [6], [10], [0]],
@@ -270,65 +270,65 @@ class TestTransform(unittest.TestCase):
                 [[15], [14], [13], [0]]
             ], dtype=np.float32),
         ]
-        expected_bboxes_list = [
+        expected_bboxes_seq = [
             np.array([
                 [0, 0, 2, 2],
                 [1, 0, 2, 3],
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
-        expected_labels_list = original_labels_list
+        expected_labels_seq = original_labels_seq
 
         # NumPy.
-        for i in range(len(original_image_list)):
+        for i in range(len(original_image_seq)):
             image, bboxes, labels = rotate(
-                original_image_list[i],
-                original_bboxes_list[i],
-                original_labels_list[i],
+                original_image_seq[i],
+                original_bboxes_seq[i],
+                original_labels_seq[i],
                 angles_deg[i]
             )
             self.assertTrue(
-                np.array_equal(expected_image_list[i], image)
+                np.array_equal(expected_image_seq[i], image)
             )
             self.assertTrue(
-                np.array_equal(expected_bboxes_list[i], bboxes)
+                np.array_equal(expected_bboxes_seq[i], bboxes)
             )
             self.assertTrue(
-                np.array_equal(expected_labels_list[i], labels)
+                np.array_equal(expected_labels_seq[i], labels)
             )
 
         # TF.
         (
-            tf_original_image_list,
-            tf_original_bboxes_list,
-            tf_original_labels_list
+            tf_original_image_seq,
+            tf_original_bboxes_seq,
+            tf_original_labels_seq
         ) = to_tf(
-            original_image_list, original_bboxes_list, original_labels_list
+            original_image_seq, original_bboxes_seq, original_labels_seq
         )
         (
-            tf_expected_image_list,
-            tf_expected_bboxes_list,
-            tf_expected_labels_list
+            tf_expected_image_seq,
+            tf_expected_bboxes_seq,
+            tf_expected_labels_seq
         ) = to_tf(
-            expected_image_list, expected_bboxes_list, expected_labels_list
+            expected_image_seq, expected_bboxes_seq, expected_labels_seq
         )
-        for i in range(len(tf_original_image_list)):
+        for i in range(len(tf_original_image_seq)):
             tf_image, tf_bboxes, tf_labels = tf_rotate(
-                tf_original_image_list[i],
-                tf_original_bboxes_list[i],
-                tf_original_labels_list[i],
+                tf_original_image_seq[i],
+                tf_original_bboxes_seq[i],
+                tf_original_labels_seq[i],
                 angles_deg[i]
             )
             self.assertTrue(
-                np.array_equal(tf_expected_image_list[i].numpy(),
+                np.array_equal(tf_expected_image_seq[i].numpy(),
                                tf_image.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_bboxes_list[i].numpy(),
+                np.array_equal(tf_expected_bboxes_seq[i].numpy(),
                                tf_bboxes.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_labels_list[i].numpy(),
+                np.array_equal(tf_expected_labels_seq[i].numpy(),
                                tf_labels.numpy())
             )
 
@@ -383,7 +383,7 @@ class TestTransform(unittest.TestCase):
         translate_heights = [-1, 0, 1]
         translate_widths = [0, 1, 1]
 
-        expected_image_list = [
+        expected_image_seq = [
             np.array([
                 [[4], [5], [6]],
                 [[7], [8], [9]],
@@ -403,7 +403,7 @@ class TestTransform(unittest.TestCase):
                 [[0], [27], [28]]
             ], dtype=np.float32),
         ]
-        expected_bboxes_list = [
+        expected_bboxes_seq = [
             np.array([
                 [1, 0, 2, 1],
                 [0, 0, 3, 2],
@@ -413,57 +413,57 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
-        expected_labels_list = [
+        expected_labels_seq = [
             np.array([0, 1], dtype=np.float32),
             np.array([2], dtype=np.float32),
             np.array([], dtype=np.float32),
         ]
 
         # NumPy.
-        for i in range(len(ORIGINAL_IMAGE_LIST)):
+        for i in range(len(ORIGINAL_IMAGE_SEQ)):
             image, bboxes, labels = translate(
-                ORIGINAL_IMAGE_LIST[i],
-                ORIGINAL_BBOXES_LIST[i],
-                ORIGINAL_LABELS_LIST[i],
+                ORIGINAL_IMAGE_SEQ[i],
+                ORIGINAL_BBOXES_SEQ[i],
+                ORIGINAL_LABELS_SEQ[i],
                 translate_heights[i], translate_widths[i]
             )
-            self.assertTrue(np.array_equal(expected_image_list[i], image))
-            self.assertTrue(np.array_equal(expected_bboxes_list[i], bboxes))
-            self.assertTrue(np.array_equal(expected_labels_list[i], labels))
+            self.assertTrue(np.array_equal(expected_image_seq[i], image))
+            self.assertTrue(np.array_equal(expected_bboxes_seq[i], bboxes))
+            self.assertTrue(np.array_equal(expected_labels_seq[i], labels))
 
         # TF.
         (
-            tf_expected_image_list,
-            tf_expected_bboxes_list,
-            tf_expected_labels_list
+            tf_expected_image_seq,
+            tf_expected_bboxes_seq,
+            tf_expected_labels_seq
         ) = to_tf(
-            expected_image_list, expected_bboxes_list, expected_labels_list
+            expected_image_seq, expected_bboxes_seq, expected_labels_seq
         )
 
-        for i in range(len(TF_ORIGINAL_LABELS_LIST)):
+        for i in range(len(TF_ORIGINAL_LABELS_SEQ)):
             tf_image, tf_bboxes, tf_labels = tf_translate(
-                TF_ORIGINAL_IMAGE_LIST[i],
-                TF_ORIGINAL_BBOXES_LIST[i],
-                TF_ORIGINAL_LABELS_LIST[i],
+                TF_ORIGINAL_IMAGE_SEQ[i],
+                TF_ORIGINAL_BBOXES_SEQ[i],
+                TF_ORIGINAL_LABELS_SEQ[i],
                 translate_heights[i], translate_widths[i]
             )
             self.assertTrue(
-                np.array_equal(tf_expected_image_list[i].numpy(),
+                np.array_equal(tf_expected_image_seq[i].numpy(),
                                tf_image.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_bboxes_list[i].numpy(),
+                np.array_equal(tf_expected_bboxes_seq[i].numpy(),
                                tf_bboxes.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_labels_list[i].numpy(),
+                np.array_equal(tf_expected_labels_seq[i].numpy(),
                                tf_labels.numpy())
             )
 
     def test_crop(self) -> None:
 
-        dummy_image_list = [np.random.rand(128, 128, 3) for _ in range(4)]
-        original_bboxes_list = [
+        dummy_image_seq = [np.random.rand(128, 128, 3) for _ in range(4)]
+        original_bboxes_seq = [
             np.array([
                 [64, 52, 20, 24],
                 [44, 48, 12, 8],
@@ -477,7 +477,7 @@ class TestTransform(unittest.TestCase):
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
-        original_labels_list = [
+        original_labels_seq = [
             np.array([0, 1], dtype=np.float32),
             np.array([2, 1], dtype=np.float32),
             np.array([0], dtype=np.float32),
@@ -489,7 +489,7 @@ class TestTransform(unittest.TestCase):
         cropped_image_heights = [128 * 0.75] * 4
         cropped_image_widths = [128 * 0.75] * 4
 
-        expected_bboxes_list = [
+        expected_bboxes_seq = [
             np.array([
                 [32, 20, 20, 24],
                 [12, 16, 12, 8],
@@ -500,7 +500,7 @@ class TestTransform(unittest.TestCase):
             np.array([], dtype=np.float32).reshape(-1, 4),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
-        expected_labels_list = [
+        expected_labels_seq = [
             np.array([0, 1], dtype=np.float32),
             np.array([2], dtype=np.float32),
             np.array([], dtype=np.float32),
@@ -508,47 +508,47 @@ class TestTransform(unittest.TestCase):
         ]
 
         # NumPy.
-        for i in range(len(dummy_image_list)):
+        for i in range(len(dummy_image_seq)):
             _, bboxes, labels = crop(
-                dummy_image_list[i],
-                original_bboxes_list[i],
-                original_labels_list[i],
+                dummy_image_seq[i],
+                original_bboxes_seq[i],
+                original_labels_seq[i],
                 int(offset_heights[i]), int(offset_widths[i]),
                 int(cropped_image_heights[i]), int(cropped_image_widths[i])
             )
             self.assertTrue(
-                np.allclose(expected_bboxes_list[i], bboxes)
+                np.allclose(expected_bboxes_seq[i], bboxes)
             )
             self.assertTrue(
-                np.allclose(expected_labels_list[i], labels)
+                np.allclose(expected_labels_seq[i], labels)
             )
 
         # TF.
         (
-            tf_dummy_image_list,
-            tf_original_bboxes_list,
-            tf_original_labels_list
+            tf_dummy_image_seq,
+            tf_original_bboxes_seq,
+            tf_original_labels_seq
         ) = to_tf(
-            dummy_image_list, original_bboxes_list, original_labels_list
+            dummy_image_seq, original_bboxes_seq, original_labels_seq
         )
-        _, tf_expected_bboxes_list, tf_expected_labels_list = to_tf(
-            dummy_image_list, expected_bboxes_list, expected_labels_list
+        _, tf_expected_bboxes_seq, tf_expected_labels_seq = to_tf(
+            dummy_image_seq, expected_bboxes_seq, expected_labels_seq
         )
 
-        for i in range(len(tf_dummy_image_list)):
+        for i in range(len(tf_dummy_image_seq)):
             _, tf_bboxes, tf_labels = tf_crop(
-                tf_dummy_image_list[i],
-                tf_original_bboxes_list[i],
-                tf_original_labels_list[i],
+                tf_dummy_image_seq[i],
+                tf_original_bboxes_seq[i],
+                tf_original_labels_seq[i],
                 int(offset_heights[i]), int(offset_widths[i]),
                 int(cropped_image_heights[i]), int(cropped_image_widths[i])
             )
             self.assertTrue(
-                np.allclose(tf_expected_bboxes_list[i].numpy(),
+                np.allclose(tf_expected_bboxes_seq[i].numpy(),
                             tf_bboxes.numpy())
             )
             self.assertTrue(
-                np.allclose(tf_expected_labels_list[i].numpy(),
+                np.allclose(tf_expected_labels_seq[i].numpy(),
                             tf_labels.numpy())
             )
 

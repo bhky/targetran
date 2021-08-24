@@ -15,9 +15,9 @@ from targetran.utils import Compose, collate_fn
 def make_np_data() -> Tuple[Sequence[np.ndarray],
                             Sequence[np.ndarray],
                             Sequence[np.ndarray]]:
-    image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
+    image_seq = [np.random.rand(480, 512, 3) for _ in range(3)]
 
-    bboxes_list = [
+    bboxes_seq = [
         np.array([
             [214, 223, 10, 11],
             [345, 230, 21, 9],
@@ -30,31 +30,31 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
         ]),
     ]
 
-    labels_list = [
+    labels_seq = [
         np.array([0, 1]),
         np.array([]),
         np.array([2, 3, 0]),
     ]
 
-    return image_list, bboxes_list, labels_list
+    return image_seq, bboxes_seq, labels_seq
 
 
 class PTDataset(Dataset):
 
     def __init__(
             self,
-            image_list: Sequence[np.ndarray],
-            bboxes_list: Sequence[np.ndarray],
-            labels_list: Sequence[np.ndarray],
+            image_seq: Sequence[np.ndarray],
+            bboxes_seq: Sequence[np.ndarray],
+            labels_seq: Sequence[np.ndarray],
             transforms: Optional[Compose]
     ) -> None:
-        self.image_list = image_list
-        self.bboxes_list = bboxes_list
-        self.labels_list = labels_list
+        self.image_seq = image_seq
+        self.bboxes_seq = bboxes_seq
+        self.labels_seq = labels_seq
         self.transforms = transforms
 
     def __len__(self) -> int:
-        return len(self.image_list)
+        return len(self.image_seq)
 
     def __getitem__(
             self,
@@ -62,19 +62,19 @@ class PTDataset(Dataset):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.transforms:
             return self.transforms(
-                self.image_list[idx],
-                self.bboxes_list[idx],
-                self.labels_list[idx]
+                self.image_seq[idx],
+                self.bboxes_seq[idx],
+                self.labels_seq[idx]
             )
         return (
-            self.image_list[idx],
-            self.bboxes_list[idx],
-            self.labels_list[idx]
+            self.image_seq[idx],
+            self.bboxes_seq[idx],
+            self.labels_seq[idx]
         )
 
 
 def main() -> None:
-    image_list, bboxes_list, labels_list = make_np_data()
+    image_seq, bboxes_seq, labels_seq = make_np_data()
 
     transforms = Compose([
         targetran.np.RandomRotate(probability=1.0),
@@ -88,7 +88,7 @@ def main() -> None:
 
     print("-------- Random transform --------")
 
-    ds = PTDataset(image_list, bboxes_list, labels_list, transforms)
+    ds = PTDataset(image_seq, bboxes_seq, labels_seq, transforms)
 
     for sample in ds:
         image, bboxes, labels = sample

@@ -13,9 +13,9 @@ import targetran.tf
 def make_np_data() -> Tuple[Sequence[np.ndarray],
                             Sequence[np.ndarray],
                             Sequence[np.ndarray]]:
-    image_list = [np.random.rand(480, 512, 3) for _ in range(3)]
+    image_seq = [np.random.rand(480, 512, 3) for _ in range(3)]
 
-    bboxes_list = [
+    bboxes_seq = [
         np.array([
             [214, 223, 10, 11],
             [345, 230, 21, 9],
@@ -28,19 +28,19 @@ def make_np_data() -> Tuple[Sequence[np.ndarray],
         ]),
     ]
 
-    labels_list = [
+    labels_seq = [
         np.array([0, 1]),
         np.array([]),
         np.array([2, 3, 0]),
     ]
 
-    return image_list, bboxes_list, labels_list
+    return image_seq, bboxes_seq, labels_seq
 
 
 def main() -> None:
-    image_list, bboxes_list, labels_list = make_np_data()
+    image_seq, bboxes_seq, labels_seq = make_np_data()
 
-    ds = targetran.tf.seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
+    ds = targetran.tf.seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
     print("-------- Raw data --------")
 
@@ -72,7 +72,7 @@ def main() -> None:
 
     print("-------- Random transform with combine-affine --------")
 
-    ds = targetran.tf.seqs_to_tf_dataset(image_list, bboxes_list, labels_list)
+    ds = targetran.tf.seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
     affine_transforms = targetran.tf.TFCombineAffine([
          targetran.tf.TFRandomRotate(probability=1.0),
