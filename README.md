@@ -33,7 +33,7 @@
 
 Python 3 is required.
 
-The best way to install Targetran is from PyPI:
+The best way to install Targetran with its dependencies is from PyPI:
 ```shell
 python3 -m pip install --upgrade targetran
 ```
