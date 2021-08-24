@@ -316,7 +316,8 @@ Please see the [data format](#data-format) section for usage instructions.
 ### Transformation functions
 
 Each transformation class also has a pure functional counterpart, 
-e.g., `rotate` and `tf_rotate` for `np.ndarray` and `tf.Tensor`, 
+e.g., `rotate` and `tf_rotate` for `np.ndarray` and `tf.Tensor` 
+(with `tf_*` prefix), 
 to which one could provide exact transformation parameters.
 
 The input format is `(image, bboxes, labels, ...)` where each function
