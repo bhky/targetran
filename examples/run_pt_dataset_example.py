@@ -119,17 +119,17 @@ def make_pt_dataset(
         transforms: Optional[Compose]
 ) -> Dataset:
     """
+    Users may do it differently depending on the data.
     The main point is the item order of each list must match correspondingly.
     """
-    image_list: List[np.ndarray] = []
-    bboxes_list: List[np.ndarray] = []
-    labels_list: List[np.ndarray] = []
-    for image_id, image in image_dict.items():
-        image_list.append(image)
-        bboxes_list.append(annotation_dict[image_id]["bboxes"])
-        labels_list.append(annotation_dict[image_id]["labels"])
-
-    return PTDataset(image_list, bboxes_list, labels_list, transforms)
+    image_seq = [image for image in image_dict.values()]
+    bboxes_seq = [
+        annotation_dict[image_id]["bboxes"] for image_id in image_dict.keys()
+    ]
+    labels_seq = [
+        annotation_dict[image_id]["labels"] for image_id in image_dict.keys()
+    ]
+    return PTDataset(image_seq, bboxes_seq, labels_seq, transforms)
 
 
 def plot(
