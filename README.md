@@ -10,7 +10,8 @@
 
 ![example](docs/example.png)
 
-(Figure produced by the example code [here](examples/run_tf_dataset_example.py).)
+(Figure produced by the example code [here](examples/run_tf_dataset_example.py).
+The author owns the photos.)
 
 # Table of contents
 
