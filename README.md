@@ -258,7 +258,7 @@ also be used for image classification in which only the images are to be transfo
 e.g., given a dataset that returns `(image, label)` samples, or even only `image` samples. 
 The `image_only` function can be used to convert a transformation class for this purpose.
 
-If the dataset returns a tuple `(image, ...)` duration iteration, only the `image`
+If the dataset returns a tuple `(image, ...)` in each iteration, only the `image`
 will be transformed, other parameters that followed such as `(..., label, weight)` 
 will be returned untouched.
 
@@ -291,9 +291,9 @@ See [here](examples) for example codes.
 
 ## Overview
 
-There are three modules: the NumPy transformation tools are from `targetran.np`,
-the TensorFlow transformation tools are from `targetran.tf`, and some general
-helper utilities are from `targetran.utils`.
+There are three modules: `targetran.np` for the NumPy transformation tools,
+`targetran.tf` for the TensorFlow transformation tools, and `targetran.utils` 
+for some general helper utilities.
 
 ### Transformation classes
 
