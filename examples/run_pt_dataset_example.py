@@ -120,7 +120,7 @@ def make_pt_dataset(
 ) -> Dataset:
     """
     Users may do it differently depending on the data.
-    The main point is the item order of each list must match correspondingly.
+    The main point is the item order of each sequence must match accordingly.
     """
     image_seq = [image for image in image_dict.values()]
     bboxes_seq = [
