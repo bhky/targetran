@@ -24,11 +24,6 @@ The author owns the photos.)
   - [Image classification](#image-classification)
   - [Examples](#examples)
 - [API](#api)
-  - [Overview](#overview)
-    - [Transformation classes](#transformation-classes)
-    - [Transformation functions](#transformation-functions)
-  - [Full list](#full-list)
-  - [Manual](#manual)
 
 # Installation
 
