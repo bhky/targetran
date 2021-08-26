@@ -13,13 +13,13 @@ readily available in frameworks such as TensorFlow and PyTorch.
 
 Here comes Targetran to fill the gap.
 
-# Targetran
+# What is Targetran?
 
-- Data augmentation library to assist object detection or image classification 
+- A data augmentation library to assist object detection or image classification 
   model training. 
-- Simple Python API to transform both the images and the target rectangular 
+- Has simple Python API to transform both the images and the target rectangular 
   bounding-boxes.
-- Dataset-idiomatic implementation for TensorFlow and PyTorch.
+- Use dataset-idiomatic approach for TensorFlow and PyTorch.
 
 ![example](docs/example.png)
 
