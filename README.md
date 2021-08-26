@@ -3,7 +3,7 @@
 # Motivation
 
 [Data augmentation](https://en.wikipedia.org/wiki/Data_augmentation) 
-is a technique commonly used for training machine learning models in the  
+is a technique commonly used for training machine learning models in the
 computer vision field, where one can increase the amount of image data by
 creating transformed copies of the original images.
 
