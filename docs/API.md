@@ -203,7 +203,7 @@ Resize the input image.
 Convert array sequences to TensorFlow (eager) tensor sequences.
 - Parameters
   - `image_seq`, `bboxes_seq`, `labels_seq`: 
-    Please refer to the [data format](https://github.com/bhky/targetran/blob/main/README.md#data-format).
+    Please refer to the [data format](../README.md#data-format).
 - Returns
   - Tuple of tensors: `(image_seq, bboxes_seq, labels_seq)`.
 
@@ -211,7 +211,7 @@ Convert array sequences to TensorFlow (eager) tensor sequences.
 Convert array sequences to a TensorFlow Dataset.
 - Parameters
   - `image_seq`, `bboxes_seq`, `labels_seq`: 
-    Please refer to the [data format](https://github.com/bhky/targetran/blob/main/README.md#data-format).
+    Please refer to the [data format](../README.md#data-format).
 - Returns
   - `tf.data.Dataset` instance.
 
