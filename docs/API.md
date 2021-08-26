@@ -14,7 +14,7 @@ There are three modules:
 - `targetran.tf` for TensorFlow transformation tools;
 - `targetran.utils` for general helper utilities.
 
-Please see [here](https://github.com/bhky/targetran/blob/main/README.md#usage) 
+Please see [here](../README.md#usage) 
 for usage instructions.
 
 
@@ -303,7 +303,7 @@ To be used with the `DataLoader` from PyTorch for batching.
 
 ### `image_only`
 Convert a transformation class to transform the input image only, mainly for 
-[image classification](https://github.com/bhky/targetran/blob/main/README.md#image-classification).
+[image classification](../README.md#image-classification).
 - Parameters
   - `tran_fn`: Transformation class object.
 - Returns
