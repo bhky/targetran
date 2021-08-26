@@ -40,7 +40,7 @@ def _tf_resize_image(
         dest_size: Tuple[int, int]
 ) -> tf.Tensor:
     """
-    dest_size: (height, width)
+    dest_size: (image_height, image_width)
     """
     return tf.image.resize(
         image, size=dest_size, method=tf.image.ResizeMethod.AREA

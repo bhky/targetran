@@ -46,7 +46,7 @@ def _np_resize_image(
         dest_size: Tuple[int, int]
 ) -> np.ndarray:
     """
-    dest_size: (height, width)
+    dest_size: (image_height, image_width)
     """
     return cv2.resize(
         image, dsize=(dest_size[1], dest_size[0]), interpolation=cv2.INTER_AREA

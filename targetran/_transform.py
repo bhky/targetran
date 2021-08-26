@@ -668,7 +668,7 @@ def _resize(
     image: [h, w, c]
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
-    dest_size: (height, width)
+    dest_size: (image_height, image_width)
     """
     image, bboxes, labels = _sanitise(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn
