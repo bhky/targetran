@@ -9,9 +9,14 @@
 
 ## Overview
 
-There are three modules: `targetran.np` for the NumPy transformation tools,
-`targetran.tf` for the TensorFlow transformation tools, and `targetran.utils` 
-for some general helper utilities.
+There are three modules:
+- `targetran.np` for NumPy transformation tools;
+- `targetran.tf` for TensorFlow transformation tools;
+- `targetran.utils` for general helper utilities.
+
+Please see [here](https://github.com/bhky/targetran/blob/main/README.md#usage) 
+for usage instructions.
+
 
 ### Transformation classes
 
@@ -28,10 +33,6 @@ a single sample consists of:
 - `labels` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`, can be empty).
 
 The return format is a tuple: `(image, bboxes, labels)`.
-
-Please see 
-[data format](https://github.com/bhky/targetran/blob/main/README.md#data-format) 
-for usage instructions.
 
 ### Transformation functions
 
