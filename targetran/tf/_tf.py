@@ -23,6 +23,7 @@ from targetran._tf_functional import (
     _tf_gather_image,
 )
 from targetran._transform import (
+    _AffineParam,
     _affine_transform,
     _flip_left_right,
     _flip_up_down,
@@ -86,6 +87,16 @@ def seqs_to_tf_dataset(
     return ds
 
 
+def _tf_get_affine_param() -> _AffineParam:
+    return _AffineParam(
+        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
+        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
+        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
+        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
+        tf.logical_and, tf.boolean_mask
+    )
+
+
 def _tf_affine_transform(
         image: tf.Tensor,
         bboxes: tf.Tensor,
@@ -94,13 +105,8 @@ def _tf_affine_transform(
         bboxes_tran_mat: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _affine_transform(
-        image, bboxes, labels,
-        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
-        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.ones_like, tf.stack, tf.concat,
-        image_dest_tran_mat, bboxes_tran_mat, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
-        tf.logical_and, tf.boolean_mask
+        image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
+        _tf_get_affine_param()
     )
 
 
@@ -110,12 +116,7 @@ def tf_flip_left_right(
         labels: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_left_right(
-        image, bboxes, labels,
-        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
-        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
-        tf.logical_and, tf.boolean_mask
+        image, bboxes, labels, _tf_get_affine_param()
     )
 
 
@@ -125,12 +126,7 @@ def tf_flip_up_down(
         labels: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_up_down(
-        image, bboxes, labels,
-        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
-        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
-        tf.logical_and, tf.boolean_mask
+        image, bboxes, labels, _tf_get_affine_param()
     )
 
 
@@ -141,13 +137,8 @@ def tf_rotate(
         angle_deg: float
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate(
-        image, bboxes, labels, _tf_convert(angle_deg),
-        _tf_convert, tf.cos, tf.sin, tf.shape, tf.reshape,
-        tf.expand_dims, tf.squeeze, _tf_pad_image, tf.range,
-        _tf_round_to_int, tf.repeat, tf.tile,
-        tf.ones_like, tf.stack, tf.concat, tf.matmul,
-        tf.clip_by_value, _tf_gather_image, tf.identity,
-        tf.reduce_max, tf.reduce_min, tf.logical_and, tf.boolean_mask
+        image, bboxes, labels, _tf_convert(angle_deg), tf.cos, tf.sin,
+        _tf_get_affine_param()
     )
 
 
@@ -161,12 +152,8 @@ def tf_shear(
     if check_input:
         _check_shear_input(angle_deg)
     return _shear(
-        image, bboxes, labels, _tf_convert(angle_deg),
-        _tf_convert, tf.tan, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
-        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
-        tf.logical_and, tf.boolean_mask
+        image, bboxes, labels, _tf_convert(angle_deg), tf.tan,
+        _tf_get_affine_param()
     )
 
 
@@ -185,11 +172,7 @@ def tf_translate(
     return _translate(
         image, bboxes, labels,
         _tf_convert(translate_height), _tf_convert(translate_width),
-        _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
-        _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
-        tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
-        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
-        tf.logical_and, tf.boolean_mask
+        _tf_get_affine_param()
     )
 
 

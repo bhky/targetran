@@ -24,6 +24,7 @@ from targetran._np_functional import (
     _np_gather_image,
 )
 from targetran._transform import (
+    _AffineParam,
     _affine_transform,
     _flip_left_right,
     _flip_up_down,
@@ -42,6 +43,16 @@ from targetran._transform import (
 )
 
 
+def _np_get_affine_param() -> _AffineParam:
+    return _AffineParam(
+        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
+        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
+        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
+        _np_gather_image, np.copy, np.max, np.min,
+        _np_logical_and, _np_boolean_mask
+    )
+
+
 def _np_affine_transform(
         image: np.ndarray,
         bboxes: np.ndarray,
@@ -50,13 +61,8 @@ def _np_affine_transform(
         bboxes_tran_mat: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _affine_transform(
-        image, bboxes, labels,
-        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
-        np.ones_like, np.stack, np.concatenate,
-        image_dest_tran_mat, bboxes_tran_mat, np.matmul, np.clip,
-        _np_gather_image, np.copy, np.max, np.min,
-        _np_logical_and, _np_boolean_mask
+        image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
+        _np_get_affine_param()
     )
 
 
@@ -66,12 +72,7 @@ def flip_left_right(
         labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_left_right(
-        image, bboxes, labels,
-        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
-        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
-        _np_gather_image, np.copy, np.max, np.min,
-        _np_logical_and, _np_boolean_mask
+        image, bboxes, labels, _np_get_affine_param()
     )
 
 
@@ -81,12 +82,7 @@ def flip_up_down(
         labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_up_down(
-        image, bboxes, labels,
-        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
-        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
-        _np_gather_image, np.copy, np.max, np.min,
-        _np_logical_and, _np_boolean_mask
+        image, bboxes, labels, _np_get_affine_param()
     )
 
 
@@ -97,13 +93,8 @@ def rotate(
         angle_deg: float
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _rotate(
-        image, bboxes, labels, _np_convert(angle_deg),
-        _np_convert, np.cos, np.sin, np.shape, np.reshape,
-        np.expand_dims, np.squeeze, _np_pad_image, _np_range,
-        _np_round_to_int, np.repeat, np.tile,
-        np.ones_like, np.stack, np.concatenate, np.matmul,
-        np.clip, _np_gather_image, np.copy, np.max, np.min,
-        _np_logical_and, _np_boolean_mask
+        image, bboxes, labels, _np_convert(angle_deg), np.cos, np.sin,
+        _np_get_affine_param()
     )
 
 
@@ -117,12 +108,8 @@ def shear(
     if check_input:
         _check_shear_input(angle_deg)
     return _shear(
-        image, bboxes, labels, _np_convert(angle_deg),
-        _np_convert, np.tan, np.shape, np.reshape, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
-        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
-        _np_gather_image, np.copy, np.max, np.min,
-        _np_logical_and, _np_boolean_mask
+        image, bboxes, labels, _np_convert(angle_deg), np.tan,
+        _np_get_affine_param()
     )
 
 
@@ -139,11 +126,7 @@ def translate(
     return _translate(
         image, bboxes, labels,
         _np_convert(translate_height), _np_convert(translate_width),
-        _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
-        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
-        _np_gather_image, np.copy, np.max, np.min,
-        _np_logical_and, _np_boolean_mask
+        _np_get_affine_param()
     )
 
 
