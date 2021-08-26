@@ -1,5 +1,12 @@
 # Targetran API
 
+## Table of contents
+- [Overview](#overview)
+  - [Transformation classes](#transformation-classes)
+  - [Transformation functions](#transformation-functions)
+- [Full list](#full-list)
+- [Manual](#manual)
+
 ## Overview
 
 There are three modules: `targetran.np` for the NumPy transformation tools,
@@ -22,7 +29,9 @@ a single sample consists of:
 
 The return format is a tuple: `(image, bboxes, labels)`.
 
-Please see the [data format](#data-format) section for usage instructions.
+Please see 
+[data format](https://github.com/bhky/targetran/blob/main/README.md#data-format) 
+for usage instructions.
 
 ### Transformation functions
 
@@ -192,14 +201,16 @@ Resize the input image.
 ### `to_tf`
 Convert array sequences to TensorFlow (eager) tensor sequences.
 - Parameters
-  - `image_seq`, `bboxes_seq`, `labels_seq`: Please refer to the [data format](#data-format).
+  - `image_seq`, `bboxes_seq`, `labels_seq`: 
+    Please refer to the [data format](https://github.com/bhky/targetran/blob/main/README.md#data-format).
 - Returns
   - Tuple of tensors: `(image_seq, bboxes_seq, labels_seq)`.
 
 ### `seqs_to_tf_dataset`
 Convert array sequences to a TensorFlow Dataset.
 - Parameters
-  - `image_seq`, `bboxes_seq`, `labels_seq`: Please refer to the [data format](#data-format).
+  - `image_seq`, `bboxes_seq`, `labels_seq`: 
+    Please refer to the [data format](https://github.com/bhky/targetran/blob/main/README.md#data-format).
 - Returns
   - `tf.data.Dataset` instance.
 
@@ -290,8 +301,8 @@ To be used with the `DataLoader` from PyTorch for batching.
   - Tuple of sequences.
 
 ### `image_only`
-Convert a transformation class to transform the input image only,
-mainly for [image classification](#image-classification).
+Convert a transformation class to transform the input image only, mainly for 
+[image classification](https://github.com/bhky/targetran/blob/main/README.md#image-classification).
 - Parameters
   - `tran_fn`: Transformation class object.
 - Returns
