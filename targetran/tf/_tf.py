@@ -23,7 +23,7 @@ from targetran._tf_functional import (
     _tf_gather_image,
 )
 from targetran._transform import (
-    _AffineParam,
+    _AffineDependency,
     _affine_transform,
     _flip_left_right,
     _flip_up_down,
@@ -87,8 +87,8 @@ def seqs_to_tf_dataset(
     return ds
 
 
-def _tf_get_affine_param() -> _AffineParam:
-    return _AffineParam(
+def _tf_get_affine_dependency() -> _AffineDependency:
+    return _AffineDependency(
         _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
         _tf_pad_image, tf.range, _tf_round_to_int, tf.repeat, tf.tile,
         tf.ones_like, tf.stack, tf.concat, tf.matmul, tf.clip_by_value,
@@ -106,7 +106,7 @@ def _tf_affine_transform(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _affine_transform(
         image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
-        _tf_get_affine_param()
+        _tf_get_affine_dependency()
     )
 
 
@@ -116,7 +116,7 @@ def tf_flip_left_right(
         labels: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_left_right(
-        image, bboxes, labels, _tf_get_affine_param()
+        image, bboxes, labels, _tf_get_affine_dependency()
     )
 
 
@@ -126,7 +126,7 @@ def tf_flip_up_down(
         labels: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_up_down(
-        image, bboxes, labels, _tf_get_affine_param()
+        image, bboxes, labels, _tf_get_affine_dependency()
     )
 
 
@@ -138,7 +138,7 @@ def tf_rotate(
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate(
         image, bboxes, labels, _tf_convert(angle_deg), tf.cos, tf.sin,
-        _tf_get_affine_param()
+        _tf_get_affine_dependency()
     )
 
 
@@ -153,7 +153,7 @@ def tf_shear(
         _check_shear_input(angle_deg)
     return _shear(
         image, bboxes, labels, _tf_convert(angle_deg), tf.tan,
-        _tf_get_affine_param()
+        _tf_get_affine_dependency()
     )
 
 
@@ -172,7 +172,7 @@ def tf_translate(
     return _translate(
         image, bboxes, labels,
         _tf_convert(translate_height), _tf_convert(translate_width),
-        _tf_get_affine_param()
+        _tf_get_affine_dependency()
     )
 
 

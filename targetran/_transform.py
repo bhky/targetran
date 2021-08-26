@@ -34,7 +34,7 @@ def _sanitise(
 
 
 @dataclass
-class _AffineParam:
+class _AffineDependency:
     convert_fn: Callable[..., T]
     shape_fn: Callable[[T], Tuple[int, ...]]
     reshape_fn: Callable[[T, Tuple[int, ...]], T]
@@ -64,7 +64,7 @@ def _affine_transform(
         labels: T,
         image_dest_tran_mat: T,
         bboxes_tran_mat: T,
-        p: _AffineParam
+        d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
@@ -72,106 +72,106 @@ def _affine_transform(
     labels: [0, 1, 0, ...]
     """
     image, bboxes, labels = _sanitise(
-        image, bboxes, labels, p.convert_fn, p.shape_fn, p.reshape_fn
+        image, bboxes, labels, d.convert_fn, d.shape_fn, d.reshape_fn
     )
 
-    image_shape = p.shape_fn(image)
+    image_shape = d.shape_fn(image)
     height, width = int(image_shape[0]), int(image_shape[1])
     h_mod, w_mod = height % 2, width % 2
     num_channels = int(image_shape[2])
 
     # Pad image to provide a zero-value pixel frame for clipping use below.
-    pad_offsets = p.convert_fn([1, 1, 1, 1])
-    image = p.pad_image_fn(image, pad_offsets)
+    pad_offsets = d.convert_fn([1, 1, 1, 1])
+    image = d.pad_image_fn(image, pad_offsets)
 
     # References:
     # https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
 
     # Destination indices. Note that (-foo // 2) != -(foo // 2).
-    row_idxes = p.repeat_fn(  # Along y-axis, from top to bottom.
-        p.range_fn(-(height // 2) + 1 - h_mod, height // 2 + 1, 1),
-        p.round_to_int_fn(p.convert_fn([width]))
+    row_idxes = d.repeat_fn(  # Along y-axis, from top to bottom.
+        d.range_fn(-(height // 2) + 1 - h_mod, height // 2 + 1, 1),
+        d.round_to_int_fn(d.convert_fn([width]))
     )
-    col_idxes = p.tile_fn(  # Along x-axis, from left to right.
-        p.range_fn(-(width // 2) + 1 - w_mod, width // 2 + 1, 1),
-        p.round_to_int_fn(p.convert_fn([height]))
+    col_idxes = d.tile_fn(  # Along x-axis, from left to right.
+        d.range_fn(-(width // 2) + 1 - w_mod, width // 2 + 1, 1),
+        d.round_to_int_fn(d.convert_fn([height]))
     )
     # Note the (col, row) -> (x, y) swapping. Last axis is dummy.
-    image_dest_idxes = p.stack_fn(
-        [col_idxes, row_idxes, p.ones_like_fn(col_idxes)], 0
+    image_dest_idxes = d.stack_fn(
+        [col_idxes, row_idxes, d.ones_like_fn(col_idxes)], 0
     )
 
     # Transform image, with clipping.
-    new_image_dest_idxes = p.matmul_fn(
-        image_dest_tran_mat, p.convert_fn(image_dest_idxes)
+    new_image_dest_idxes = d.matmul_fn(
+        image_dest_tran_mat, d.convert_fn(image_dest_idxes)
     )
-    clipped_new_image_dest_idxes = p.clip_fn(
+    clipped_new_image_dest_idxes = d.clip_fn(
         new_image_dest_idxes[:2],
         # Note the extra idx for the padded frame.
-        p.convert_fn([
+        d.convert_fn([
             [-(width // 2) - w_mod], [-(height // 2) - h_mod]
         ]),
-        p.convert_fn([
+        d.convert_fn([
             [width // 2 + 1], [height // 2 + 1]
         ])
     )
 
     # Assigning original pixel values to new positions.
-    image_orig_idxes = p.concat_fn([
+    image_orig_idxes = d.concat_fn([
         # Rows.
-        clipped_new_image_dest_idxes[1:] + p.convert_fn(height // 2 + h_mod),
+        clipped_new_image_dest_idxes[1:] + d.convert_fn(height // 2 + h_mod),
         # Columns.
-        clipped_new_image_dest_idxes[:1] + p.convert_fn(width // 2 + w_mod)
+        clipped_new_image_dest_idxes[:1] + d.convert_fn(width // 2 + w_mod)
     ], 0)
-    image_orig_idxes = p.round_to_int_fn(image_orig_idxes)
-    values = p.gather_image_fn(image, image_orig_idxes)
-    new_image = p.reshape_fn(values, (height, width, num_channels))
+    image_orig_idxes = d.round_to_int_fn(image_orig_idxes)
+    values = d.gather_image_fn(image, image_orig_idxes)
+    new_image = d.reshape_fn(values, (height, width, num_channels))
 
     # Transform bboxes.
     top_left_xs = bboxes[:, :1]
     top_left_ys = bboxes[:, 1:2]
     top_right_xs = bboxes[:, :1] + bboxes[:, 2:3] - 1
     top_right_ys = bboxes[:, 1:2]
-    bottom_left_xs = p.copy_fn(top_left_xs)
-    bottom_left_ys = p.copy_fn(top_left_ys + bboxes[:, 3:] - 1)
-    bottom_right_xs = p.copy_fn(top_right_xs)
-    bottom_right_ys = p.copy_fn(top_right_ys + bboxes[:, 3:] - 1)
+    bottom_left_xs = d.copy_fn(top_left_xs)
+    bottom_left_ys = d.copy_fn(top_left_ys + bboxes[:, 3:] - 1)
+    bottom_right_xs = d.copy_fn(top_right_xs)
+    bottom_right_ys = d.copy_fn(top_right_ys + bboxes[:, 3:] - 1)
 
-    xs = p.concat_fn(
-        [top_left_xs - p.convert_fn(width // 2 - 1 + w_mod),
-         top_right_xs - p.convert_fn(width // 2 - 1 + w_mod),
-         bottom_left_xs - p.convert_fn(width // 2 - 1 + w_mod),
-         bottom_right_xs - p.convert_fn(width // 2 - 1 + w_mod)],
+    xs = d.concat_fn(
+        [top_left_xs - d.convert_fn(width // 2 - 1 + w_mod),
+         top_right_xs - d.convert_fn(width // 2 - 1 + w_mod),
+         bottom_left_xs - d.convert_fn(width // 2 - 1 + w_mod),
+         bottom_right_xs - d.convert_fn(width // 2 - 1 + w_mod)],
         1
     )
-    ys = p.concat_fn(
-        [top_left_ys - p.convert_fn(height // 2 - 1 + h_mod),
-         top_right_ys - p.convert_fn(height // 2 - 1 + h_mod),
-         bottom_left_ys - p.convert_fn(height // 2 - 1 + h_mod),
-         bottom_right_ys - p.convert_fn(height // 2 - 1 + h_mod)],
+    ys = d.concat_fn(
+        [top_left_ys - d.convert_fn(height // 2 - 1 + h_mod),
+         top_right_ys - d.convert_fn(height // 2 - 1 + h_mod),
+         bottom_left_ys - d.convert_fn(height // 2 - 1 + h_mod),
+         bottom_right_ys - d.convert_fn(height // 2 - 1 + h_mod)],
         1
     )
-    bboxes_idxes = p.stack_fn(  # Shape: [num_bboxes, 3, 4].
-        [xs, ys, p.ones_like_fn(xs)], 1
+    bboxes_idxes = d.stack_fn(  # Shape: [num_bboxes, 3, 4].
+        [xs, ys, d.ones_like_fn(xs)], 1
     )
 
-    tran_bboxes_idxes = p.matmul_fn(bboxes_tran_mat, bboxes_idxes)
+    tran_bboxes_idxes = d.matmul_fn(bboxes_tran_mat, bboxes_idxes)
 
     # New bboxes, defined as the rectangle enclosing the transformed bboxes.
     tran_xs = tran_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
     tran_ys = tran_bboxes_idxes[:, 1, :]
-    max_xs = p.max_fn(tran_xs, -1)  # Shape: [num_bboxes].
-    max_ys = p.max_fn(tran_ys, -1)
-    min_xs = p.min_fn(tran_xs, -1)
-    min_ys = p.min_fn(tran_ys, -1)
+    max_xs = d.max_fn(tran_xs, -1)  # Shape: [num_bboxes].
+    max_ys = d.max_fn(tran_ys, -1)
+    min_xs = d.min_fn(tran_xs, -1)
+    min_ys = d.min_fn(tran_ys, -1)
 
-    tran_top_left_xs = p.round_to_int_fn(p.expand_dim_fn(min_xs, -1))
-    tran_top_left_ys = p.round_to_int_fn(p.expand_dim_fn(min_ys, -1))
-    tran_bottom_right_xs = p.round_to_int_fn(p.expand_dim_fn(max_xs, -1))
-    tran_bottom_right_ys = p.round_to_int_fn(p.expand_dim_fn(max_ys, -1))
+    tran_top_left_xs = d.round_to_int_fn(d.expand_dim_fn(min_xs, -1))
+    tran_top_left_ys = d.round_to_int_fn(d.expand_dim_fn(min_ys, -1))
+    tran_bottom_right_xs = d.round_to_int_fn(d.expand_dim_fn(max_xs, -1))
+    tran_bottom_right_ys = d.round_to_int_fn(d.expand_dim_fn(max_ys, -1))
     new_widths = tran_bottom_right_xs - tran_top_left_xs + 1
     new_heights = tran_bottom_right_ys - tran_top_left_ys + 1
-    tran_bboxes = p.concat_fn([  # Shape: [num_bboxes, 4].
+    tran_bboxes = d.concat_fn([  # Shape: [num_bboxes, 4].
         tran_top_left_xs, tran_top_left_ys, new_widths, new_heights
     ], -1)
 
@@ -181,32 +181,32 @@ def _affine_transform(
     # Filter new bboxes values.
     xcens = new_xs + new_widths // 2
     ycens = new_ys + new_heights // 2
-    included = p.squeeze_fn(p.logical_and_fn(
-        p.logical_and_fn(xcens >= 0, xcens <= width),
-        p.logical_and_fn(ycens >= 0, ycens <= height)
+    included = d.squeeze_fn(d.logical_and_fn(
+        d.logical_and_fn(xcens >= 0, xcens <= width),
+        d.logical_and_fn(ycens >= 0, ycens <= height)
     ), -1)
 
     # Clip new bboxes values.
-    xmaxs = p.clip_fn(
-        p.convert_fn(new_xs + new_widths), p.convert_fn(0), p.convert_fn(width)
+    xmaxs = d.clip_fn(
+        d.convert_fn(new_xs + new_widths), d.convert_fn(0), d.convert_fn(width)
     )
-    ymaxs = p.clip_fn(
-        p.convert_fn(new_ys + new_heights), p.convert_fn(0), p.convert_fn(height)
+    ymaxs = d.clip_fn(
+        d.convert_fn(new_ys + new_heights), d.convert_fn(0), d.convert_fn(height)
     )
-    new_xs = p.clip_fn(
-        p.convert_fn(new_xs), p.convert_fn(0), p.convert_fn(width)
+    new_xs = d.clip_fn(
+        d.convert_fn(new_xs), d.convert_fn(0), d.convert_fn(width)
     )
-    new_ys = p.clip_fn(
-        p.convert_fn(new_ys), p.convert_fn(0), p.convert_fn(height)
+    new_ys = d.clip_fn(
+        d.convert_fn(new_ys), d.convert_fn(0), d.convert_fn(height)
     )
     new_widths = xmaxs - new_xs
     new_heights = ymaxs - new_ys
 
-    new_bboxes = p.concat_fn([new_xs, new_ys, new_widths, new_heights], 1)
-    new_bboxes = p.convert_fn(p.boolean_mask_fn(new_bboxes, included))
+    new_bboxes = d.concat_fn([new_xs, new_ys, new_widths, new_heights], 1)
+    new_bboxes = d.convert_fn(d.boolean_mask_fn(new_bboxes, included))
 
     # Filter labels.
-    new_labels = p.boolean_mask_fn(labels, included)
+    new_labels = d.boolean_mask_fn(labels, included)
 
     return new_image, new_bboxes, new_labels
 
@@ -231,7 +231,7 @@ def _flip_left_right(
         image: T,
         bboxes: T,
         labels: T,
-        p: _AffineParam
+        d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
@@ -239,10 +239,10 @@ def _flip_left_right(
     labels: [0, 1, 0, ...]
     """
     image_dest_flip_lr_mat, bboxes_flip_lr_mat = _get_flip_left_right_mats(
-        p.convert_fn
+        d.convert_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_flip_lr_mat, bboxes_flip_lr_mat, p
+        image, bboxes, labels, image_dest_flip_lr_mat, bboxes_flip_lr_mat, d
     )
 
 
@@ -266,7 +266,7 @@ def _flip_up_down(
         image: T,
         bboxes: T,
         labels: T,
-        p: _AffineParam
+        d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
@@ -274,10 +274,10 @@ def _flip_up_down(
     labels: [0, 1, 0, ...]
     """
     image_dest_flip_ud_mat, bboxes_flip_ud_mat = _get_flip_up_down_mats(
-        p.convert_fn
+        d.convert_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_flip_ud_mat, bboxes_flip_ud_mat, p
+        image, bboxes, labels, image_dest_flip_ud_mat, bboxes_flip_ud_mat, d
     )
 
 
@@ -310,7 +310,7 @@ def _rotate(
         angle_deg: T,
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T],
-        p: _AffineParam
+        d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
@@ -319,10 +319,10 @@ def _rotate(
     angle_deg: positive means anti-clockwise.
     """
     image_dest_rot_mat, bboxes_rot_mat = _get_rotate_mats(
-        angle_deg, p.convert_fn, cos_fn, sin_fn
+        angle_deg, d.convert_fn, cos_fn, sin_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_rot_mat, bboxes_rot_mat, p
+        image, bboxes, labels, image_dest_rot_mat, bboxes_rot_mat, d
     )
 
 
@@ -354,7 +354,7 @@ def _shear(
         labels: T,
         angle_deg: T,
         tan_fn: Callable[[T], T],
-        p: _AffineParam
+        d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
@@ -363,10 +363,10 @@ def _shear(
     angle_deg: positive means anti-clockwise, where abs(angle_deg) must be < 90.
     """
     image_dest_shear_mat, bboxes_shear_mat = _get_shear_mats(
-        angle_deg, p.convert_fn, tan_fn
+        angle_deg, d.convert_fn, tan_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_shear_mat, bboxes_shear_mat, p
+        image, bboxes, labels, image_dest_shear_mat, bboxes_shear_mat, d
     )
 
 
@@ -394,7 +394,7 @@ def _translate(
         labels: T,
         translate_height: T,
         translate_width: T,
-        p: _AffineParam
+        d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
     image: [h, w, c]
@@ -404,10 +404,10 @@ def _translate(
     translate_width: in range (-image_width, image_width)
     """
     image_dest_translate_mat, bboxes_translate_mat = _get_translate_mats(
-        translate_height, translate_width, p.convert_fn
+        translate_height, translate_width, d.convert_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_translate_mat, bboxes_translate_mat, p
+        image, bboxes, labels, image_dest_translate_mat, bboxes_translate_mat, d
     )
 
 
