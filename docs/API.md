@@ -14,8 +14,7 @@ There are three modules:
 - `targetran.tf` for TensorFlow transformation tools;
 - `targetran.utils` for general helper utilities.
 
-Please see [here](../README.md#usage) 
-for usage instructions.
+Please see [here](../README.md#usage) for usage instructions.
 
 
 ### Transformation classes
