@@ -18,16 +18,15 @@ Here comes Targetran to fill the gap.
 
 # What is Targetran?
 
-- A data augmentation library to assist object detection or image classification 
-  model training. 
+- A light-weight data augmentation library to assist object detection or 
+  image classification model training. 
 - Has simple Python API to transform both the images and the target rectangular 
-  bounding-boxes.
+  bounding-boxes with minimal configurations.
 - Use dataset-idiomatic approach for TensorFlow and PyTorch.
 
 ![example](docs/example.png)
 
-(Figure produced by the example code [here](examples/local/run_tf_dataset_local_example.py).
-The author owns the photos.)
+(Figure produced by the example code [here](examples/local/run_tf_dataset_local_example.py).)
 
 # Table of contents
 
