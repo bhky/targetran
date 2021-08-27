@@ -1,5 +1,7 @@
 ![logo](logo/targetran_logo.png)
 
+![ci](https://github.com/bhky/targetran/actions/workflows/ci/badge.svg)
+
 # Motivation
 
 [Data augmentation](https://en.wikipedia.org/wiki/Data_augmentation) 
