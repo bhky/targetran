@@ -24,7 +24,7 @@ from targetran._np_functional import (
     _np_gather_image,
 )
 from targetran._transform import (
-    _AffineParam,
+    _AffineDependency,
     _affine_transform,
     _flip_left_right,
     _flip_up_down,
@@ -43,8 +43,8 @@ from targetran._transform import (
 )
 
 
-def _np_get_affine_param() -> _AffineParam:
-    return _AffineParam(
+def _np_get_affine_dependency() -> _AffineDependency:
+    return _AffineDependency(
         _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
         _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
         np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
@@ -62,7 +62,7 @@ def _np_affine_transform(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _affine_transform(
         image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
-        _np_get_affine_param()
+        _np_get_affine_dependency()
     )
 
 
@@ -72,7 +72,7 @@ def flip_left_right(
         labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_left_right(
-        image, bboxes, labels, _np_get_affine_param()
+        image, bboxes, labels, _np_get_affine_dependency()
     )
 
 
@@ -82,7 +82,7 @@ def flip_up_down(
         labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_up_down(
-        image, bboxes, labels, _np_get_affine_param()
+        image, bboxes, labels, _np_get_affine_dependency()
     )
 
 
@@ -94,7 +94,7 @@ def rotate(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _rotate(
         image, bboxes, labels, _np_convert(angle_deg), np.cos, np.sin,
-        _np_get_affine_param()
+        _np_get_affine_dependency()
     )
 
 
@@ -109,7 +109,7 @@ def shear(
         _check_shear_input(angle_deg)
     return _shear(
         image, bboxes, labels, _np_convert(angle_deg), np.tan,
-        _np_get_affine_param()
+        _np_get_affine_dependency()
     )
 
 
@@ -126,7 +126,7 @@ def translate(
     return _translate(
         image, bboxes, labels,
         _np_convert(translate_height), _np_convert(translate_width),
-        _np_get_affine_param()
+        _np_get_affine_dependency()
     )
 
 

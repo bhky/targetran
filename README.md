@@ -1,16 +1,29 @@
 ![logo](logo/targetran_logo.png)
 
-# Targetran
+# Motivation
 
-- Data augmentation library for object detection or image classification 
+[Data augmentation](https://en.wikipedia.org/wiki/Data_augmentation) 
+is a technique commonly used for training machine learning models in the
+computer vision field, where one can increase the amount of image data by
+creating transformed copies of the original images.
+
+In the object detection sub-field, the transformation has to be done also
+to the target rectangular bounding-boxes. However, such functionality is not 
+readily available in frameworks such as TensorFlow and PyTorch.
+
+Here comes Targetran to fill the gap.
+
+# What is Targetran?
+
+- A data augmentation library to assist object detection or image classification 
   model training. 
-- Simple Python API to transform both the images and 
-  the target rectangular bounding-boxes.
-- Dataset-idiomatic implementation for TensorFlow and PyTorch.
+- Has simple Python API to transform both the images and the target rectangular 
+  bounding-boxes.
+- Use dataset-idiomatic approach for TensorFlow and PyTorch.
 
 ![example](docs/example.png)
 
-(Figure produced by the example code [here](examples/run_tf_dataset_example.py).
+(Figure produced by the example code [here](examples/local/run_tf_dataset_local_example.py).
 The author owns the photos.)
 
 # Table of contents
