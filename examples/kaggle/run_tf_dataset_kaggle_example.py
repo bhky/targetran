@@ -150,7 +150,7 @@ def save_plots(ds: tf.data.Dataset, num_images: int) -> None:
                 color=(0, 0, 255), thickness=2
             )
 
-        fig, ax = plt.subplots(figsize=(6, 6))
+        fig, ax = plt.subplots(figsize=(8, 8))
         ax.imshow(image)
         ax.set_axis_off()
         fig.set_tight_layout(True)
