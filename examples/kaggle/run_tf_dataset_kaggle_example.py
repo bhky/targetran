@@ -35,12 +35,15 @@ from targetran.tf import (
 DATA_DIR = "/kaggle/input/global-wheat-detection"
 
 
-def make_df(num_images: Optional[int] = None) -> pd.DataFrame:
+def make_df(
+        num_images: Optional[int] = None,
+        data_dir: str = DATA_DIR
+) -> pd.DataFrame:
     """
     Read and arrange data from train.csv and the train image directory.
     """
-    train_csv_path = os.path.join(DATA_DIR, "train.csv")
-    train_images_dir = os.path.join(DATA_DIR, "train")
+    train_csv_path = os.path.join(data_dir, "train.csv")
+    train_images_dir = os.path.join(data_dir, "train")
 
     # Add image paths to df.
     df_wheat = pd.read_csv(train_csv_path)
