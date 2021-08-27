@@ -295,7 +295,7 @@ ds = PTDataset(..., transforms=transforms)
 ## Examples
 
 - See [here](examples) for code examples in this repository. 
-- See [here](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset?scriptVersionId=73208719)
+- See [here](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset)
   for an example using Kaggle notebook and competition data.
 
 # API
