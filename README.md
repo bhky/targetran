@@ -23,7 +23,7 @@ Here comes Targetran to fill the gap.
 
 ![example](docs/example.png)
 
-(Figure produced by the example code [here](examples/run_tf_dataset_example.py).
+(Figure produced by the example code [here](examples/local/run_tf_dataset_local_example.py).
 The author owns the photos.)
 
 # Table of contents

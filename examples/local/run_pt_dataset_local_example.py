@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 """
-TensorFlow Dataset example.
+PyTorch Dataset local example.
 """
 
 import glob
 import json
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import cv2
 import matplotlib.pylab as plt
 import numpy as np
-import tensorflow as tf
+from torch.utils.data import Dataset, DataLoader
 
-from targetran.tf import (
-    seqs_to_tf_dataset,
-    TFCombineAffine,
-    TFRandomFlipLeftRight,
-    TFRandomRotate,
-    TFRandomShear,
-    TFRandomCrop,
-    TFRandomTranslate,
-    TFResize,
+from targetran.np import (
+    CombineAffine,
+    RandomFlipLeftRight,
+    RandomRotate,
+    RandomShear,
+    RandomCrop,
+    RandomTranslate,
+    Resize,
 )
+from targetran.utils import Compose, collate_fn
 
 
 def load_images() -> Dict[str, np.ndarray]:
@@ -75,10 +75,49 @@ def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
     return data_dict
 
 
-def make_tf_dataset(
+class PTDataset(Dataset):
+    """
+    A very simple PyTorch Dataset.
+    As per common practice, transforms are done on NumPy arrays.
+    """
+
+    def __init__(
+            self,
+            image_seq: Sequence[np.ndarray],
+            bboxes_seq: Sequence[np.ndarray],
+            labels_seq: Sequence[np.ndarray],
+            transforms: Optional[Compose]
+    ) -> None:
+        self.image_seq = image_seq
+        self.bboxes_seq = bboxes_seq
+        self.labels_seq = labels_seq
+        self.transforms = transforms
+
+    def __len__(self) -> int:
+        return len(self.image_seq)
+
+    def __getitem__(
+            self,
+            idx: int
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if self.transforms:
+            return self.transforms(
+                self.image_seq[idx],
+                self.bboxes_seq[idx],
+                self.labels_seq[idx]
+            )
+        return (
+            self.image_seq[idx],
+            self.bboxes_seq[idx],
+            self.labels_seq[idx]
+        )
+
+
+def make_pt_dataset(
         image_dict: Dict[str, np.ndarray],
-        annotation_dict: Dict[str, Dict[str, np.ndarray]]
-) -> tf.data.Dataset:
+        annotation_dict: Dict[str, Dict[str, np.ndarray]],
+        transforms: Optional[Compose]
+) -> Dataset:
     """
     Users may do it differently depending on the data.
     The main point is the item order of each sequence must match accordingly.
@@ -90,11 +129,11 @@ def make_tf_dataset(
     labels_seq = [
         annotation_dict[image_id]["labels"] for image_id in image_dict.keys()
     ]
-    return seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
+    return PTDataset(image_seq, bboxes_seq, labels_seq, transforms)
 
 
 def plot(
-        ds: tf.data.Dataset,
+        ds: Dataset,
         num_rows: int,
         num_cols: int,
         figure_size_inches: Tuple[float, float] = (7.0, 4.5)
@@ -104,9 +143,11 @@ def plot(
     """
     fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
 
-    for i, sample in enumerate(ds.take(num_rows * num_cols)):
+    for i in range(num_rows * num_cols):
 
-        image, bboxes, labels = [tensor.numpy() for tensor in sample]
+        sample = ds[i % len(ds)]
+
+        image, bboxes, labels = sample
         image = image.astype(np.int32)
 
         for bbox, label in zip(bboxes, labels):
@@ -136,35 +177,33 @@ def plot(
 
 
 def main() -> None:
-    ds = make_tf_dataset(load_images(), load_annotations())
-
     # The affine transformations can be combined for better performance.
     # Note that cropping and resizing are not affine.
-    affine_transform = TFCombineAffine([
-        TFRandomRotate(probability=1.0),
-        TFRandomShear(probability=1.0),
-        TFRandomTranslate(probability=1.0),
-        TFRandomFlipLeftRight(probability=0.5),
-    ], probability=1.0, seed=0)
+    affine_transform = CombineAffine([
+        RandomRotate(probability=1.0),
+        RandomShear(probability=1.0),
+        RandomTranslate(probability=1.0),
+        RandomFlipLeftRight(probability=0.5),
+    ], probability=1.0, seed=2)
 
-    # The `repeat` call here is only for re-using samples in this illustration.
-    ds = ds \
-        .repeat() \
-        .map(TFRandomCrop(probability=1.0, seed=1)) \
-        .map(affine_transform) \
-        .map(TFResize((640, 640)))
+    transforms = Compose([
+        RandomCrop(probability=1.0, seed=1),
+        affine_transform,
+        Resize((640, 640)),
+    ])
+
+    ds = make_pt_dataset(load_images(), load_annotations(), transforms)
 
     plot(ds, num_rows=2, num_cols=3)
 
-    # Example of using the dataset with padded-batching.
-    ds = ds.padded_batch(2, padding_values=np.nan)
+    # Example of batching with DataLoader and collate_fn.
+    data_loader = DataLoader(ds, batch_size=2, collate_fn=collate_fn)
 
-    for batch in ds.take(5):
-        image_batch, bboxes_batch, labels_batch = batch
-        print("--------------")
-        print(f"transformed image-batch shape: {image_batch.get_shape()}")
-        print(f"transformed bboxes-batch shape: {bboxes_batch.get_shape()}")
-        print(f"transformed labels-batch shape: {bboxes_batch.get_shape()}")
+    for batch in data_loader:
+        image_seq, bboxes_seq, labels_seq = batch
+        print(f"transformed image-seq size: {len(image_seq)}")
+        print(f"transformed bboxes-seq size: {len(bboxes_seq)}")
+        print(f"transformed labels-seq size: {len(labels_seq)}")
 
 
 if __name__ == "__main__":
