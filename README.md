@@ -1,6 +1,6 @@
 ![logo](logo/targetran_logo.png)
 
-![ci](https://github.com/bhky/targetran/actions/workflows/ci/badge.svg)
+![ci](https://github.com/bhky/targetran/actions/workflows/ci.yml/badge.svg)
 
 # Motivation
 
