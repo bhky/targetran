@@ -4,9 +4,6 @@ Usage example of Targetran with TensorFlow Dataset, using data from Kaggle:
 https://www.kaggle.com/c/global-wheat-detection/data
 
 This example is to be run on a Kaggle Notebook, with the above dataset added.
-
-See:
-https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset?scriptVersionId=73208719
 """
 
 # Uncomment the following line when running on a Kaggle Notebook.
