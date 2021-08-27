@@ -158,7 +158,7 @@ def save_plots(ds: tf.data.Dataset, num_images: int) -> None:
 
 
 def main() -> None:
-    num_images = 8
+    num_images = 6
     df = make_df(num_images=num_images)
     ds = make_tf_dataset(load_images(df), load_annotations(df))
 
