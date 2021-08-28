@@ -140,11 +140,11 @@ Randomly shear the input image horizontally about the centre.
 ### `RandomTranslate`, `TFRandomTranslate`
 Randomly translate the input image.
 - `__init__` parameters
-  - `translate_height_fraction_range` (`Tuple[float, float]`, default `(-0.2, 0.2)`):
+  - `translate_height_fraction_range` (`Tuple[float, float]`, default `(-0.1, 0.1)`):
     The lower and upper limits (both exclusive) of the vertical translation, 
     given as fractions of the image height. 
     Both values should be greater than `-1.0` and less than `1.0`.
-  - `translate_width_fraction_range` (`Tuple[float, float]`, default `(-0.2, 0.2)`):
+  - `translate_width_fraction_range` (`Tuple[float, float]`, default `(-0.1, 0.1)`):
       The lower and upper limits (both exclusive) of the horizontal translation, 
       given as fractions of the image width. 
       Both values should be greater than `-1.0` and less than `1.0`.
