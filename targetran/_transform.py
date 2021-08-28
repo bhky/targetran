@@ -458,12 +458,8 @@ def _get_crop_inputs(
     crop_heights = image_height * height_fractions
     crop_widths = image_width * width_fractions
 
-    offset_heights = round_to_int_fn(
-        (image_height - crop_heights) * rand_fn()
-    )
-    offset_widths = round_to_int_fn(
-        (image_width - crop_widths) * rand_fn()
-    )
+    offset_heights = round_to_int_fn((image_height - crop_heights) * rand_fn())
+    offset_widths = round_to_int_fn((image_width - crop_widths) * rand_fn())
 
     return (
         offset_heights, offset_widths,
