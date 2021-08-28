@@ -298,10 +298,9 @@ ds = PTDataset(..., transforms=transforms)
 
 ## Examples
 
-- See [here](examples) for code examples in this repository. 
-- See [here](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset)
-  for how to construct a TensorFlow Dataset with Targetran, 
-  using Kaggle notebook and objection detection data.
+- [Code examples in this repository](examples) 
+- [Construct a TensorFlow Dataset with Targetran, 
+   using Kaggle notebook and objection detection data](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset)
 
 # API
 
