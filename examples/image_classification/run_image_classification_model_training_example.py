@@ -107,7 +107,7 @@ def train_model(
     affine_transform = tt.TFCombineAffine([
         tt.TFRandomFlipLeftRight(seed=seed),
         tt.TFRandomRotate(seed=seed),
-        tt.TFRandomShear(seed=seed),
+        tt.TFRandomTranslate(seed=seed),
     ], probability=0.9, seed=seed)
 
     def set_shape(
