@@ -14,15 +14,24 @@ In the object detection sub-field, the transformation has to be done also
 to the target rectangular bounding-boxes. However, such functionality is not 
 readily available in frameworks such as TensorFlow and PyTorch.
 
+While there are other powerful augmentation tools available, many of those 
+do not work well with the 
+[TPU](https://en.wikipedia.org/wiki/Tensor_Processing_Unit)
+when accessing from [Google Colab](https://colab.research.google.com/) or 
+[Kaggle Notebooks](https://www.kaggle.com/code),
+which are popular options nowadays for a lot of people who do not have their
+own hardware resources.
+
 Here comes Targetran to fill the gap.
 
 # What is Targetran?
 
 - A light-weight data augmentation library to assist object detection or 
-  image classification model training. 
+  image classification model training.
 - Has simple Python API to transform both the images and the target rectangular 
   bounding-boxes.
 - Use dataset-idiomatic approach for TensorFlow and PyTorch.
+- Can be used with the TPU for acceleration (TensorFlow Dataset only).
 
 ![example](docs/example.png)
 
@@ -298,9 +307,9 @@ ds = PTDataset(..., transforms=transforms)
 
 ## Examples
 
-- See [here](examples) for code examples in this repository. 
-- See [here](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset)
-  for an example using Kaggle notebook and competition data.
+- [Code examples in this repository](examples) 
+- [Construct a TensorFlow Dataset with Targetran 
+   using Kaggle notebook and objection detection data](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset)
 
 # API
 
