@@ -143,7 +143,7 @@ def save_plots(ds: tf.data.Dataset, num_images: int) -> None:
                 color=(0, 0, 255), thickness=2
             )
 
-        fig, ax = plt.subplots(figsize=(8, 8))
+        fig, ax = plt.subplots()
         ax.imshow(image)
         ax.set_axis_off()
         fig.set_tight_layout(True)
@@ -167,7 +167,7 @@ def main() -> None:
     ds = ds \
         .map(tt.TFRandomCrop(probability=1.0, seed=1)) \
         .map(affine_transform) \
-        .map(tt.TFResize((960, 960)))
+        .map(tt.TFResize((512, 512)))
 
     save_plots(ds, num_images=num_images)
 
