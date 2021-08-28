@@ -533,8 +533,8 @@ class TFRandomCrop(TFRandomTransform):
 
     def __init__(
             self,
-            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
-            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            crop_height_fraction_range: Tuple[float, float] = (0.8, 0.9),
+            crop_width_fraction_range: Tuple[float, float] = (0.8, 0.9),
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:

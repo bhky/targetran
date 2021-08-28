@@ -174,11 +174,11 @@ Combine the random affine transformations to improve performance.
 ### `RandomCrop`, `TFRandomCrop`
 Get a random crop of the input image.
 - `__init__` parameters
-  - `crop_height_fraction_range` (`Tuple[float, float]`, default `(0.7, 0.9)`):
+  - `crop_height_fraction_range` (`Tuple[float, float]`, default `(0.8, 0.9)`):
     The lower and upper limits (both exclusive) of the image crop height, 
     given as fractions of the image height. 
     Both values should be greater than `0.0` and less than `1.0`.
-  - `crop_width_fraction_range` (`Tuple[float, float]`, default `(0.7, 0.9)`):
+  - `crop_width_fraction_range` (`Tuple[float, float]`, default `(0.8, 0.9)`):
       The lower and upper limits (both exclusive) of the image crop width, 
       given as fractions of the image width. 
       Both values should be greater than `0.0` and less than `1.0`.
