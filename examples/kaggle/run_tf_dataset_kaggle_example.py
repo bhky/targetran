@@ -17,18 +17,8 @@ import cv2
 import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
+import targetran.tf as tt
 import tensorflow as tf
-
-from targetran.tf import (
-    seqs_to_tf_dataset,
-    TFCombineAffine,
-    TFRandomFlipLeftRight,
-    TFRandomRotate,
-    TFRandomShear,
-    TFRandomCrop,
-    TFRandomTranslate,
-    TFResize,
-)
 
 # This will be the data path when you use "Add Data" on the right panel
 # of a Kaggle Notebook.
@@ -127,7 +117,7 @@ def make_tf_dataset(
     labels_seq = [
         annotation_dict[image_id]["labels"] for image_id in image_dict.keys()
     ]
-    return seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
+    return tt.seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 
 def save_plots(ds: tf.data.Dataset, num_images: int) -> None:
@@ -167,17 +157,17 @@ def main() -> None:
 
     # The affine transformations can be combined for better performance.
     # Note that cropping and resizing are not affine.
-    affine_transform = TFCombineAffine([
-        TFRandomRotate(probability=1.0),
-        TFRandomShear(probability=1.0),
-        TFRandomTranslate(probability=1.0),
-        TFRandomFlipLeftRight(probability=0.5),
+    affine_transform = tt.TFCombineAffine([
+        tt.TFRandomRotate(probability=1.0),
+        tt.TFRandomShear(probability=1.0),
+        tt.TFRandomTranslate(probability=1.0),
+        tt.TFRandomFlipLeftRight(probability=0.5),
     ], probability=1.0, seed=0)
 
     ds = ds \
-        .map(TFRandomCrop(probability=1.0, seed=1)) \
+        .map(tt.TFRandomCrop(probability=1.0, seed=1)) \
         .map(affine_transform) \
-        .map(TFResize((960, 960)))
+        .map(tt.TFResize((960, 960)))
 
     save_plots(ds, num_images=num_images)
 
