@@ -291,14 +291,14 @@ def _get_rotate_mats(
     # Image rotation matrix. Clockwise for the destination indices,
     # so the final image would appear to be rotated anti-clockwise.
     image_dest_rot_mat = convert_fn([
-        [cos_fn(ang_rad), -sin_fn(ang_rad), convert_fn(0)],
-        [sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [cos_fn(ang_rad), -sin_fn(ang_rad), 0],
+        [sin_fn(ang_rad), cos_fn(ang_rad), 0],
+        [0, 0, 1]
     ])
     bboxes_rot_mat = convert_fn([  # Anti-clockwise.
-        [cos_fn(ang_rad), sin_fn(ang_rad), convert_fn(0)],
-        [-sin_fn(ang_rad), cos_fn(ang_rad), convert_fn(0)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [cos_fn(ang_rad), sin_fn(ang_rad), 0],
+        [-sin_fn(ang_rad), cos_fn(ang_rad), 0],
+        [0, 0, 1]
     ])
     return image_dest_rot_mat, bboxes_rot_mat
 
@@ -336,14 +336,14 @@ def _get_shear_mats(
     # Image shear matrix. Clockwise for the destination indices,
     # so the final image would appear to be sheared anti-clockwise.
     image_dest_shear_mat = convert_fn([
-        [convert_fn(1), -factor, convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [1, -factor, 0],
+        [0, 1, 0],
+        [0, 0, 1]
     ])
     bboxes_shear_mat = convert_fn([  # Anti-clockwise.
-        [convert_fn(1), factor, convert_fn(0)],
-        [convert_fn(0), convert_fn(1), convert_fn(0)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [1, factor, 0],
+        [0, 1, 0],
+        [0, 0, 1]
     ])
     return image_dest_shear_mat, bboxes_shear_mat
 
@@ -376,14 +376,14 @@ def _get_translate_mats(
         convert_fn: Callable[..., T]
 ) -> Tuple[T, T]:
     image_dest_translate_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), -convert_fn(translate_width)],
-        [convert_fn(0), convert_fn(1), -convert_fn(translate_height)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [1, 0, -translate_width],
+        [0, 1, -translate_height],
+        [0, 0, 1]
     ])
     bboxes_translate_mat = convert_fn([
-        [convert_fn(1), convert_fn(0), convert_fn(translate_width)],
-        [convert_fn(0), convert_fn(1), convert_fn(translate_height)],
-        [convert_fn(0), convert_fn(0), convert_fn(1)]
+        [1, 0, translate_width],
+        [0, 1, translate_height],
+        [0, 0, 1]
     ])
     return image_dest_translate_mat, bboxes_translate_mat
 
