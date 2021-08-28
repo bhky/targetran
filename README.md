@@ -309,7 +309,7 @@ ds = PTDataset(..., transforms=transforms)
 
 - [Code examples in this repository](examples) 
 - [Construct a TensorFlow Dataset with Targetran 
-   and objection detection data](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset) 
+   and object detection data](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset) 
   (Kaggle Notebook)
 - [Image classification with TensorFlow and Targetran on TPU](https://www.kaggle.com/boscoyung/targetran-tpu-for-image-classification-example)
   (Kaggle Notebook)
