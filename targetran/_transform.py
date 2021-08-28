@@ -455,19 +455,15 @@ def _get_crop_inputs(
         height_fraction_range, width_fraction_range, rand_fn, convert_fn
     )
 
-    cropped_image_heights = image_height * height_fractions
-    cropped_image_widths = image_width * width_fractions
+    crop_heights = image_height * height_fractions
+    crop_widths = image_width * width_fractions
 
-    offset_heights = round_to_int_fn(
-        (image_height - cropped_image_heights) * rand_fn()
-    )
-    offset_widths = round_to_int_fn(
-        (image_width - cropped_image_widths) * rand_fn()
-    )
+    offset_heights = round_to_int_fn((image_height - crop_heights) * rand_fn())
+    offset_widths = round_to_int_fn((image_width - crop_widths) * rand_fn())
 
     return (
         offset_heights, offset_widths,
-        cropped_image_heights, cropped_image_widths
+        crop_heights, crop_widths
     )
 
 
@@ -477,8 +473,8 @@ def _crop(
         labels: T,
         offset_height: T,
         offset_width: T,
-        cropped_image_height: T,
-        cropped_image_width: T,
+        crop_height: T,
+        crop_width: T,
         convert_fn: Callable[..., T],
         shape_fn: Callable[[T], Tuple[int, ...]],
         reshape_fn: Callable[[T, Tuple[int, ...]], T],
@@ -501,8 +497,8 @@ def _crop(
 
     top = offset_height
     left = offset_width
-    bottom = top + cropped_image_height
-    right = left + cropped_image_width
+    bottom = top + crop_height
+    right = left + crop_width
 
     # Crop image.
     image = image[int(top):int(bottom), int(left):int(right), :]
@@ -517,15 +513,15 @@ def _crop(
     xcens = xs + widths // 2
     ycens = ys + heights // 2
     included = squeeze_fn(logical_and_fn(
-        logical_and_fn(xcens >= 0, xcens <= cropped_image_width),
-        logical_and_fn(ycens >= 0, ycens <= cropped_image_height)
+        logical_and_fn(xcens >= 0, xcens <= crop_width),
+        logical_and_fn(ycens >= 0, ycens <= crop_height)
     ), -1)  # Squeeze along the last axis.
 
     # Clip bboxes values.
-    xmaxs = clip_fn(xs + widths, convert_fn(0), cropped_image_width)
-    ymaxs = clip_fn(ys + heights, convert_fn(0), cropped_image_height)
-    xs = clip_fn(xs, convert_fn(0), cropped_image_width)
-    ys = clip_fn(ys, convert_fn(0), cropped_image_height)
+    xmaxs = clip_fn(xs + widths, convert_fn(0), crop_width)
+    ymaxs = clip_fn(ys + heights, convert_fn(0), crop_height)
+    xs = clip_fn(xs, convert_fn(0), crop_width)
+    ys = clip_fn(ys, convert_fn(0), crop_height)
     widths = xmaxs - xs
     heights = ymaxs - ys
 

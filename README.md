@@ -1,5 +1,8 @@
 ![logo](logo/targetran_logo.png)
 
+[![ci](https://github.com/bhky/targetran/actions/workflows/ci.yml/badge.svg)](https://github.com/bhky/targetran/actions)
+[![License MIT 1.0](https://img.shields.io/badge/license-MIT%201.0-blue.svg)](LICENSE)
+
 # Motivation
 
 [Data augmentation](https://en.wikipedia.org/wiki/Data_augmentation) 
@@ -15,16 +18,15 @@ Here comes Targetran to fill the gap.
 
 # What is Targetran?
 
-- A data augmentation library to assist object detection or image classification 
-  model training. 
+- A light-weight data augmentation library to assist object detection or 
+  image classification model training. 
 - Has simple Python API to transform both the images and the target rectangular 
   bounding-boxes.
 - Use dataset-idiomatic approach for TensorFlow and PyTorch.
 
 ![example](docs/example.png)
 
-(Figure produced by the example code [here](examples/local/run_tf_dataset_local_example.py).
-The author owns the photos.)
+(Figure produced by the example code [here](examples/local/run_tf_dataset_local_example.py).)
 
 # Table of contents
 
@@ -140,17 +142,18 @@ ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 # The affine transformations can be combined for better performance.
 # Note that cropping and resizing are not affine.
 affine_transform = TFCombineAffine([
-    TFRandomRotate(),
-    TFRandomShear(),
+    TFRandomRotate(probability=0.8),  # Probability to include each affine transformation 
+    TFRandomShear(probability=0.6),   # can be specified, the default is 0.7.
     TFRandomTranslate(),
     TFRandomFlipLeftRight(),
     TFRandomFlipUpDown(),
-])
+], probability=1.0)  # Probability to apply this single combined transformation, i.e.,
+                     # some samples could be untouched in this step, if desired.
 
 # Typical application.
 auto_tune = tf.data.AUTOTUNE
 ds = ds \
-    .map(TFRandomCrop(), num_parallel_calls=auto_tune) \
+    .map(TFRandomCrop(probability=0.5), num_parallel_calls=auto_tune) \
     .map(affine_transform, num_parallel_calls=auto_tune) \
     .map(TFResize((256, 256)), num_parallel_calls=auto_tune)
 
@@ -227,18 +230,19 @@ class PTDataset(Dataset):
 # The affine transformations can be combined for better performance.
 # Note that cropping and resizing are not affine.
 affine_transform = CombineAffine([
-    RandomRotate(),
-    RandomShear(),
+    RandomRotate(probability=0.8),  # Probability to include each affine transformation 
+    RandomShear(probability=0.6),   # can be specified, the default is 0.7.
     RandomTranslate(),
     RandomFlipLeftRight(),
     RandomFlipUpDown(),
-])
+], probability=1.0)  # Probability to apply this single combined transformation, i.e.,
+                     # some samples could be untouched in this step, if desired.
 
 # The `Compose` here is similar to that from the torchvision package, except 
 # that here it also supports callables with multiple inputs and outputs needed
 # for objection detection tasks, i.e., (image, bboxes, labels).
 transforms = Compose([
-    RandomCrop(),
+    RandomCrop(probability=0.5),
     affine_transform,
     Resize((256, 256)),
 ])
@@ -294,7 +298,9 @@ ds = PTDataset(..., transforms=transforms)
 
 ## Examples
 
-See [here](examples) for example codes.
+- See [here](examples) for code examples in this repository. 
+- See [here](https://www.kaggle.com/boscoyung/targetran-example-with-tensorflow-dataset)
+  for an example using Kaggle notebook and competition data.
 
 # API
 

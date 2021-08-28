@@ -174,13 +174,13 @@ Combine the random affine transformations to improve performance.
 ### `RandomCrop`, `TFRandomCrop`
 Get a random crop of the input image.
 - `__init__` parameters
-  - `cropped_height_fraction_range` (`Tuple[float, float]`, default `(0.7, 0.9)`):
-    The lower and upper limits (both exclusive) of the cropped image height, 
-    given as fractions of the original image height. 
+  - `crop_height_fraction_range` (`Tuple[float, float]`, default `(0.7, 0.9)`):
+    The lower and upper limits (both exclusive) of the image crop height, 
+    given as fractions of the image height. 
     Both values should be greater than `0.0` and less than `1.0`.
-  - `cropped_width_fraction_range` (`Tuple[float, float]`, default `(0.7, 0.9)`):
-      The lower and upper limits (both exclusive) of the cropped image width, 
-      given as fractions of the original image width. 
+  - `crop_width_fraction_range` (`Tuple[float, float]`, default `(0.7, 0.9)`):
+      The lower and upper limits (both exclusive) of the image crop width, 
+      given as fractions of the image width. 
       Both values should be greater than `0.0` and less than `1.0`.
   - `probability` (`float`, default `0.7`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
@@ -264,14 +264,14 @@ Translate the input image.
 Get a crop of the input image.
 - Parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
-  - `offset_height` (`int`): Offset height of the cropped image in pixels,
+  - `offset_height` (`int`): Offset height of the image crop in pixels,
     must be greater than `0` and less than the image height.
-  - `offset_width` (`int`): Offset width of the cropped image in pixels,
+  - `offset_width` (`int`): Offset width of the image crop in pixels,
     must be greater than `0` and less than the image width.
-  - `cropped_image_height` (`int`): 
-    In pixels, naturally bounded by the original image height.
-  - `cropped_image_width` (`int`): 
-    In pixels, naturally bounded by the original image width.
+  - `crop_height` (`int`): 
+    In pixels, naturally bounded by the image height.
+  - `crop_width` (`int`): 
+    In pixels, naturally bounded by the image width.
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
 

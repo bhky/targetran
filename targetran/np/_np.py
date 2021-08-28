@@ -149,8 +149,8 @@ def crop(
         labels: np.ndarray,
         offset_height: int,
         offset_width: int,
-        cropped_image_height: int,
-        cropped_image_width: int,
+        crop_height: int,
+        crop_width: int,
         check_input: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     if check_input:
@@ -158,7 +158,7 @@ def crop(
     return _crop(
         image, bboxes, labels,
         _np_convert(offset_height), _np_convert(offset_width),
-        _np_convert(cropped_image_height), _np_convert(cropped_image_width),
+        _np_convert(crop_height), _np_convert(crop_width),
         _np_convert, np.shape, np.reshape, np.concatenate,
         _np_logical_and, np.squeeze, np.clip, _np_boolean_mask
     )
@@ -486,22 +486,20 @@ class RandomCrop(RandomTransform):
 
     def __init__(
             self,
-            cropped_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
-            cropped_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            crop_height_fraction_range: Tuple[float, float] = (0.7, 0.9),
+            crop_width_fraction_range: Tuple[float, float] = (0.7, 0.9),
             probability: float = 0.7,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(
-            cropped_height_fraction_range, (0.0, 1.0),
-            "cropped_height_fraction_range"
+            crop_height_fraction_range, (0.0, 1.0), "crop_height_fraction_range"
         )
         _check_input_range(
-            cropped_width_fraction_range, (0.0, 1.0),
-            "cropped_width_fraction_range"
+            crop_width_fraction_range, (0.0, 1.0), "crop_width_fraction_range"
         )
         super().__init__(crop, probability, seed, "RandomCrop", False)
-        self.cropped_height_fraction_range = cropped_height_fraction_range
-        self.cropped_width_fraction_range = cropped_width_fraction_range
+        self.crop_height_fraction_range = crop_height_fraction_range
+        self.crop_width_fraction_range = crop_width_fraction_range
 
     def __call__(
             self,
@@ -511,17 +509,17 @@ class RandomCrop(RandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        offset_height, offset_width, cropped_height, cropped_width = \
+        offset_height, offset_width, crop_height, crop_width = \
             _np_get_crop_inputs(
                 np.shape(image)[0], np.shape(image)[1],
-                self.cropped_height_fraction_range,
-                self.cropped_width_fraction_range,
+                self.crop_height_fraction_range,
+                self.crop_width_fraction_range,
                 self._rand_fn
             )
 
         return super().__call__(
             image, bboxes, labels,
-            offset_height, offset_width, cropped_height, cropped_width, False
+            offset_height, offset_width, crop_height, crop_width, False
         )
 
 

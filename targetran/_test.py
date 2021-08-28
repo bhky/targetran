@@ -486,8 +486,8 @@ class TestTransform(unittest.TestCase):
 
         offset_heights = [128 * 0.25, 0.0, 0.0, 99.0]
         offset_widths = [128 * 0.25, 0.0, 0.0, 59.0]
-        cropped_image_heights = [128 * 0.75] * 4
-        cropped_image_widths = [128 * 0.75] * 4
+        crop_heights = [128 * 0.75] * 4
+        crop_widths = [128 * 0.75] * 4
 
         expected_bboxes_seq = [
             np.array([
@@ -514,7 +514,7 @@ class TestTransform(unittest.TestCase):
                 original_bboxes_seq[i],
                 original_labels_seq[i],
                 int(offset_heights[i]), int(offset_widths[i]),
-                int(cropped_image_heights[i]), int(cropped_image_widths[i])
+                int(crop_heights[i]), int(crop_widths[i])
             )
             self.assertTrue(
                 np.allclose(expected_bboxes_seq[i], bboxes)
@@ -541,7 +541,7 @@ class TestTransform(unittest.TestCase):
                 tf_original_bboxes_seq[i],
                 tf_original_labels_seq[i],
                 int(offset_heights[i]), int(offset_widths[i]),
-                int(cropped_image_heights[i]), int(cropped_image_widths[i])
+                int(crop_heights[i]), int(crop_widths[i])
             )
             self.assertTrue(
                 np.allclose(tf_expected_bboxes_seq[i].numpy(),
