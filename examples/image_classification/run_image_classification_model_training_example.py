@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
 Usage example of Targetran with TFDS for image classification model training.
-"""
 
-# Uncomment the following line when running on a Kaggle Notebook.
-# !pip install -U targetran
+On a Kaggle Notebook, select the "Accelerator": TPUv3-8
+"""
 
 import os
 from typing import Tuple
+
+# Needed for the Kaggle Notebook.
+os.system("pip install -U targetran")
 
 import targetran.tf as tt
 import tensorflow as tf
@@ -101,7 +103,7 @@ def train_model(
         ds_val: tf.data.Dataset,
         image_size: Tuple[int, int],
         batch_size: int,
-        num_epochs: int,
+        max_num_epochs: int,
         seed: int = 42
 ) -> None:
     affine_transform = tt.TFCombineAffine([
@@ -154,7 +156,7 @@ def train_model(
 
     model.fit(
         ds_train,
-        epochs=num_epochs,
+        epochs=max_num_epochs,
         validation_data=ds_val,
         callbacks=callbacks,
         verbose=2
@@ -174,10 +176,11 @@ def main() -> None:
     with strategy.scope():
         model = make_model(image_size, num_classes=5)
 
-    batch_size = 16 * strategy.num_replicas_in_sync
+    batch_size = 16 * strategy.num_replicas_in_sync  # See TPU docs.
 
     train_model(
-        model, ds_train, ds_val, image_size, batch_size, num_epochs=100
+        model, ds_train, ds_val, image_size, batch_size,
+        max_num_epochs=5  # With early-stopping, set this to a large number.
     )
 
 

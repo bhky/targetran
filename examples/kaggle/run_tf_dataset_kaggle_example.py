@@ -6,12 +6,12 @@ https://www.kaggle.com/c/global-wheat-detection/data
 This example is to be run on a Kaggle Notebook, with the above dataset added.
 """
 
-# Uncomment the following line when running on a Kaggle Notebook.
-# !pip install -U targetran
-
 import json
 import os
 from typing import Dict, Optional
+
+# Needed for the Kaggle Notebook.
+os.system("pip install -U targetran")
 
 import cv2
 import matplotlib.pylab as plt
