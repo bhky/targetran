@@ -180,7 +180,7 @@ def main() -> None:
     image_width = 331
     num_val_samples = 256
     batch_size = 16 * strategy.num_replicas_in_sync  # See TPU docs.
-    max_num_epochs = 5  # With early-stopping, set this to a large number.
+    max_num_epochs = 5  # With early-stopping, can set this to a large number.
 
     image_size = (image_height, image_width)
 
