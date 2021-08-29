@@ -154,12 +154,12 @@ def save_plot(
         ds: tf.data.Dataset,
         num_rows: int,
         num_cols: int,
-        figure_size_inches: Tuple[float, float] = (20.0, 20.0)
+        figure_size_inches: Tuple[float, float] = (10.0, 10.0)
 ) -> None:
 
     fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
 
-    for n, sample in enumerate(ds.take(num_rows * num_cols)):
+    for n, sample in enumerate(ds.unbatch().take(num_rows * num_cols)):
 
         image, label = [tensor.numpy() for tensor in sample]
         image = image.astype(np.int32)
@@ -174,7 +174,7 @@ def save_plot(
         ax.set_axis_off()
 
     fig.set_tight_layout(True)
-    fig.savefig("figure.eps")
+    fig.savefig("figure.png")
 
 
 def train_model(
@@ -222,7 +222,7 @@ def main() -> None:
     ds_train, ds_val = transform_and_batch(
         ds_train, ds_val, image_size, batch_size
     )
-    save_plot(ds, num_rows=4, num_cols=3)
+    save_plot(ds_train, num_rows=4, num_cols=3)
     train_model(model, ds_train, ds_val, max_num_epochs)
 
 
