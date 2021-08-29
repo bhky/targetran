@@ -68,6 +68,7 @@ def make_model(
         optimizer=tf.keras.optimizers.Adam(),
         metrics=["acc"]
     )
+    model.summary()
     return model
 
 
@@ -97,15 +98,16 @@ def split_ds(
     return ds_train, ds_val
 
 
-def train_model(
-        model: Model,
+def transform_and_batch(
         ds_train: tf.data.Dataset,
         ds_val: tf.data.Dataset,
         image_size: Tuple[int, int],
         batch_size: int,
-        max_num_epochs: int,
         seed: int = 42
-) -> None:
+) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
+    """
+    Apply data augmentation and batching.
+    """
     affine_transform = tt.TFCombineAffine([
         tt.TFRandomFlipLeftRight(seed=seed),
         tt.TFRandomRotate(seed=seed),
@@ -141,6 +143,15 @@ def train_model(
         .batch(batch_size) \
         .prefetch(auto)
 
+    return ds_train, ds_val
+
+
+def train_model(
+        model: Model,
+        ds_train: tf.data.Dataset,
+        ds_val: tf.data.Dataset,
+        max_num_epochs: int
+) -> None:
     callbacks = [
         tf.keras.callbacks.ReduceLROnPlateau(
             monitor="val_loss", mode="min", patience=6,
@@ -151,9 +162,6 @@ def train_model(
             restore_best_weights=True, verbose=1
         ),
     ]
-
-    model.summary()
-
     model.fit(
         ds_train,
         epochs=max_num_epochs,
@@ -166,22 +174,25 @@ def train_model(
 def main() -> None:
     strategy = setup_accelerators_and_get_strategy()
 
-    ds = load_data()
-    ds_train, ds_val = split_ds(ds, num_val_samples=256)
-
     image_height = 331
     image_width = 331
+    num_val_samples = 256
+    batch_size = 16 * strategy.num_replicas_in_sync  # See TPU docs.
+    max_num_epochs = 5  # With early-stopping, set this to a large number.
+
     image_size = (image_height, image_width)
 
     with strategy.scope():
         model = make_model(image_size, num_classes=5)
 
-    batch_size = 16 * strategy.num_replicas_in_sync  # See TPU docs.
+    ds = load_data()
+    ds_train, ds_val = split_ds(ds, num_val_samples)
 
-    train_model(
-        model, ds_train, ds_val, image_size, batch_size,
-        max_num_epochs=5  # With early-stopping, set this to a large number.
+    ds_train, ds_val = transform_and_batch(
+        ds_train, ds_val, image_size, batch_size
     )
+
+    train_model(model, ds_train, ds_val, max_num_epochs)
 
 
 if __name__ == "__main__":
