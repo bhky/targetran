@@ -21,7 +21,10 @@ Please see [here](../README.md#usage) for usage instructions.
 
 Each transformation class comes in a pair, with one operating 
 on `np.ndarray` and the other on `tf.Tensor`. For the latter, the class names 
-have a `TF*` prefix, e.g., `RandomRotate` and `TFRandomRotate`.
+have a `TF*` prefix, e.g., `RandomRotate` and `TFRandomRotate`, respectively.
+
+Pure TensorFlow ops are used for implementing the `TF*` tools,
+which is why they could work smoothly with a TensorFlow Dataset on TPU.
 
 The transformation classes are callables that accept input parameters from 
 a single sample consists of:
