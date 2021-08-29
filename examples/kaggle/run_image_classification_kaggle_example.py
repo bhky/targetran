@@ -125,9 +125,9 @@ def transform_and_batch(
         return image, label
 
     affine_transform = tt.TFCombineAffine([
-        tt.TFRandomFlipLeftRight(seed=seed),
-        tt.TFRandomRotate(seed=seed),
-        tt.TFRandomTranslate(seed=seed),
+        tt.TFRandomFlipLeftRight(probability=0.5, seed=seed),
+        tt.TFRandomRotate(probability=0.5, seed=seed),
+        tt.TFRandomTranslate(probability=0.5, seed=seed),
     ], probability=0.9, seed=seed)
 
     auto = tf.data.AUTOTUNE
@@ -209,7 +209,7 @@ def main() -> None:
     image_width = 331
     num_val_samples = 256
     batch_size = 16 * strategy.num_replicas_in_sync  # See TPU docs.
-    max_num_epochs = 5  # With early-stopping, can set this to a large number.
+    max_num_epochs = 5  # With early-stopping, this can be a large number.
 
     image_size = (image_height, image_width)
 
