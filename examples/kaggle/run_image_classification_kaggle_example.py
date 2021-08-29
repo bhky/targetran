@@ -108,23 +108,25 @@ def transform_and_batch(
     """
     Apply data augmentation and batching.
     """
-    affine_transform = tt.TFCombineAffine([
-        tt.TFRandomFlipLeftRight(seed=seed),
-        tt.TFRandomRotate(seed=seed),
-        tt.TFRandomTranslate(seed=seed),
-    ], probability=0.9, seed=seed)
-
     def set_shape(
             image: tf.Tensor,
             label: tf.Tensor
     ) -> Tuple[tf.Tensor, tf.Tensor]:
         """
-        To tackle the following exception when running with TPU:
+        Somehow the dataset loses the shape information after transformation,
+        so this step has to be added to tackle the following exception when
+        running on TPU:
             Compilation failure: Dynamic Spatial Convolution is not supported
         """
         image.set_shape((image_size[0], image_size[1], 3))
         label.set_shape([])
         return image, label
+
+    affine_transform = tt.TFCombineAffine([
+        tt.TFRandomFlipLeftRight(seed=seed),
+        tt.TFRandomRotate(seed=seed),
+        tt.TFRandomTranslate(seed=seed),
+    ], probability=0.9, seed=seed)
 
     auto = tf.data.AUTOTUNE
 
