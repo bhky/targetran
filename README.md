@@ -148,8 +148,8 @@ from targetran.tf import (
 # it returns a tuple of tensors for a single sample: (image, bboxes, labels).
 ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
-# The affine transformations can be combined for better performance.
-# Note that cropping and resizing are not affine.
+# The affine transformations can be combined into one operation for better performance.
+# Note that cropping and resizing are not affine and cannot be combined.
 affine_transform = TFCombineAffine([
     TFRandomRotate(probability=0.8),  # Probability to include each affine transformation 
     TFRandomShear(probability=0.6),   # can be specified, otherwise the default is used.
@@ -235,8 +235,8 @@ class PTDataset(Dataset):
         )
 
 
-# The affine transformations can be combined for better performance.
-# Note that cropping and resizing are not affine.
+# The affine transformations can be combined into one operation for better performance.
+# Note that cropping and resizing are not affine and cannot be combined.
 affine_transform = CombineAffine([
     RandomRotate(probability=0.8),  # Probability to include each affine transformation 
     RandomShear(probability=0.6),   # can be specified, otherwise the default is used.
