@@ -167,7 +167,7 @@ Combine the random affine transformations to improve performance.
     - `RandomRotate`/`TFRandomRotate`
     - `RandomShear`/`TFRandomShear`
     - `RandomTranslate`/`TFRandomTranslate`
-  - `probability` (`float`, default `0.7`): Probability to apply the combined transformation.
+  - `probability` (`float`, default `1.0`): Probability to apply the combined transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).

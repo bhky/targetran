@@ -225,7 +225,7 @@ class CombineAffine(RandomTransform):
     def __init__(
             self,
             transforms: Sequence[RandomTransform],
-            probability: float = 0.7,
+            probability: float = 1.0,
             seed: Optional[int] = None
     ) -> None:
         not_affine_trans = list(filter(lambda t: not t.is_affine, transforms))
