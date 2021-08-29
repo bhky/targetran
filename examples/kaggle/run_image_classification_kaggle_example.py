@@ -110,7 +110,7 @@ def transform_and_batch(
     """
     Apply data augmentation and batching.
     """
-    def set_shape(
+    def set_tensor_shapes(
             image: tf.Tensor,
             label: tf.Tensor
     ) -> Tuple[tf.Tensor, tf.Tensor]:
@@ -137,13 +137,13 @@ def transform_and_batch(
         .shuffle(2048, seed=seed) \
         .map(image_only(affine_transform), num_parallel_calls=auto) \
         .map(image_only(tt.TFResize(image_size)), num_parallel_calls=auto) \
-        .map(set_shape, num_parallel_calls=auto) \
+        .map(set_tensor_shapes, num_parallel_calls=auto) \
         .batch(batch_size) \
         .prefetch(auto)
 
     ds_val = ds_val \
         .map(image_only(tt.TFResize(image_size)), num_parallel_calls=auto) \
-        .map(set_shape, num_parallel_calls=auto) \
+        .map(set_tensor_shapes, num_parallel_calls=auto) \
         .batch(batch_size) \
         .prefetch(auto)
 
