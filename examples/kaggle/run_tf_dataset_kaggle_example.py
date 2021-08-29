@@ -161,7 +161,7 @@ def main() -> None:
         tt.TFRandomRotate(probability=1.0),
         tt.TFRandomShear(probability=1.0),
         tt.TFRandomTranslate(probability=1.0),
-        tt.TFRandomFlipLeftRight(probability=0.5),
+        tt.TFRandomFlipLeftRight(),
     ], probability=1.0, seed=0)
 
     ds = ds \

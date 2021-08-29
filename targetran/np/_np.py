@@ -289,7 +289,7 @@ class RandomFlipLeftRight(RandomTransform):
 
     def __init__(
             self,
-            probability: float = 0.9,
+            probability: float = 0.5,
             seed: Optional[int] = None
     ) -> None:
         super().__init__(
@@ -318,7 +318,7 @@ class RandomFlipUpDown(RandomTransform):
 
     def __init__(
             self,
-            probability: float = 0.9,
+            probability: float = 0.5,
             seed: Optional[int] = None
     ) -> None:
         super().__init__(

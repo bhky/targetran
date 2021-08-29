@@ -96,7 +96,7 @@ expects different additional input parameters. The return format is still
 ### `RandomFlipLeftRight`, `TFRandomFlipLeftRight`
 Randomly flip the input image horizontally (left to right).
 - `__init__` parameters
-  - `probability` (`float`, default `0.9`): Probability to apply the transformation.
+  - `probability` (`float`, default `0.5`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
@@ -106,7 +106,7 @@ Randomly flip the input image horizontally (left to right).
 ### `RandomFlipUpDown`, `TFRandomFlipUpDown`
 Randomly flip the input image vertically (up to down).
 - `__init__` parameters
-  - `probability` (`float`, default `0.9`): Probability to apply the transformation.
+  - `probability` (`float`, default `0.5`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).

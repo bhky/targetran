@@ -125,7 +125,7 @@ def transform_and_batch(
         return image, label
 
     affine_transform = tt.TFCombineAffine([
-        tt.TFRandomFlipLeftRight(probability=0.5, seed=seed),
+        tt.TFRandomFlipLeftRight(seed=seed),
         tt.TFRandomRotate(probability=0.5, seed=seed),
         tt.TFRandomTranslate(probability=0.5, seed=seed),
     ], probability=0.9, seed=seed)
