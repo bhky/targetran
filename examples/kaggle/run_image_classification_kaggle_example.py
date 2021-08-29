@@ -11,6 +11,8 @@ from typing import Tuple
 # Needed for the Kaggle Notebook.
 os.system("pip install -U targetran")
 
+import matplotlib.pylab as plt
+import numpy as np
 import targetran.tf as tt
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -148,6 +150,33 @@ def transform_and_batch(
     return ds_train, ds_val
 
 
+def save_plot(
+        ds: tf.data.Dataset,
+        num_rows: int,
+        num_cols: int,
+        figure_size_inches: Tuple[float, float] = (20.0, 20.0)
+) -> None:
+
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
+
+    for n, sample in enumerate(ds.take(num_rows * num_cols)):
+
+        image, label = [tensor.numpy() for tensor in sample]
+        image = image.astype(np.int32)
+
+        if num_rows == 1 or num_cols == 1:
+            ax = axes[n]
+        else:
+            ax = axes[n % num_rows][n % num_cols]
+
+        ax.imshow(image)
+        ax.set_title(label)
+        ax.set_axis_off()
+
+    fig.set_tight_layout(True)
+    fig.savefig("figure.eps")
+
+
 def train_model(
         model: Model,
         ds_train: tf.data.Dataset,
@@ -193,7 +222,7 @@ def main() -> None:
     ds_train, ds_val = transform_and_batch(
         ds_train, ds_val, image_size, batch_size
     )
-
+    save_plot(ds, num_rows=4, num_cols=3)
     train_model(model, ds_train, ds_val, max_num_epochs)
 
 
