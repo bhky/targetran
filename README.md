@@ -152,12 +152,12 @@ ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 # Note that cropping and resizing are not affine.
 affine_transform = TFCombineAffine([
     TFRandomRotate(probability=0.8),  # Probability to include each affine transformation 
-    TFRandomShear(probability=0.6),   # can be specified, the default is 0.7.
+    TFRandomShear(probability=0.6),   # can be specified, the default is 0.9.
     TFRandomTranslate(),
     TFRandomFlipLeftRight(),
     TFRandomFlipUpDown(),
 ], probability=1.0)  # Probability to apply this single combined transformation, i.e.,
-                     # some samples could be untouched in this step, if desired.
+                     # some samples could be untouched, if desired. Default is 1.0.
 
 # Typical application.
 auto_tune = tf.data.AUTOTUNE
@@ -240,12 +240,12 @@ class PTDataset(Dataset):
 # Note that cropping and resizing are not affine.
 affine_transform = CombineAffine([
     RandomRotate(probability=0.8),  # Probability to include each affine transformation 
-    RandomShear(probability=0.6),   # can be specified, the default is 0.7.
+    RandomShear(probability=0.6),   # can be specified, the default is 0.9.
     RandomTranslate(),
     RandomFlipLeftRight(),
     RandomFlipUpDown(),
 ], probability=1.0)  # Probability to apply this single combined transformation, i.e.,
-                     # some samples could be untouched in this step, if desired.
+                     # some samples could be untouched, if desired. Default is 1.0.
 
 # The `Compose` here is similar to that from the torchvision package, except 
 # that here it also supports callables with multiple inputs and outputs needed
