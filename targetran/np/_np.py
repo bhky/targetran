@@ -289,7 +289,7 @@ class RandomFlipLeftRight(RandomTransform):
 
     def __init__(
             self,
-            probability: float = 0.7,
+            probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
         super().__init__(
@@ -318,7 +318,7 @@ class RandomFlipUpDown(RandomTransform):
 
     def __init__(
             self,
-            probability: float = 0.7,
+            probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
         super().__init__(
@@ -348,7 +348,7 @@ class RandomRotate(RandomTransform):
     def __init__(
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
-            probability: float = 0.7,
+            probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, None, "angle_deg_range")
@@ -386,7 +386,7 @@ class RandomShear(RandomTransform):
     def __init__(
             self,
             angle_deg_range: Tuple[float, float] = (-10.0, 10.0),
-            probability: float = 0.7,
+            probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, (-90.0, 90.0), "angle_deg_range")
@@ -423,7 +423,7 @@ class RandomTranslate(RandomTransform):
             self,
             translate_height_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             translate_width_fraction_range: Tuple[float, float] = (-0.1, 0.1),
-            probability: float = 0.7,
+            probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(
@@ -488,7 +488,7 @@ class RandomCrop(RandomTransform):
             self,
             crop_height_fraction_range: Tuple[float, float] = (0.8, 0.9),
             crop_width_fraction_range: Tuple[float, float] = (0.8, 0.9),
-            probability: float = 0.7,
+            probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(
