@@ -33,11 +33,9 @@ def setup_accelerators_and_get_strategy() -> tf.distribute.Strategy:
         strategy = tf.distribute.TPUStrategy(tpu)
         print(f"Using TPU.")
     except ValueError:
-        # Fallback to GPU.
-        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-        # Strategy for GPU or multi-GPU machines.
+        # Fallback to GPU, if exists. Strategy for GPU or multi-GPU machines.
         strategy = tf.distribute.MirroredStrategy()
-        print(f"Using GPU.")
+        print(f"Not using TPU.")
     print(f"Number of accelerators: {strategy.num_replicas_in_sync}")
     return strategy
 
