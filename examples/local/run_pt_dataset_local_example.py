@@ -179,13 +179,24 @@ def plot(
 def main() -> None:
     # The affine transformations can be combined for better performance.
     # Note that cropping and resizing are not affine.
+    #
+    # Option (1): each step has their own probability to be included.
     affine_transform = CombineAffine(
         [RandomRotate(probability=1.0),
          RandomShear(probability=1.0),
          RandomTranslate(probability=1.0),
          RandomFlipLeftRight(probability=0.5)],
+        probability=1.0,
+        seed=2
+    )
+    # Option (2): fixed the number of steps to be randomly chosen, e.g., 2.
+    affine_transform = CombineAffine(
+        [RandomRotate(),
+         RandomShear(),
+         RandomTranslate(),
+         RandomFlipLeftRight()],
         num_selected_transforms=2,
-        selected_probabilities=[0.5, 0.0, 0.5, 0.0],
+        selected_probabilities=[0.5, 0.0, 0.3, 0.2],
         probability=1.0,
         seed=2
     )

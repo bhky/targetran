@@ -140,15 +140,26 @@ def main() -> None:
 
     # The affine transformations can be combined for better performance.
     # Note that cropping and resizing are not affine.
+    #
+    # Option (1): each step has their own probability to be included.
     affine_transform = TFCombineAffine(
         [TFRandomRotate(probability=1.0),
          TFRandomShear(probability=1.0),
          TFRandomTranslate(probability=1.0),
          TFRandomFlipLeftRight(probability=0.5)],
-        num_selected_transforms=2,
-        selected_probabilities=[0.5, 0.0, 0.5, 0.0],
         probability=1.0,
-        seed=0
+        seed=2
+    )
+    # Option (2): fixed the number of steps to be randomly chosen, e.g., 2.
+    affine_transform = TFCombineAffine(
+        [TFRandomRotate(),
+         TFRandomShear(),
+         TFRandomTranslate(),
+         TFRandomFlipLeftRight()],
+        num_selected_transforms=2,
+        selected_probabilities=[0.5, 0.0, 0.3, 0.2],
+        probability=1.0,
+        seed=2
     )
 
     # The `repeat` call here is only for re-using samples in this illustration.
