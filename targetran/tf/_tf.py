@@ -3,7 +3,7 @@ API for TensorFlow usage.
 """
 
 import functools
-from typing import Any, Callable, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Callable, List, Optional, Sequence, Tuple, TypeVar
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
@@ -272,6 +272,8 @@ class TFCombineAffine(TFRandomTransform):
     def __init__(
             self,
             transforms: Sequence[TFRandomTransform],
+            num_selected_transforms: Optional[int] = None,
+            selected_probabilities: Optional[List[float]] = None,
             probability: float = 1.0,
             seed: Optional[int] = None
     ) -> None:
@@ -281,13 +283,23 @@ class TFCombineAffine(TFRandomTransform):
                 f"Non-affine transforms cannot be included in TFCombineAffine: "
                 f"{[t.name for t in not_affine_trans]}"
             )
+        if num_selected_transforms and selected_probabilities:
+            if len(selected_probabilities) != len(transforms):
+                raise ValueError(
+                    "Number of items in selected_probabilities should be "
+                    "the same as the number of items in transforms."
+                )
         super().__init__(
             _tf_affine_transform, probability, seed, "TFCombineAffine", True
         )
         self._transforms = transforms
+        self._num_selected_transforms = num_selected_transforms
+        self._selected_probabilities = selected_probabilities
         self._identity_mat = tf.expand_dims(tf.constant([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
+        # For selecting transformations only.
+        self._np_rng = np.random.default_rng(seed=seed)
 
     def _combine_mats(
             self,
@@ -299,13 +311,22 @@ class TFCombineAffine(TFRandomTransform):
               for i, t in enumerate(self._transforms)]
         ))
 
-        conditions = tf.reshape(rand_fn() < probs, (len(probs), 1, 1))
-        image_dest_tran_mats = tf.where(
-            conditions, image_dest_tran_mats, self._identity_mat
-        )
-        bboxes_tran_mats = tf.where(
-            conditions, bboxes_tran_mats, self._identity_mat
-        )
+        if self._num_selected_transforms:
+            indices = self._np_rng.choice(
+                len(self._transforms),
+                self._num_selected_transforms,
+                replace=False, p=self._selected_probabilities
+            ).tolist()
+            image_dest_tran_mats = tf.gather(image_dest_tran_mats, indices)
+            bboxes_tran_mats = tf.gather(bboxes_tran_mats, indices)
+        else:
+            conditions = tf.reshape(rand_fn() < probs, (len(probs), 1, 1))
+            image_dest_tran_mats = tf.where(
+                conditions, image_dest_tran_mats, self._identity_mat
+            )
+            bboxes_tran_mats = tf.where(
+                conditions, bboxes_tran_mats, self._identity_mat
+            )
 
         image_dest_tran_mat = functools.reduce(
             tf.matmul, tf.unstack(image_dest_tran_mats)

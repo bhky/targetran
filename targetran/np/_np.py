@@ -3,7 +3,7 @@ API for NumPy usage.
 """
 
 import functools
-from typing import Any, Callable, Optional, Sequence, Tuple
+from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 import numpy as np  # type: ignore
 
@@ -225,6 +225,8 @@ class CombineAffine(RandomTransform):
     def __init__(
             self,
             transforms: Sequence[RandomTransform],
+            num_selected_transforms: Optional[int] = None,
+            selected_probabilities: Optional[List[float]] = None,
             probability: float = 1.0,
             seed: Optional[int] = None
     ) -> None:
@@ -234,10 +236,18 @@ class CombineAffine(RandomTransform):
                 f"Non-affine transforms cannot be included in CombineAffine: "
                 f"{[t.name for t in not_affine_trans]}"
             )
+        if num_selected_transforms and selected_probabilities:
+            if len(selected_probabilities) != len(transforms):
+                raise ValueError(
+                    "Number of items in selected_probabilities should be "
+                    "the same as the number of items in transforms."
+                )
         super().__init__(
             _np_affine_transform, probability, seed, "CombineAffine", True
         )
         self._transforms = transforms
+        self._num_selected_transforms = num_selected_transforms
+        self._selected_probabilities = selected_probabilities
         self._identity_mat = np.expand_dims(np.array([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
@@ -252,13 +262,22 @@ class CombineAffine(RandomTransform):
               for i, t in enumerate(self._transforms)]
         ))
 
-        conditions = np.reshape(rand_fn() < probs, (len(probs), 1, 1))
-        image_dest_tran_mats = np.where(
-            conditions, image_dest_tran_mats, self._identity_mat
-        )
-        bboxes_tran_mats = np.where(
-            conditions, bboxes_tran_mats, self._identity_mat
-        )
+        if self._num_selected_transforms:
+            indices = self._rng.choice(
+                len(self._transforms),
+                self._num_selected_transforms,
+                replace=False, p=self._selected_probabilities
+            ).tolist()
+            image_dest_tran_mats = np.take(image_dest_tran_mats, indices, 0)
+            bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
+        else:
+            conditions = np.reshape(rand_fn() < probs, (len(probs), 1, 1))
+            image_dest_tran_mats = np.where(
+                conditions, image_dest_tran_mats, self._identity_mat
+            )
+            bboxes_tran_mats = np.where(
+                conditions, bboxes_tran_mats, self._identity_mat
+            )
 
         image_dest_tran_mat = functools.reduce(
             np.matmul, image_dest_tran_mats
