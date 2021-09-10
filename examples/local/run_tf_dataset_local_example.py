@@ -157,7 +157,7 @@ def main() -> None:
          TFRandomTranslate(),
          TFRandomFlipLeftRight()],
         num_selected_transforms=2,
-        selected_probabilities=[0.5, 0.0, 0.3, 0.2],
+        selected_probabilities=None,  # Default is None: uniform distribution.
         probability=1.0,
         seed=2
     )

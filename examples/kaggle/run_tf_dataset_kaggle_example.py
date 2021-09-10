@@ -157,12 +157,14 @@ def main() -> None:
 
     # The affine transformations can be combined for better performance.
     # Note that cropping and resizing are not affine.
-    affine_transform = tt.TFCombineAffine([
-        tt.TFRandomRotate(probability=1.0),
-        tt.TFRandomShear(probability=1.0),
-        tt.TFRandomTranslate(probability=1.0),
-        tt.TFRandomFlipLeftRight(),
-    ], probability=1.0, seed=0)
+    affine_transform = tt.TFCombineAffine(
+        [tt.TFRandomRotate(probability=1.0),
+         tt.TFRandomShear(probability=1.0),
+         tt.TFRandomTranslate(probability=1.0),
+         tt.TFRandomFlipLeftRight()],
+        probability=1.0,
+        seed=0
+    )
 
     ds = ds \
         .map(tt.TFRandomCrop(probability=1.0, seed=1)) \

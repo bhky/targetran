@@ -124,11 +124,13 @@ def transform_and_batch(
         label.set_shape([])
         return image, label
 
-    affine_transform = tt.TFCombineAffine([
-        tt.TFRandomFlipLeftRight(seed=seed),
-        tt.TFRandomRotate(probability=0.5, seed=seed),
-        tt.TFRandomTranslate(probability=0.5, seed=seed),
-    ], probability=0.9, seed=seed)
+    affine_transform = tt.TFCombineAffine(
+        [tt.TFRandomFlipLeftRight(),
+         tt.TFRandomRotate(),
+         tt.TFRandomTranslate()],
+        num_selected_transforms=2,
+        seed=seed
+    )
 
     auto = tf.data.AUTOTUNE
 
