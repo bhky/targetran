@@ -167,6 +167,14 @@ Combine the random affine transformations to improve performance.
     - `RandomRotate`/`TFRandomRotate`
     - `RandomShear`/`TFRandomShear`
     - `RandomTranslate`/`TFRandomTranslate`
+  - `num_selected_transforms` (`Optional[int]`, default `None`): 
+    Number of steps included in `transforms` to be randomly selected.
+    If `None`, all of them will be considered using the `probability` given in each step.
+    See the [example scripts](../examples/local).
+  - `selected_probabilities` (`Optional[List[float]]`, default `None`):
+    The selection probabilities associated with each step in `transforms`. 
+    If `None`, a uniform distribution over all steps is assumed. 
+    Only valid if `num_selected_transforms` is an `int`.
   - `probability` (`float`, default `1.0`): Probability to apply the combined transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters

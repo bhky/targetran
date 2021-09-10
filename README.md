@@ -150,13 +150,25 @@ ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 # The affine transformations can be combined into one operation for better performance.
 # Note that cropping and resizing are not affine and cannot be combined.
-affine_transform = TFCombineAffine([
-    TFRandomRotate(probability=0.8),  # Probability to include each affine transformation 
-    TFRandomShear(probability=0.6),   # can be specified, otherwise the default is used.
-    TFRandomTranslate(),
-    TFRandomFlipLeftRight(),
-    TFRandomFlipUpDown(),
-], probability=1.0)  # Probability to apply this single combined transformation.
+affine_transform = TFCombineAffine(
+    [TFRandomRotate(probability=0.8),  # Probability to include each affine transformation 
+     TFRandomShear(probability=0.6),   # can be specified, otherwise the default is used.
+     TFRandomTranslate(),
+     TFRandomFlipLeftRight(),
+     TFRandomFlipUpDown()],
+    probability=1.0  # Probability to apply this single combined transformation.
+)
+# Alternatively, the number of randomly selected transformations can be fixed.
+affine_transform = TFCombineAffine(
+    [TFRandomRotate(), 
+     TFRandomShear(),
+     TFRandomTranslate(),
+     TFRandomFlipLeftRight(),
+     TFRandomFlipUpDown()],
+    num_selected_transforms=2,  # Only two steps from the list will be selected.
+    selected_probabilities=[0.5, 0.0, 0.3, 0.2, 0.0],  # Must sum up to 1.0, if given.
+    probability=1.0  # Probability to apply this single combined transformation.
+)
 
 # Typical application.
 auto_tune = tf.data.AUTOTUNE
@@ -237,13 +249,25 @@ class PTDataset(Dataset):
 
 # The affine transformations can be combined into one operation for better performance.
 # Note that cropping and resizing are not affine and cannot be combined.
-affine_transform = CombineAffine([
-    RandomRotate(probability=0.8),  # Probability to include each affine transformation 
-    RandomShear(probability=0.6),   # can be specified, otherwise the default is used.
-    RandomTranslate(),
-    RandomFlipLeftRight(),
-    RandomFlipUpDown(),
-], probability=1.0)  # Probability to apply this single combined transformation.
+affine_transform = CombineAffine(
+    [RandomRotate(probability=0.8),  # Probability to include each affine transformation 
+     RandomShear(probability=0.6),   # can be specified, otherwise the default is used.
+     RandomTranslate(),
+     RandomFlipLeftRight(),
+     RandomFlipUpDown()],
+    probability=1.0  # Probability to apply this single combined transformation.
+)
+# Alternatively, the number of randomly selected transformations can be fixed.
+affine_transform = CombineAffine(
+    [RandomRotate(), 
+     RandomShear(),
+     RandomTranslate(),
+     RandomFlipLeftRight(),
+     RandomFlipUpDown()],
+    num_selected_transforms=2,  # Only two steps from the list will be selected.
+    selected_probabilities=[0.5, 0.0, 0.3, 0.2, 0.0],  # Must sum up to 1.0, if given.
+    probability=1.0  # Probability to apply this single combined transformation.
+)
 
 # The `Compose` here is similar to that from the torchvision package, except 
 # that here it also supports callables with multiple inputs and outputs needed
