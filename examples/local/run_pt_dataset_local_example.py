@@ -189,7 +189,9 @@ def main() -> None:
         probability=1.0,
         seed=2
     )
-    # Option (2): fixed the number of steps to be randomly chosen, e.g., 2.
+    # Option (2): set the number of steps to be randomly chosen, e.g., 2.
+    # This could be a better option because too many transformations may deform
+    # the images too much.
     affine_transform = CombineAffine(
         [RandomRotate(),
          RandomShear(),

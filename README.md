@@ -158,7 +158,9 @@ affine_transform = TFCombineAffine(
      TFRandomFlipUpDown()],
     probability=1.0  # Probability to apply this single combined transformation.
 )
-# Alternatively, the number of randomly selected transformations can be fixed.
+# Alternatively, one can decide the number of randomly selected transformations,
+# e.g., use only any two of them. This could be a better option because too many 
+# transformation steps may deform the images too much.
 affine_transform = TFCombineAffine(
     [TFRandomRotate(), 
      TFRandomShear(),
@@ -257,7 +259,9 @@ affine_transform = CombineAffine(
      RandomFlipUpDown()],
     probability=1.0  # Probability to apply this single combined transformation.
 )
-# Alternatively, the number of randomly selected transformations can be fixed.
+# Alternatively, one can decide the number of randomly selected transformations,
+# e.g., use only any two of them. This could be a better option because too many 
+# transformation steps may deform the images too much.
 affine_transform = CombineAffine(
     [RandomRotate(), 
      RandomShear(),
