@@ -267,6 +267,27 @@ class TFRandomTransform:
         return image, bboxes, labels
 
 
+def _get_random_indices(
+        rng: tf.random.Generator,
+        num_indices: int,
+        num_selected_indices: int,
+        selected_probabilities: Optional[List[float]] = None,
+) -> tf.Tensor:
+    """
+    Roughly mimicking Numpy choice for getting indices, without replacement.
+    The indices always start from 0.
+
+    References:
+    https://github.com/tensorflow/tensorflow/issues/9260#issuecomment-437875125
+    """
+    probs = selected_probabilities if selected_probabilities \
+        else tf.ones(num_indices)
+    logits = tf.math.log(probs)
+    z = -tf.math.log(-tf.math.log(rng.uniform(tf.shape(logits), 0, 1)))
+    _, indices = tf.nn.top_k(logits + z, num_selected_indices)
+    return indices
+
+
 class TFCombineAffine(TFRandomTransform):
 
     def __init__(
@@ -298,8 +319,6 @@ class TFCombineAffine(TFRandomTransform):
         self._identity_mat = tf.expand_dims(tf.constant([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
-        # For selecting transformations only.
-        self._np_rng = np.random.default_rng(seed=seed)
 
     def _combine_mats(
             self,
@@ -312,11 +331,12 @@ class TFCombineAffine(TFRandomTransform):
         ))
 
         if self._num_selected_transforms:
-            indices = self._np_rng.choice(
+            indices = _get_random_indices(
+                self._rng,
                 len(self._transforms),
                 self._num_selected_transforms,
-                replace=False, p=self._selected_probabilities
-            ).tolist()
+                self._selected_probabilities
+            )
             image_dest_tran_mats = tf.gather(image_dest_tran_mats, indices)
             bboxes_tran_mats = tf.gather(bboxes_tran_mats, indices)
         else:
