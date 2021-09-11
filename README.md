@@ -162,7 +162,7 @@ affine_transform = TFCombineAffine(
 # e.g., use only any two of them. This could be a better option because too many 
 # transformation steps may deform the images too much.
 affine_transform = TFCombineAffine(
-    [TFRandomRotate(), 
+    [TFRandomRotate(),  # Individual probability has no effect in this approach.
      TFRandomShear(),
      TFRandomTranslate(),
      TFRandomFlipLeftRight(),
@@ -263,7 +263,7 @@ affine_transform = CombineAffine(
 # e.g., use only any two of them. This could be a better option because too many 
 # transformation steps may deform the images too much.
 affine_transform = CombineAffine(
-    [RandomRotate(), 
+    [RandomRotate(),  # Individual probability has no effect in this approach.
      RandomShear(),
      RandomTranslate(),
      RandomFlipLeftRight(),
