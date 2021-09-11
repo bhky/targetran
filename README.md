@@ -172,7 +172,7 @@ affine_transform = TFCombineAffine(
     probability=1.0  # Probability to apply this single combined transformation.
 )
 
-# Typical application.
+# Apply transformations.
 auto_tune = tf.data.AUTOTUNE
 ds = ds \
     .map(TFRandomCrop(probability=0.5), num_parallel_calls=auto_tune) \
