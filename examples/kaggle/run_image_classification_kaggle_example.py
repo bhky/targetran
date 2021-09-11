@@ -106,7 +106,7 @@ def transform_and_batch(
         seed: int = 42
 ) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
     """
-    Apply data augmentation and batching.
+    Apply data augmentation (to training set only) and batching.
     """
     def set_tensor_shapes(
             image: tf.Tensor,
@@ -125,6 +125,7 @@ def transform_and_batch(
     affine_transform = tt.TFCombineAffine(
         [tt.TFRandomFlipLeftRight(),
          tt.TFRandomRotate(),
+         tt.TFRandomShear(),
          tt.TFRandomTranslate()],
         num_selected_transforms=2,
         seed=seed
