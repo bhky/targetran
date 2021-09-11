@@ -150,15 +150,17 @@ ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 # The affine transformations can be combined into one operation for better performance.
 # Note that cropping and resizing are not affine and cannot be combined.
+# Option (1):
 affine_transform = TFCombineAffine(
     [TFRandomRotate(probability=0.8),  # Probability to include each affine transformation 
      TFRandomShear(probability=0.6),   # can be specified, otherwise the default is used.
-     TFRandomTranslate(),
+     TFRandomTranslate(),              # Thus, the number of selected transformations varies.
      TFRandomFlipLeftRight(),
      TFRandomFlipUpDown()],
     probability=1.0  # Probability to apply this single combined transformation.
 )
-# Alternatively, one can decide the number of randomly selected transformations,
+# Option (2):
+# Alternatively, one can decide the exact number of randomly selected transformations,
 # e.g., use only any two of them. This could be a better option because too many 
 # transformation steps may deform the images too much.
 affine_transform = TFCombineAffine(
@@ -251,15 +253,17 @@ class PTDataset(Dataset):
 
 # The affine transformations can be combined into one operation for better performance.
 # Note that cropping and resizing are not affine and cannot be combined.
+# Option (1):
 affine_transform = CombineAffine(
     [RandomRotate(probability=0.8),  # Probability to include each affine transformation 
      RandomShear(probability=0.6),   # can be specified, otherwise the default is used.
-     RandomTranslate(),
+     RandomTranslate(),              # Thus, the number of selected transformations varies.
      RandomFlipLeftRight(),
      RandomFlipUpDown()],
     probability=1.0  # Probability to apply this single combined transformation.
 )
-# Alternatively, one can decide the number of randomly selected transformations,
+# Option (2):
+# Alternatively, one can decide the exact number of randomly selected transformations,
 # e.g., use only any two of them. This could be a better option because too many 
 # transformation steps may deform the images too much.
 affine_transform = CombineAffine(
