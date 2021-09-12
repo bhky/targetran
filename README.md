@@ -16,7 +16,7 @@ readily available in frameworks such as TensorFlow and PyTorch.
 
 While there are other powerful augmentation tools available, many of those 
 do not work well with the 
-[TPU](https://en.wikipedia.org/wiki/Tensor_Processing_Unit)
+[TPU](https://cloud.google.com/tpu)
 when accessing from [Google Colab](https://colab.research.google.com/) or 
 [Kaggle Notebooks](https://www.kaggle.com/code),
 which are popular options nowadays for a lot of people who do not have their
