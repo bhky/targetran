@@ -18,8 +18,8 @@ from targetran.np import (
     RandomFlipLeftRight,
     RandomRotate,
     RandomShear,
-    RandomCrop,
     RandomTranslate,
+    RandomCrop,
     Resize,
 )
 from targetran.utils import Compose, collate_fn

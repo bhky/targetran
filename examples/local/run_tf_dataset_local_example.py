@@ -19,8 +19,8 @@ from targetran.tf import (
     TFRandomFlipLeftRight,
     TFRandomRotate,
     TFRandomShear,
-    TFRandomCrop,
     TFRandomTranslate,
+    TFRandomCrop,
     TFResize,
 )
 
