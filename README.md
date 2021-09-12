@@ -138,8 +138,8 @@ from targetran.tf import (
     TFRandomFlipUpDown,    
     TFRandomRotate,
     TFRandomShear,
-    TFRandomCrop,
     TFRandomTranslate,
+    TFRandomCrop,
     TFResize,
 )
 
@@ -206,8 +206,8 @@ from targetran.np import (
     RandomFlipUpDown,
     RandomRotate,
     RandomShear,
-    RandomCrop,
     RandomTranslate,
+    RandomCrop,
     Resize,
 )
 from targetran.utils import Compose
