@@ -152,9 +152,9 @@ ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 # Note that cropping and resizing are not affine and cannot be combined.
 # Option (1):
 affine_transform = TFCombineAffine(
-    [TFRandomRotate(probability=0.8),  # Probability to include each affine transformation 
-     TFRandomShear(probability=0.6),   # can be specified, otherwise the default is used.
-     TFRandomTranslate(),              # Thus, the number of selected transformations varies.
+    [TFRandomRotate(probability=0.8),  # Probability to include each affine transformation step 
+     TFRandomShear(probability=0.6),   # can be specified, otherwise the default value is used.
+     TFRandomTranslate(),              # Thus, the number of selected steps could vary.
      TFRandomFlipLeftRight(),
      TFRandomFlipUpDown()],
     probability=1.0  # Probability to apply this single combined transformation.
@@ -255,9 +255,9 @@ class PTDataset(Dataset):
 # Note that cropping and resizing are not affine and cannot be combined.
 # Option (1):
 affine_transform = CombineAffine(
-    [RandomRotate(probability=0.8),  # Probability to include each affine transformation 
-     RandomShear(probability=0.6),   # can be specified, otherwise the default is used.
-     RandomTranslate(),              # Thus, the number of selected transformations varies.
+    [RandomRotate(probability=0.8),  # Probability to include each affine transformation step 
+     RandomShear(probability=0.6),   # can be specified, otherwise the default value is used.
+     RandomTranslate(),              # Thus, the number of selected steps could vary.
      RandomFlipLeftRight(),
      RandomFlipUpDown()],
     probability=1.0  # Probability to apply this single combined transformation.
