@@ -173,6 +173,7 @@ affine_transform = TFCombineAffine(
     selected_probabilities=[0.5, 0.0, 0.3, 0.2, 0.0],  # Must sum up to 1.0, if given.
     probability=1.0  # Probability to apply this single combined transformation.
 )
+# Please refer to the API manual for more parameter options.
 
 # Apply transformations.
 auto_tune = tf.data.AUTOTUNE
@@ -276,6 +277,7 @@ affine_transform = CombineAffine(
     selected_probabilities=[0.5, 0.0, 0.3, 0.2, 0.0],  # Must sum up to 1.0, if given.
     probability=1.0  # Probability to apply this single combined transformation.
 )
+# Please refer to the API manual for more parameter options.
 
 # The `Compose` here is similar to that from the torchvision package, except 
 # that here it also supports callables with multiple inputs and outputs needed
