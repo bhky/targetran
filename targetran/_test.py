@@ -17,6 +17,7 @@ from .np import (
 )
 from .tf import (
     to_tf,
+    seqs_to_tf_dataset,
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate,
@@ -550,6 +551,32 @@ class TestTransform(unittest.TestCase):
             self.assertTrue(
                 np.allclose(tf_expected_labels_seq[i].numpy(),
                             tf_labels.numpy())
+            )
+
+
+class TestConversion(unittest.TestCase):
+
+    def test_seqs_to_tf_dataset(self) -> None:
+        ds = seqs_to_tf_dataset(
+            ORIGINAL_IMAGE_SEQ, ORIGINAL_BBOXES_SEQ, ORIGINAL_LABELS_SEQ
+        )
+        for i, (image, bboxes, labels) in enumerate(ds):
+            self.assertTrue(
+                np.allclose(ORIGINAL_IMAGE_SEQ[i], image.numpy())
+            )
+            self.assertTrue(
+                np.allclose(ORIGINAL_BBOXES_SEQ[i], bboxes.numpy())
+            )
+            self.assertTrue(
+                np.allclose(ORIGINAL_LABELS_SEQ[i], labels.numpy())
+            )
+
+        ds_image_only = seqs_to_tf_dataset(
+            ORIGINAL_IMAGE_SEQ, [], []
+        )
+        for i, (image, _, _) in enumerate(ds_image_only):
+            self.assertTrue(
+                np.allclose(ORIGINAL_IMAGE_SEQ[i], image.numpy())
             )
 
 

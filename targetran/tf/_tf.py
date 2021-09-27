@@ -3,6 +3,7 @@ API for TensorFlow usage.
 """
 
 import functools
+import itertools
 from typing import Any, Callable, List, Optional, Sequence, Tuple, TypeVar
 
 import numpy as np  # type: ignore
@@ -56,7 +57,9 @@ def to_tf(
         (_tf_convert(image),
          tf.reshape(_tf_convert(bboxes), (-1, 4)),
          _tf_convert(labels))
-        for image, bboxes, labels in zip(image_seq, bboxes_seq, labels_seq)
+        for image, bboxes, labels in itertools.zip_longest(
+            image_seq, bboxes_seq, labels_seq, fillvalue=[]
+        )
     ]
     tf_image_seq, tf_bboxes_seq, tf_labels_seq = tuple(zip(*tuples))
     return tf_image_seq, tf_bboxes_seq, tf_labels_seq
@@ -83,7 +86,13 @@ def seqs_to_tf_dataset(
     # the whole point of using ragged-tensors is ONLY for building a Dataset...
     # Note that the label ragged-tensors are of rank-0, so they are implicitly
     # converted to tensors during mapping. Strange TF Dataset behaviour...
-    ds = ds.map(lambda i, b, l: (i.to_tensor(), b.to_tensor(), l))
+    ds = ds.map(
+        lambda i, b, l: (
+            i if isinstance(i, tf.Tensor) else i.to_tensor(),
+            b if isinstance(b, tf.Tensor) else b.to_tensor(),
+            l
+        )
+    )
     return ds
 
 
