@@ -419,7 +419,7 @@ def _get_random_size_fractions(
 ) -> Tuple[T, T]:
     """
     height_fraction_range, width_fraction_range: (-1.0, 1.0)
-    rand_fn: generate array of random numbers in range [0.0, 1.0)
+    rand_fn: generate random number in range [0.0, 1.0)
     """
     height_fraction_range = convert_fn(height_fraction_range)
     width_fraction_range = convert_fn(width_fraction_range)
@@ -429,10 +429,10 @@ def _get_random_size_fractions(
     height_fraction_diff = height_fraction_range[1] - min_height_fraction
     width_fraction_diff = width_fraction_range[1] - min_width_fraction
 
-    height_fractions = height_fraction_diff * rand_fn() + min_height_fraction
-    width_fractions = width_fraction_diff * rand_fn() + min_width_fraction
+    height_fraction = height_fraction_diff * rand_fn() + min_height_fraction
+    width_fraction = width_fraction_diff * rand_fn() + min_width_fraction
 
-    return height_fractions, width_fractions
+    return height_fraction, width_fraction
 
 
 def _get_crop_inputs(
@@ -446,25 +446,22 @@ def _get_crop_inputs(
 ) -> Tuple[T, T, T, T]:
     """
     height_fraction_range, width_fraction_range: in range [0.0, 1.0)
-    rand_fn: generate array of random numbers in range [0.0, 1.0)
+    rand_fn: generate random number in range [0.0, 1.0)
     """
     image_height = convert_fn(image_height)
     image_width = convert_fn(image_width)
 
-    height_fractions, width_fractions = _get_random_size_fractions(
+    height_fraction, width_fraction = _get_random_size_fractions(
         height_fraction_range, width_fraction_range, rand_fn, convert_fn
     )
 
-    crop_heights = image_height * height_fractions
-    crop_widths = image_width * width_fractions
+    crop_height = image_height * height_fraction
+    crop_width = image_width * width_fraction
 
-    offset_heights = round_to_int_fn((image_height - crop_heights) * rand_fn())
-    offset_widths = round_to_int_fn((image_width - crop_widths) * rand_fn())
+    offset_height = round_to_int_fn((image_height - crop_height) * rand_fn())
+    offset_width = round_to_int_fn((image_width - crop_width) * rand_fn())
 
-    return (
-        offset_heights, offset_widths,
-        crop_heights, crop_widths
-    )
+    return offset_height, offset_width, crop_height, crop_width
 
 
 def _crop(
