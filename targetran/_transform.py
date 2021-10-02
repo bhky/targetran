@@ -7,6 +7,8 @@ from typing import Any, Callable, List, Tuple, TypeVar
 
 import numpy as np  # type: ignore
 
+from targetran.utils import Interpolation
+
 # This roughly means anything that is ndarray-like.
 T = TypeVar("T", np.ndarray, Any)
 
@@ -50,6 +52,8 @@ class _AffineDependency:
     concat_fn: Callable[[List[T], int], T]
     matmul_fn: Callable[[T, T], T]
     clip_fn: Callable[[T, T, T], T]
+    floor_fn: Callable[[T], T]
+    ceil_fn: Callable[[T], T]
     gather_image_fn: Callable[[T, T], T]
     copy_fn: Callable[[T], T]
     max_fn: Callable[[T, int], T]
@@ -64,6 +68,7 @@ def _affine_transform(
         labels: T,
         image_dest_tran_mat: T,
         bboxes_tran_mat: T,
+        interpolation: Interpolation,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -101,7 +106,7 @@ def _affine_transform(
         [col_idxes, row_idxes, d.ones_like_fn(col_idxes)], 0
     )
 
-    # Transform image, with clipping.
+    # Transform destination indices, with clipping.
     new_image_dest_idxes = d.matmul_fn(
         image_dest_tran_mat, d.convert_fn(image_dest_idxes)
     )
@@ -123,8 +128,54 @@ def _affine_transform(
         # Columns.
         clipped_new_image_dest_idxes[:1] + d.convert_fn(width // 2 + w_mod)
     ], 0)
-    image_orig_idxes = d.round_to_int_fn(image_orig_idxes)
-    values = d.gather_image_fn(image, image_orig_idxes)
+
+    if interpolation == Interpolation.NEAREST:
+        image_rounded_orig_idxes = d.round_to_int_fn(image_orig_idxes)
+        values = d.gather_image_fn(image, image_rounded_orig_idxes)
+
+    elif interpolation == Interpolation.BILINEAR:
+        floor_idxes = d.round_to_int_fn(d.floor_fn(image_orig_idxes))
+        ceil_idxes = d.round_to_int_fn(d.ceil_fn(image_orig_idxes))
+
+        floor_row_idxes = floor_idxes[:1, :]
+        floor_col_idxes = floor_idxes[1:, :]
+        ceil_row_idxes = ceil_idxes[:1, :]
+        ceil_col_idxes = ceil_idxes[1:, :]
+        floor_floor_idxes = d.concat_fn([floor_row_idxes, floor_col_idxes], 0)
+        floor_ceil_idxes = d.concat_fn([floor_row_idxes, ceil_col_idxes], 0)
+        ceil_floor_idxes = d.concat_fn([ceil_row_idxes, floor_col_idxes], 0)
+        ceil_ceil_idxes = d.concat_fn([ceil_row_idxes, ceil_col_idxes], 0)
+
+        dists = image_orig_idxes - d.convert_fn(floor_idxes)
+        floor_weights = 1.0 - dists
+        ceil_weights = 1.0 - floor_weights
+        floor_row_weights = floor_weights[0]
+        floor_col_weights = floor_weights[1]
+        ceil_row_weights = ceil_weights[0]
+        ceil_col_weights = ceil_weights[1]
+        # Reshape for broadcasting need.
+        floor_floor_weights = d.reshape_fn(
+            floor_row_weights * floor_col_weights, (-1, 1)
+        )
+        floor_ceil_weights = d.reshape_fn(
+            floor_row_weights * ceil_col_weights, (-1, 1)
+        )
+        ceil_floor_weights = d.reshape_fn(
+            ceil_row_weights * floor_col_weights, (-1, 1)
+        )
+        ceil_ceil_weights = d.reshape_fn(
+            ceil_row_weights * ceil_col_weights, (-1, 1)
+        )
+
+        values = \
+            d.gather_image_fn(image, floor_floor_idxes) * floor_floor_weights + \
+            d.gather_image_fn(image, floor_ceil_idxes) * floor_ceil_weights + \
+            d.gather_image_fn(image, ceil_floor_idxes) * ceil_floor_weights + \
+            d.gather_image_fn(image, ceil_ceil_idxes) * ceil_ceil_weights
+
+    else:
+        raise ValueError("Undefined interpolation option.")
+
     new_image = d.reshape_fn(values, (height, width, num_channels))
 
     # Transform bboxes.
@@ -231,6 +282,7 @@ def _flip_left_right(
         image: T,
         bboxes: T,
         labels: T,
+        interpolation: Interpolation,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -242,7 +294,8 @@ def _flip_left_right(
         d.convert_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_flip_lr_mat, bboxes_flip_lr_mat, d
+        image, bboxes, labels, image_dest_flip_lr_mat, bboxes_flip_lr_mat,
+        interpolation, d
     )
 
 
@@ -266,6 +319,7 @@ def _flip_up_down(
         image: T,
         bboxes: T,
         labels: T,
+        interpolation: Interpolation,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -277,7 +331,8 @@ def _flip_up_down(
         d.convert_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_flip_ud_mat, bboxes_flip_ud_mat, d
+        image, bboxes, labels, image_dest_flip_ud_mat, bboxes_flip_ud_mat,
+        interpolation, d
     )
 
 
@@ -310,6 +365,7 @@ def _rotate(
         angle_deg: T,
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T],
+        interpolation: Interpolation,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -322,7 +378,8 @@ def _rotate(
         angle_deg, d.convert_fn, cos_fn, sin_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_rot_mat, bboxes_rot_mat, d
+        image, bboxes, labels, image_dest_rot_mat, bboxes_rot_mat,
+        interpolation, d
     )
 
 
@@ -354,6 +411,7 @@ def _shear(
         labels: T,
         angle_deg: T,
         tan_fn: Callable[[T], T],
+        interpolation: Interpolation,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -366,7 +424,8 @@ def _shear(
         angle_deg, d.convert_fn, tan_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_shear_mat, bboxes_shear_mat, d
+        image, bboxes, labels, image_dest_shear_mat, bboxes_shear_mat,
+        interpolation, d
     )
 
 
@@ -394,6 +453,7 @@ def _translate(
         labels: T,
         translate_height: T,
         translate_width: T,
+        interpolation: Interpolation,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -407,7 +467,8 @@ def _translate(
         translate_height, translate_width, d.convert_fn
     )
     return _affine_transform(
-        image, bboxes, labels, image_dest_translate_mat, bboxes_translate_mat, d
+        image, bboxes, labels, image_dest_translate_mat, bboxes_translate_mat,
+        interpolation, d
     )
 
 

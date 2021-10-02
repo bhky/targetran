@@ -2,9 +2,15 @@
 Utilities.
 """
 
+from enum import auto, Enum
 from typing import Any, Callable, Sequence, Tuple, TypeVar
 
 T = TypeVar("T")
+
+
+class Interpolation(Enum):
+    NEAREST = auto()
+    BILINEAR = auto()
 
 
 class Compose:
