@@ -106,7 +106,7 @@ def _affine_transform(
         [col_idxes, row_idxes, d.ones_like_fn(col_idxes)], 0
     )
 
-    # Transform destination indices, with clipping.
+    # Transform destination indices, with clipping. Note that these are floats.
     new_image_dest_idxes = d.matmul_fn(
         image_dest_tran_mat, d.convert_fn(image_dest_idxes)
     )
