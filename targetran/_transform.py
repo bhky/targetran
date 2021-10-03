@@ -44,6 +44,7 @@ class _AffineDependency:
     squeeze_fn: Callable[[T, int], T]
     pad_image_fn: Callable[[T, T], T]
     range_fn: Callable[[int, int, int], T]
+    cast_to_int_fn: Callable[[T], T]
     round_to_int_fn: Callable[[T], T]
     repeat_fn: Callable[[T, T], T]
     tile_fn: Callable[[T, T], T]
@@ -134,8 +135,8 @@ def _affine_transform(
         values = d.gather_image_fn(image, image_rounded_orig_idxes)
 
     elif interpolation == Interpolation.BILINEAR:
-        floor_idxes = d.round_to_int_fn(d.floor_fn(image_orig_idxes))
-        ceil_idxes = d.round_to_int_fn(d.ceil_fn(image_orig_idxes))
+        floor_idxes = d.cast_to_int_fn(d.floor_fn(image_orig_idxes))
+        ceil_idxes = d.cast_to_int_fn(d.ceil_fn(image_orig_idxes))
 
         floor_row_idxes = floor_idxes[:1, :]
         floor_col_idxes = floor_idxes[1:, :]
