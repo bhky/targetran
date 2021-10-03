@@ -25,6 +25,7 @@ from .tf import (
     tf_translate,
     tf_crop,
 )
+from .utils import Interpolation
 
 ORIGINAL_IMAGE_SEQ = [
     np.array([
@@ -286,7 +287,8 @@ class TestTransform(unittest.TestCase):
                 original_image_seq[i],
                 original_bboxes_seq[i],
                 original_labels_seq[i],
-                angles_deg[i]
+                angles_deg[i],
+                Interpolation.NEAREST
             )
             self.assertTrue(
                 np.array_equal(expected_image_seq[i], image)
@@ -318,19 +320,20 @@ class TestTransform(unittest.TestCase):
                 tf_original_image_seq[i],
                 tf_original_bboxes_seq[i],
                 tf_original_labels_seq[i],
-                angles_deg[i]
+                angles_deg[i],
+                Interpolation.NEAREST
             )
             self.assertTrue(
-                np.array_equal(tf_expected_image_seq[i].numpy(),
-                               tf_image.numpy())
+                np.allclose(tf_expected_image_seq[i].numpy(),
+                            tf_image.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_bboxes_seq[i].numpy(),
-                               tf_bboxes.numpy())
+                np.allclose(tf_expected_bboxes_seq[i].numpy(),
+                            tf_bboxes.numpy())
             )
             self.assertTrue(
-                np.array_equal(tf_expected_labels_seq[i].numpy(),
-                               tf_labels.numpy())
+                np.allclose(tf_expected_labels_seq[i].numpy(),
+                            tf_labels.numpy())
             )
 
     def test_shear(self) -> None:
@@ -353,7 +356,7 @@ class TestTransform(unittest.TestCase):
         # NumPy.
         _, bboxes, labels = shear(
             dummy_image, original_bboxes, original_labels,
-            angle_deg
+            angle_deg, Interpolation.NEAREST
         )
         self.assertTrue(np.array_equal(expected_bboxes, bboxes))
         self.assertTrue(np.array_equal(expected_labels, labels))
@@ -370,7 +373,7 @@ class TestTransform(unittest.TestCase):
             tf.convert_to_tensor(dummy_image, dtype=tf.float32),
             tf.convert_to_tensor(original_bboxes, dtype=tf.float32),
             tf.convert_to_tensor(original_labels, dtype=tf.float32),
-            angle_deg
+            angle_deg, Interpolation.NEAREST
         )
         self.assertTrue(
             np.allclose(tf_expected_bboxes.numpy(), tf_bboxes.numpy())
@@ -426,7 +429,8 @@ class TestTransform(unittest.TestCase):
                 ORIGINAL_IMAGE_SEQ[i],
                 ORIGINAL_BBOXES_SEQ[i],
                 ORIGINAL_LABELS_SEQ[i],
-                translate_heights[i], translate_widths[i]
+                translate_heights[i], translate_widths[i],
+                Interpolation.NEAREST
             )
             self.assertTrue(np.array_equal(expected_image_seq[i], image))
             self.assertTrue(np.array_equal(expected_bboxes_seq[i], bboxes))
@@ -446,7 +450,8 @@ class TestTransform(unittest.TestCase):
                 TF_ORIGINAL_IMAGE_SEQ[i],
                 TF_ORIGINAL_BBOXES_SEQ[i],
                 TF_ORIGINAL_LABELS_SEQ[i],
-                translate_heights[i], translate_widths[i]
+                translate_heights[i], translate_widths[i],
+                Interpolation.NEAREST
             )
             self.assertTrue(
                 np.array_equal(tf_expected_image_seq[i].numpy(),

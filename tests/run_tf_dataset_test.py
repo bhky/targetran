@@ -75,11 +75,11 @@ def main() -> None:
     ds = targetran.tf.seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
     affine_transforms = targetran.tf.TFCombineAffine([
-         targetran.tf.TFRandomRotate(probability=1.0),
-         targetran.tf.TFRandomShear(probability=1.0),
-         targetran.tf.TFRandomTranslate(probability=1.0),
-         targetran.tf.TFRandomFlipUpDown(probability=1.0),
-         targetran.tf.TFRandomFlipLeftRight(probability=1.0),
+        targetran.tf.TFRandomRotate(probability=1.0),
+        targetran.tf.TFRandomShear(probability=1.0),
+        targetran.tf.TFRandomTranslate(probability=1.0),
+        targetran.tf.TFRandomFlipUpDown(probability=1.0),
+        targetran.tf.TFRandomFlipLeftRight(probability=1.0),
     ], probability=1.0)
 
     ds = ds \

@@ -108,6 +108,7 @@ def transform_and_batch(
     """
     Apply data augmentation (to training set only) and batching.
     """
+
     def set_tensor_shapes(
             image: tf.Tensor,
             label: tf.Tensor
@@ -157,7 +158,6 @@ def save_plot(
         num_cols: int,
         figure_size_inches: Tuple[float, float] = (10.0, 10.0)
 ) -> None:
-
     fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
 
     for n, sample in enumerate(ds.unbatch().take(num_rows * num_cols)):

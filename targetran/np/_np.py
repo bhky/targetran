@@ -41,6 +41,7 @@ from targetran._transform import (
     _get_shear_mats,
     _get_translate_mats,
 )
+from targetran.utils import Interpolation
 
 
 def _np_get_affine_dependency() -> _AffineDependency:
@@ -48,7 +49,8 @@ def _np_get_affine_dependency() -> _AffineDependency:
         _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
         _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
         np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
-        _np_gather_image, np.copy, np.max, np.min,
+        np.floor, np.ceil, _np_gather_image, np.copy,
+        np.max, np.min,
         _np_logical_and, _np_boolean_mask
     )
 
@@ -58,11 +60,12 @@ def _np_affine_transform(
         bboxes: np.ndarray,
         labels: np.ndarray,
         image_dest_tran_mat: np.ndarray,
-        bboxes_tran_mat: np.ndarray
+        bboxes_tran_mat: np.ndarray,
+        interpolation: Interpolation
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _affine_transform(
         image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
-        _np_get_affine_dependency()
+        interpolation, _np_get_affine_dependency()
     )
 
 
@@ -72,7 +75,8 @@ def flip_left_right(
         labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_left_right(
-        image, bboxes, labels, _np_get_affine_dependency()
+        image, bboxes, labels,
+        Interpolation.NEAREST, _np_get_affine_dependency()
     )
 
 
@@ -82,7 +86,8 @@ def flip_up_down(
         labels: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _flip_up_down(
-        image, bboxes, labels, _np_get_affine_dependency()
+        image, bboxes, labels,
+        Interpolation.NEAREST, _np_get_affine_dependency()
     )
 
 
@@ -90,11 +95,12 @@ def rotate(
         image: np.ndarray,
         bboxes: np.ndarray,
         labels: np.ndarray,
-        angle_deg: float
+        angle_deg: float,
+        interpolation: Interpolation = Interpolation.BILINEAR
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return _rotate(
         image, bboxes, labels, _np_convert(angle_deg), np.cos, np.sin,
-        _np_get_affine_dependency()
+        interpolation, _np_get_affine_dependency()
     )
 
 
@@ -103,13 +109,14 @@ def shear(
         bboxes: np.ndarray,
         labels: np.ndarray,
         angle_deg: float,
-        check_input: bool = True
+        interpolation: Interpolation = Interpolation.BILINEAR,
+        _check_input: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    if check_input:
+    if _check_input:
         _check_shear_input(angle_deg)
     return _shear(
         image, bboxes, labels, _np_convert(angle_deg), np.tan,
-        _np_get_affine_dependency()
+        interpolation, _np_get_affine_dependency()
     )
 
 
@@ -119,14 +126,15 @@ def translate(
         labels: np.ndarray,
         translate_height: int,
         translate_width: int,
-        check_input: bool = True
+        interpolation: Interpolation = Interpolation.BILINEAR,
+        _check_input: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    if check_input:
+    if _check_input:
         _check_translate_input(image.shape, translate_height, translate_width)
     return _translate(
         image, bboxes, labels,
         _np_convert(translate_height), _np_convert(translate_width),
-        _np_get_affine_dependency()
+        interpolation, _np_get_affine_dependency()
     )
 
 
@@ -151,9 +159,9 @@ def crop(
         offset_width: int,
         crop_height: int,
         crop_width: int,
-        check_input: bool = True
+        _check_input: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    if check_input:
+    if _check_input:
         _check_crop_input(image.shape, offset_height, offset_width)
     return _crop(
         image, bboxes, labels,
@@ -227,6 +235,7 @@ class CombineAffine(RandomTransform):
             transforms: Sequence[RandomTransform],
             num_selected_transforms: Optional[int] = None,
             selected_probabilities: Optional[List[float]] = None,
+            interpolation: Interpolation = Interpolation.BILINEAR,
             probability: float = 1.0,
             seed: Optional[int] = None
     ) -> None:
@@ -248,6 +257,7 @@ class CombineAffine(RandomTransform):
         self._transforms = transforms
         self._num_selected_transforms = num_selected_transforms
         self._selected_probabilities = selected_probabilities
+        self._interpolation = interpolation
         self._identity_mat = np.expand_dims(np.array([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
@@ -300,7 +310,8 @@ class CombineAffine(RandomTransform):
             image, self._rand_fn
         )
         return super().__call__(
-            image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat
+            image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
+            self._interpolation
         )
 
 
@@ -367,12 +378,14 @@ class RandomRotate(RandomTransform):
     def __init__(
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
+            interpolation: Interpolation = Interpolation.BILINEAR,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, None, "angle_deg_range")
         super().__init__(rotate, probability, seed, "RandomRotate", True)
         self.angle_deg_range = angle_deg_range
+        self.interpolation = interpolation
 
     def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
@@ -396,7 +409,8 @@ class RandomRotate(RandomTransform):
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return super().__call__(
-            image, bboxes, labels, self._get_angle_deg(self._rand_fn)
+            image, bboxes, labels, self._get_angle_deg(self._rand_fn),
+            self.interpolation
         )
 
 
@@ -405,12 +419,14 @@ class RandomShear(RandomTransform):
     def __init__(
             self,
             angle_deg_range: Tuple[float, float] = (-10.0, 10.0),
+            interpolation: Interpolation = Interpolation.BILINEAR,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
         _check_input_range(angle_deg_range, (-90.0, 90.0), "angle_deg_range")
         super().__init__(shear, probability, seed, "RandomShear", True)
         self.angle_deg_range = angle_deg_range
+        self.interpolation = interpolation
 
     def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
@@ -432,7 +448,8 @@ class RandomShear(RandomTransform):
             **kwargs: Any
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return super().__call__(
-            image, bboxes, labels, self._get_angle_deg(self._rand_fn), False
+            image, bboxes, labels, self._get_angle_deg(self._rand_fn),
+            self.interpolation, False
         )
 
 
@@ -442,6 +459,7 @@ class RandomTranslate(RandomTransform):
             self,
             translate_height_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             translate_width_fraction_range: Tuple[float, float] = (-0.1, 0.1),
+            interpolation: Interpolation = Interpolation.BILINEAR,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
@@ -456,6 +474,7 @@ class RandomTranslate(RandomTransform):
         super().__init__(translate, probability, seed, "RandomTranslate", True)
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
+        self.interpolation = interpolation
 
     def _get_translate_height_and_width(
             self,
@@ -497,7 +516,8 @@ class RandomTranslate(RandomTransform):
         translate_height, translate_width = \
             self._get_translate_height_and_width(image, self._rand_fn)
         return super().__call__(
-            image, bboxes, labels, translate_height, translate_width, False
+            image, bboxes, labels, translate_height, translate_width,
+            self.interpolation, False
         )
 
 
