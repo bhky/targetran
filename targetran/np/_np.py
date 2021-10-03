@@ -16,6 +16,7 @@ from targetran._check import (
 from targetran._np_functional import (
     _np_convert,
     _np_range,
+    _np_cast_to_int,
     _np_round_to_int,
     _np_resize_image,
     _np_boolean_mask,
@@ -47,10 +48,10 @@ from targetran.utils import Interpolation
 def _np_get_affine_dependency() -> _AffineDependency:
     return _AffineDependency(
         _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_round_to_int, np.repeat, np.tile,
-        np.ones_like, np.stack, np.concatenate, np.matmul, np.clip,
-        np.floor, np.ceil, _np_gather_image, np.copy,
-        np.max, np.min,
+        _np_pad_image, _np_range, _np_cast_to_int, _np_round_to_int,
+        np.repeat, np.tile, np.ones_like, np.stack, np.concatenate, np.matmul,
+        np.clip, np.floor, np.ceil, _np_gather_image,
+        np.copy, np.max, np.min,
         _np_logical_and, _np_boolean_mask
     )
 

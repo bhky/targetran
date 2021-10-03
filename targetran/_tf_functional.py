@@ -13,6 +13,10 @@ def _tf_convert(x: Any) -> tf.Tensor:
     return tf.convert_to_tensor(x, dtype=tf.float32)
 
 
+def _tf_cast_to_int(x: tf.Tensor) -> tf.Tensor:
+    return tf.cast(x, dtype=tf.int32)
+
+
 def _tf_round_to_int(x: tf.Tensor) -> tf.Tensor:
     return tf.cast(tf.math.rint(x), dtype=tf.int32)
 

@@ -18,6 +18,10 @@ def _np_range(start: int, end: int, step: int) -> np.ndarray:
     return np.arange(start, end, step)
 
 
+def _np_cast_to_int(x: np.ndarray) -> np.ndarray:
+    return x.astype(dtype=np.int32)
+
+
 def _np_round_to_int(x: np.ndarray) -> np.ndarray:
     return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)
 
