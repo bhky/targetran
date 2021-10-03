@@ -146,21 +146,13 @@ def _affine_transform(
         )
 
         dists = image_orig_idxes - d.convert_fn(floor_floor_idxes)
-        floor_weights = 1.0 - dists
+        # Reshape needed for broadcasting in the gather step.
+        floor_weights = d.reshape_fn(1.0 - dists, (-1, 2))
         ceil_weights = 1.0 - floor_weights
-        # Reshape for broadcasting need.
-        floor_floor_weights = d.reshape_fn(
-            floor_weights[0] * floor_weights[1], (-1, 1)
-        )
-        floor_ceil_weights = d.reshape_fn(
-            floor_weights[0] * ceil_weights[1], (-1, 1)
-        )
-        ceil_floor_weights = d.reshape_fn(
-            ceil_weights[0] * floor_weights[1], (-1, 1)
-        )
-        ceil_ceil_weights = d.reshape_fn(
-            ceil_weights[0] * ceil_weights[1], (-1, 1)
-        )
+        floor_floor_weights = floor_weights[:, :1] * floor_weights[:, 1:]
+        floor_ceil_weights = floor_weights[:, :1] * ceil_weights[:, 1:]
+        ceil_floor_weights = ceil_weights[:, :1] * floor_weights[:, 1:]
+        ceil_ceil_weights = ceil_weights[:, :1] * ceil_weights[:, 1:]
 
         values = \
             d.gather_image_fn(image, floor_floor_idxes) * floor_floor_weights + \
