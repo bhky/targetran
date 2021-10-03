@@ -153,12 +153,13 @@ def main() -> None:
     # Option (2): set the number of steps to be randomly chosen, e.g., 2.
     # This could be a better option because too many transformations may deform
     # the images too much.
-    from targetran.utils import Interpolation
     affine_transform = TFCombineAffine(
-        [TFRandomRotate()],
-        num_selected_transforms=1,
+        [TFRandomRotate(),
+         TFRandomShear(),
+         TFRandomTranslate(),
+         TFRandomFlipLeftRight()],
+        num_selected_transforms=2,
         selected_probabilities=None,  # Default is None: uniform distribution.
-        interpolation=Interpolation.BILINEAR,
         probability=1.0,
         seed=2
     )
@@ -166,19 +167,9 @@ def main() -> None:
     # The `repeat` call here is only for re-using samples in this illustration.
     ds = ds \
         .repeat() \
-        .map(affine_transform)
-
-    from timeit import default_timer
-    for _ in range(5):
-        start = default_timer()
-        for sample in ds.take(100):
-            pass
-        elapsed = default_timer() - start
-        print("-------------")
-        print(elapsed)
-        print("-------------")
-
-    return
+        .map(TFRandomCrop(probability=1.0, seed=1)) \
+        .map(affine_transform) \
+        .map(TFResize((640, 640)))
 
     plot(ds, num_rows=2, num_cols=3)
 
