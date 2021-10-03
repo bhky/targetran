@@ -135,37 +135,31 @@ def _affine_transform(
         values = d.gather_image_fn(image, image_rounded_orig_idxes)
 
     elif interpolation == Interpolation.BILINEAR:
-        floor_idxes = d.cast_to_int_fn(d.floor_fn(image_orig_idxes))
-        ceil_idxes = d.cast_to_int_fn(d.ceil_fn(image_orig_idxes))
+        floor_floor_idxes = d.cast_to_int_fn(d.floor_fn(image_orig_idxes))
+        ceil_ceil_idxes = d.cast_to_int_fn(d.ceil_fn(image_orig_idxes))
 
-        floor_row_idxes = floor_idxes[:1, :]
-        floor_col_idxes = floor_idxes[1:, :]
-        ceil_row_idxes = ceil_idxes[:1, :]
-        ceil_col_idxes = ceil_idxes[1:, :]
-        floor_floor_idxes = d.concat_fn([floor_row_idxes, floor_col_idxes], 0)
-        floor_ceil_idxes = d.concat_fn([floor_row_idxes, ceil_col_idxes], 0)
-        ceil_floor_idxes = d.concat_fn([ceil_row_idxes, floor_col_idxes], 0)
-        ceil_ceil_idxes = d.concat_fn([ceil_row_idxes, ceil_col_idxes], 0)
+        floor_ceil_idxes = d.concat_fn(
+            [floor_floor_idxes[:1, :], ceil_ceil_idxes[1:, :]], 0
+        )
+        ceil_floor_idxes = d.concat_fn(
+            [ceil_ceil_idxes[:1, :], floor_floor_idxes[1:, :]], 0
+        )
 
-        dists = image_orig_idxes - d.convert_fn(floor_idxes)
+        dists = image_orig_idxes - d.convert_fn(floor_floor_idxes)
         floor_weights = 1.0 - dists
         ceil_weights = 1.0 - floor_weights
-        floor_row_weights = floor_weights[0]
-        floor_col_weights = floor_weights[1]
-        ceil_row_weights = ceil_weights[0]
-        ceil_col_weights = ceil_weights[1]
         # Reshape for broadcasting need.
         floor_floor_weights = d.reshape_fn(
-            floor_row_weights * floor_col_weights, (-1, 1)
+            floor_weights[0] * floor_weights[1], (-1, 1)
         )
         floor_ceil_weights = d.reshape_fn(
-            floor_row_weights * ceil_col_weights, (-1, 1)
+            floor_weights[0] * ceil_weights[1], (-1, 1)
         )
         ceil_floor_weights = d.reshape_fn(
-            ceil_row_weights * floor_col_weights, (-1, 1)
+            ceil_weights[0] * floor_weights[1], (-1, 1)
         )
         ceil_ceil_weights = d.reshape_fn(
-            ceil_row_weights * ceil_col_weights, (-1, 1)
+            ceil_weights[0] * ceil_weights[1], (-1, 1)
         )
 
         values = \
