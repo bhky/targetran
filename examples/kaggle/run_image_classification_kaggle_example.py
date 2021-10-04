@@ -92,6 +92,9 @@ def split_ds(
         num_val_samples: int,
         seed: int = 42
 ) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
+    """
+    Split the dataset into two for training and validation.
+    """
     ds = ds.shuffle(2048, seed=seed)
     ds_val = ds.take(num_val_samples)
     ds_train = ds.skip(num_val_samples)
@@ -115,7 +118,7 @@ def transform_and_batch(
     ) -> Tuple[tf.Tensor, tf.Tensor]:
         """
         Somehow the dataset loses the shape information after transformation,
-        so this step has to be added to tackle the following exception when
+        so this step may be needed to tackle the following exception when
         running on TPU:
             Compilation failure: Dynamic Spatial Convolution is not supported
         """
