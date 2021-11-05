@@ -7,7 +7,7 @@ import unittest
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
-from .np import (
+from targetran.np import (
     flip_left_right,
     flip_up_down,
     rotate,
@@ -15,7 +15,7 @@ from .np import (
     translate,
     crop,
 )
-from .tf import (
+from targetran.tf import (
     to_tf,
     seqs_to_tf_dataset,
     tf_flip_left_right,
@@ -25,7 +25,7 @@ from .tf import (
     tf_translate,
     tf_crop,
 )
-from .utils import Interpolation
+from targetran.utils import Interpolation
 
 ORIGINAL_IMAGE_SEQ = [
     np.array([
