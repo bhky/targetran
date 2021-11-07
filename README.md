@@ -51,7 +51,7 @@ Here comes Targetran to fill the gap.
 
 # Installation
 
-Python 3 is required.
+Python 3.7 or above is required. Tested for 3.7, 3.8, and 3.9.
 
 The best way to install Targetran with its dependencies is from PyPI:
 ```shell
