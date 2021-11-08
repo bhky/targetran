@@ -4,6 +4,7 @@ __pycache__
 venv/
 *.zip
 *.csv
+build/
 data/
 tmp/
 scripts/
