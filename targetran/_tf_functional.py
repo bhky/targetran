@@ -9,16 +9,16 @@ import tensorflow as tf  # type: ignore
 
 def _tf_convert(x: Any) -> tf.Tensor:
     if isinstance(x, tf.Tensor):
-        return tf.cast(x, dtype=tf.float32)
-    return tf.convert_to_tensor(x, dtype=tf.float32)
+        return tf.cast(x, tf.float32)
+    return tf.convert_to_tensor(x, tf.float32)
 
 
 def _tf_cast_to_int(x: tf.Tensor) -> tf.Tensor:
-    return tf.cast(x, dtype=tf.int32)
+    return tf.cast(x, tf.int32)
 
 
 def _tf_round_to_int(x: tf.Tensor) -> tf.Tensor:
-    return tf.cast(tf.math.rint(x), dtype=tf.int32)
+    return tf.cast(tf.math.rint(x), tf.int32)
 
 
 def _tf_pad_image(

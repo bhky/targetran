@@ -52,8 +52,10 @@ def _np_resize_image(
     """
     dest_size: (image_height, image_width)
     """
-    return cv2.resize(
-        image, dsize=(dest_size[1], dest_size[0]), interpolation=cv2.INTER_AREA
+    return cv2.resize(  # pylint: disable=no-member
+        image,
+        dsize=(dest_size[1], dest_size[0]),
+        interpolation=cv2.INTER_AREA  # pylint: disable=no-member
     )
 
 

@@ -300,7 +300,9 @@ def _get_random_indices(
     probs = selected_probabilities if selected_probabilities \
         else tf.ones(num_indices)
     logits = tf.math.log(probs)
-    z = -tf.math.log(-tf.math.log(rng.uniform(tf.shape(logits), 0, 1)))
+    z = -tf.math.log(-tf.math.log(  # pylint: disable=invalid-unary-operand-type
+        rng.uniform(tf.shape(logits), 0, 1)
+    ))
     _, indices = tf.nn.top_k(logits + z, num_selected_indices)
     return indices
 
@@ -356,8 +358,12 @@ class TFCombineAffine(TFRandomTransform):
                 self._num_selected_transforms,
                 self._selected_probabilities
             )
-            image_dest_tran_mats = tf.gather(image_dest_tran_mats, indices)
-            bboxes_tran_mats = tf.gather(bboxes_tran_mats, indices)
+            image_dest_tran_mats = tf.gather(  # pylint: disable=no-value-for-parameter
+                image_dest_tran_mats, indices
+            )
+            bboxes_tran_mats = tf.gather(  # pylint: disable=no-value-for-parameter
+                bboxes_tran_mats, indices
+            )
         else:
             conditions = tf.reshape(rand_fn() < probs, (len(probs), 1, 1))
             image_dest_tran_mats = tf.where(
