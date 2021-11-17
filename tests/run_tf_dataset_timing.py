@@ -7,7 +7,7 @@ import os
 from timeit import default_timer as timer
 from typing import Iterator, Tuple
 
-import tensorflow as tf
+import tensorflow as tf  # type: ignore
 
 from targetran.tf import (
     TFCombineAffine,

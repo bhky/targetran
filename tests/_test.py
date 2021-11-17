@@ -4,7 +4,7 @@ Unit tests.
 
 import unittest
 
-import numpy as np  # type: ignore
+import numpy as np
 import tensorflow as tf  # type: ignore
 
 from targetran.np import (

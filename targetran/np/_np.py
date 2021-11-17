@@ -386,12 +386,12 @@ class RandomRotate(RandomTransform):
     ) -> None:
         _check_input_range(angle_deg_range, None, "angle_deg_range")
         super().__init__(rotate, probability, seed, "RandomRotate", True)
-        self.angle_deg_range = angle_deg_range
+        self.angle_deg_range = np.array(angle_deg_range)
         self.interpolation = interpolation
 
     def _get_angle_deg(self, rand_fn: Callable[..., NPArray]) -> NPArray:
-        return (
-            self.angle_deg_range[1] - self.angle_deg_range[0]  # type: ignore
+        return (  # type: ignore
+            self.angle_deg_range[1] - self.angle_deg_range[0]
             * rand_fn() + self.angle_deg_range[0]
         )
 
@@ -429,12 +429,12 @@ class RandomShear(RandomTransform):
     ) -> None:
         _check_input_range(angle_deg_range, (-90.0, 90.0), "angle_deg_range")
         super().__init__(shear, probability, seed, "RandomShear", True)
-        self.angle_deg_range = angle_deg_range
+        self.angle_deg_range = np.array(angle_deg_range)
         self.interpolation = interpolation
 
     def _get_angle_deg(self, rand_fn: Callable[..., NPArray]) -> NPArray:
-        return (
-            self.angle_deg_range[1] - self.angle_deg_range[0]  # type: ignore
+        return (  # type: ignore
+            self.angle_deg_range[1] - self.angle_deg_range[0]
             * rand_fn() + self.angle_deg_range[0]
         )
 

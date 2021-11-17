@@ -3,18 +3,21 @@
 PyTorch Dataset test.
 """
 
-from typing import Optional, Sequence, Tuple
+from typing import Any, Optional, Sequence, Tuple
 
 import numpy as np
+import numpy.typing
 from torch.utils.data import Dataset, DataLoader
 
 import targetran.np
 from targetran.utils import Compose, collate_fn
 
+NPArray = np.typing.NDArray[Any]
 
-def make_np_data() -> Tuple[Sequence[np.ndarray],
-                            Sequence[np.ndarray],
-                            Sequence[np.ndarray]]:
+
+def make_np_data() -> Tuple[Sequence[NPArray],
+                            Sequence[NPArray],
+                            Sequence[NPArray]]:
     image_seq = [np.random.rand(480, 512, 3) for _ in range(3)]
 
     bboxes_seq = [
@@ -43,9 +46,9 @@ class PTDataset(Dataset):
 
     def __init__(
             self,
-            image_seq: Sequence[np.ndarray],
-            bboxes_seq: Sequence[np.ndarray],
-            labels_seq: Sequence[np.ndarray],
+            image_seq: Sequence[NPArray],
+            bboxes_seq: Sequence[NPArray],
+            labels_seq: Sequence[NPArray],
             transforms: Optional[Compose]
     ) -> None:
         self.image_seq = image_seq
@@ -59,7 +62,7 @@ class PTDataset(Dataset):
     def __getitem__(
             self,
             idx: int
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         if self.transforms:
             return self.transforms(
                 self.image_seq[idx],
