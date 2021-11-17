@@ -14,13 +14,13 @@ There are three modules:
 - `targetran.tf` for TensorFlow transformation tools;
 - `targetran.utils` for general utilities.
 
-Please see [here](../README.md#usage) for usage instructions.
+Please see [here](../README.md#usage) for notations and usage instructions.
 
 
 ### Transformation classes
 
 Each transformation class comes in a pair, with one operating 
-on `np.ndarray` and the other on `tf.Tensor`. For the latter, the class names 
+on `NDAnyArray` and the other on `tf.Tensor`. For the latter, the class names 
 have a `TF*` prefix, e.g., `RandomRotate` and `TFRandomRotate`, respectively.
 
 Pure TensorFlow ops are used for implementing the `TF*` tools,
@@ -29,17 +29,17 @@ which is why they could work smoothly with a TensorFlow Dataset on TPU.
 The transformation classes are callables that accept input parameters from 
 a single sample consists of:
 
-- `image` (`np.ndarray` or `tf.Tensor` of shape `(height, width, num_channels)`);
-- `bboxes` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty), 
+- `image` (`NDAnyArray` or `tf.Tensor` of shape `(height, width, num_channels)`);
+- `bboxes` (`NDAnyArray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty), 
   where each row is `[top_left_x, top_left_y, bbox_width, bbox_height]`;
-- `labels` (`np.ndarray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`, can be empty).
+- `labels` (`NDAnyArray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`, can be empty).
 
 The return format is a tuple: `(image, bboxes, labels)`.
 
 ### Transformation functions
 
 Each transformation class also has a pure functional counterpart, 
-e.g., `rotate` and `tf_rotate` for `np.ndarray` and `tf.Tensor` 
+e.g., `rotate` and `tf_rotate` for `NDAnyArray` and `tf.Tensor` 
 (with `tf_*` prefix), 
 to which one could provide exact transformation parameters.
 
