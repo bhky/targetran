@@ -36,6 +36,6 @@ def image_only(
         transformed_image = tran_fn(image, [], [])[0]
         if len(args) == 0:
             return transformed_image
-        return transformed_image, *args
+        return (transformed_image, *args)  # The parentheses are needed.
 
     return fn

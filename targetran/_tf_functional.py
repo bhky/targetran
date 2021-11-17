@@ -2,12 +2,14 @@
 TensorFlow functional helper utilities.
 """
 
-from typing import Any, Tuple
+from typing import Tuple
 
 import tensorflow as tf  # type: ignore
 
+from targetran._typing import ArrayLike
 
-def _tf_convert(x: Any) -> tf.Tensor:
+
+def _tf_convert(x: ArrayLike) -> tf.Tensor:
     if isinstance(x, tf.Tensor):
         return tf.cast(x, tf.float32)
     return tf.convert_to_tensor(x, tf.float32)

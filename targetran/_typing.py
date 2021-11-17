@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 import numpy.typing
 
+ArrayLike = np.typing.ArrayLike
 NDAnyArray = np.typing.NDArray[Any]
 
 # T is treated semantically as "NPArray or tf.Tensor" in this library.

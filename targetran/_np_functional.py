@@ -2,15 +2,15 @@
 Numpy functional helper utilities.
 """
 
-from typing import Any, Tuple
+from typing import Tuple
 
 import cv2  # type: ignore
 import numpy as np
 
-from targetran._typing import NDAnyArray
+from targetran._typing import ArrayLike, NDAnyArray
 
 
-def _np_convert(x: Any) -> NDAnyArray:
+def _np_convert(x: ArrayLike) -> NDAnyArray:
     if isinstance(x, np.ndarray):
         return x.astype(np.float32)
     return np.array(x, dtype=np.float32)
