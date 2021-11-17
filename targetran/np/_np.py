@@ -42,7 +42,7 @@ from targetran._transform import (
     _get_shear_mats,
     _get_translate_mats,
 )
-from targetran._typing import NPArray
+from targetran._typing import NDAnyArray
 from targetran.utils import Interpolation
 
 
@@ -58,13 +58,13 @@ def _np_get_affine_dependency() -> _AffineDependency:
 
 
 def _np_affine_transform(
-        image: NPArray,
-        bboxes: NPArray,
-        labels: NPArray,
-        image_dest_tran_mat: NPArray,
-        bboxes_tran_mat: NPArray,
+        image: NDAnyArray,
+        bboxes: NDAnyArray,
+        labels: NDAnyArray,
+        image_dest_tran_mat: NDAnyArray,
+        bboxes_tran_mat: NDAnyArray,
         interpolation: Interpolation
-) -> Tuple[NPArray, NPArray, NPArray]:
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
     return _affine_transform(
         image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
         interpolation, _np_get_affine_dependency()
@@ -72,10 +72,10 @@ def _np_affine_transform(
 
 
 def flip_left_right(
-        image: NPArray,
-        bboxes: NPArray,
-        labels: NPArray
-) -> Tuple[NPArray, NPArray, NPArray]:
+        image: NDAnyArray,
+        bboxes: NDAnyArray,
+        labels: NDAnyArray
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
     return _flip_left_right(
         image, bboxes, labels,
         Interpolation.NEAREST, _np_get_affine_dependency()
@@ -83,10 +83,10 @@ def flip_left_right(
 
 
 def flip_up_down(
-        image: NPArray,
-        bboxes: NPArray,
-        labels: NPArray
-) -> Tuple[NPArray, NPArray, NPArray]:
+        image: NDAnyArray,
+        bboxes: NDAnyArray,
+        labels: NDAnyArray
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
     return _flip_up_down(
         image, bboxes, labels,
         Interpolation.NEAREST, _np_get_affine_dependency()
@@ -94,12 +94,12 @@ def flip_up_down(
 
 
 def rotate(
-        image: NPArray,
-        bboxes: NPArray,
-        labels: NPArray,
+        image: NDAnyArray,
+        bboxes: NDAnyArray,
+        labels: NDAnyArray,
         angle_deg: float,
         interpolation: Interpolation = Interpolation.BILINEAR
-) -> Tuple[NPArray, NPArray, NPArray]:
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
     return _rotate(
         image, bboxes, labels, _np_convert(angle_deg), np.cos, np.sin,
         interpolation, _np_get_affine_dependency()
@@ -107,13 +107,13 @@ def rotate(
 
 
 def shear(
-        image: NPArray,
-        bboxes: NPArray,
-        labels: NPArray,
+        image: NDAnyArray,
+        bboxes: NDAnyArray,
+        labels: NDAnyArray,
         angle_deg: float,
         interpolation: Interpolation = Interpolation.BILINEAR,
         _check_input: bool = True
-) -> Tuple[NPArray, NPArray, NPArray]:
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
     if _check_input:
         _check_shear_input(angle_deg)
     return _shear(
@@ -123,14 +123,14 @@ def shear(
 
 
 def translate(
-        image: NPArray,
-        bboxes: NPArray,
-        labels: NPArray,
+        image: NDAnyArray,
+        bboxes: NDAnyArray,
+        labels: NDAnyArray,
         translate_height: int,
         translate_width: int,
         interpolation: Interpolation = Interpolation.BILINEAR,
         _check_input: bool = True
-) -> Tuple[NPArray, NPArray, NPArray]:
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
     if _check_input:
         _check_translate_input(image.shape, translate_height, translate_width)
     return _translate(
@@ -145,8 +145,8 @@ def _np_get_crop_inputs(
         image_width: int,
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
-        rand_fn: Callable[..., NPArray]
-) -> Tuple[NPArray, NPArray, NPArray, NPArray]:
+        rand_fn: Callable[..., NDAnyArray]
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray, NDAnyArray]:
     return _get_crop_inputs(
         image_height, image_width, height_fraction_range, width_fraction_range,
         rand_fn, _np_convert, _np_round_to_int
@@ -154,15 +154,15 @@ def _np_get_crop_inputs(
 
 
 def crop(
-        image: NPArray,
-        bboxes: NPArray,
-        labels: NPArray,
+        image: NDAnyArray,
+        bboxes: NDAnyArray,
+        labels: NDAnyArray,
         offset_height: int,
         offset_width: int,
         crop_height: int,
         crop_width: int,
         _check_input: bool = True
-) -> Tuple[NPArray, NPArray, NPArray]:
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
     if _check_input:
         _check_crop_input(image.shape, offset_height, offset_width)
     return _crop(
@@ -175,11 +175,11 @@ def crop(
 
 
 def resize(
-        image: NPArray,
-        bboxes: NPArray,
-        labels: NPArray,
+        image: NDAnyArray,
+        bboxes: NDAnyArray,
+        labels: NDAnyArray,
         dest_size: Tuple[int, int]
-) -> Tuple[NPArray, NPArray, NPArray]:
+) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
     return _resize(
         image, bboxes, labels, dest_size,
         _np_convert, np.shape, np.reshape, _np_resize_image, np.concatenate
@@ -190,7 +190,7 @@ class RandomTransform:
 
     def __init__(
             self,
-            np_fn: Callable[..., Tuple[NPArray, NPArray, NPArray]],
+            np_fn: Callable[..., Tuple[NDAnyArray, NDAnyArray, NDAnyArray]],
             probability: float,
             seed: Optional[int],
             name: str,
@@ -202,24 +202,24 @@ class RandomTransform:
         self.name = name
         self.is_affine = is_affine
 
-    def _rand_fn(self, shape: Sequence[int] = ()) -> NPArray:
+    def _rand_fn(self, shape: Sequence[int] = ()) -> NDAnyArray:
         return self._rng.random(shape)
 
     def _get_mats(
             self,
-            image: NPArray,
-            rand_fn: Callable[..., NPArray]
-    ) -> Tuple[NPArray, NPArray]:
+            image: NDAnyArray,
+            rand_fn: Callable[..., NDAnyArray]
+    ) -> Tuple[NDAnyArray, NDAnyArray]:
         pass
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray,
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         # Make sure inputs are in the needed format.
         image = _np_convert(image)
         bboxes = _np_convert(bboxes)
@@ -266,9 +266,9 @@ class CombineAffine(RandomTransform):
 
     def _combine_mats(
             self,
-            image: NPArray,
-            rand_fn: Callable[..., NPArray]
-    ) -> Tuple[NPArray, NPArray]:
+            image: NDAnyArray,
+            rand_fn: Callable[..., NDAnyArray]
+    ) -> Tuple[NDAnyArray, NDAnyArray]:
         image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
             *[(*t._get_mats(image, rand_fn), t.probability)
               for i, t in enumerate(self._transforms)]
@@ -302,12 +302,12 @@ class CombineAffine(RandomTransform):
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray,
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(
             image, self._rand_fn
         )
@@ -330,19 +330,19 @@ class RandomFlipLeftRight(RandomTransform):
 
     def _get_mats(
             self,
-            image: NPArray,
-            rand_fn: Callable[..., NPArray]
-    ) -> Tuple[NPArray, NPArray]:
+            image: NDAnyArray,
+            rand_fn: Callable[..., NDAnyArray]
+    ) -> Tuple[NDAnyArray, NDAnyArray]:
         return _get_flip_left_right_mats(_np_convert)
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray,
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         return super().__call__(image, bboxes, labels)
 
 
@@ -359,19 +359,19 @@ class RandomFlipUpDown(RandomTransform):
 
     def _get_mats(
             self,
-            image: NPArray,
-            rand_fn: Callable[..., NPArray]
-    ) -> Tuple[NPArray, NPArray]:
+            image: NDAnyArray,
+            rand_fn: Callable[..., NDAnyArray]
+    ) -> Tuple[NDAnyArray, NDAnyArray]:
         return _get_flip_up_down_mats(_np_convert)
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray,
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         return super().__call__(image, bboxes, labels)
 
 
@@ -389,7 +389,7 @@ class RandomRotate(RandomTransform):
         self.angle_deg_range = np.array(angle_deg_range)
         self.interpolation = interpolation
 
-    def _get_angle_deg(self, rand_fn: Callable[..., NPArray]) -> NPArray:
+    def _get_angle_deg(self, rand_fn: Callable[..., NDAnyArray]) -> NDAnyArray:
         return (  # type: ignore
             self.angle_deg_range[1] - self.angle_deg_range[0]
             * rand_fn() + self.angle_deg_range[0]
@@ -397,21 +397,21 @@ class RandomRotate(RandomTransform):
 
     def _get_mats(
             self,
-            image: NPArray,
-            rand_fn: Callable[..., NPArray]
-    ) -> Tuple[NPArray, NPArray]:
+            image: NDAnyArray,
+            rand_fn: Callable[..., NDAnyArray]
+    ) -> Tuple[NDAnyArray, NDAnyArray]:
         return _get_rotate_mats(
             self._get_angle_deg(rand_fn), _np_convert, np.cos, np.sin
         )
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray,
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         return super().__call__(
             image, bboxes, labels, self._get_angle_deg(self._rand_fn),
             self.interpolation
@@ -432,7 +432,7 @@ class RandomShear(RandomTransform):
         self.angle_deg_range = np.array(angle_deg_range)
         self.interpolation = interpolation
 
-    def _get_angle_deg(self, rand_fn: Callable[..., NPArray]) -> NPArray:
+    def _get_angle_deg(self, rand_fn: Callable[..., NDAnyArray]) -> NDAnyArray:
         return (  # type: ignore
             self.angle_deg_range[1] - self.angle_deg_range[0]
             * rand_fn() + self.angle_deg_range[0]
@@ -440,19 +440,19 @@ class RandomShear(RandomTransform):
 
     def _get_mats(
             self,
-            image: NPArray,
-            rand_fn: Callable[..., NPArray]
-    ) -> Tuple[NPArray, NPArray]:
+            image: NDAnyArray,
+            rand_fn: Callable[..., NDAnyArray]
+    ) -> Tuple[NDAnyArray, NDAnyArray]:
         return _get_shear_mats(self._get_angle_deg(rand_fn), _np_convert, np.tan)
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray,
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         return super().__call__(
             image, bboxes, labels, self._get_angle_deg(self._rand_fn),
             self.interpolation, False
@@ -484,9 +484,9 @@ class RandomTranslate(RandomTransform):
 
     def _get_translate_height_and_width(
             self,
-            image: NPArray,
-            rand_fn: Callable[..., NPArray]
-    ) -> Tuple[NPArray, NPArray]:
+            image: NDAnyArray,
+            rand_fn: Callable[..., NDAnyArray]
+    ) -> Tuple[NDAnyArray, NDAnyArray]:
         height_fraction, width_fraction = _get_random_size_fractions(
             self.translate_height_fraction_range,
             self.translate_width_fraction_range,
@@ -502,9 +502,9 @@ class RandomTranslate(RandomTransform):
 
     def _get_mats(
             self,
-            image: NPArray,
-            rand_fn: Callable[..., NPArray]
-    ) -> Tuple[NPArray, NPArray]:
+            image: NDAnyArray,
+            rand_fn: Callable[..., NDAnyArray]
+    ) -> Tuple[NDAnyArray, NDAnyArray]:
         translate_height, translate_width = \
             self._get_translate_height_and_width(image, rand_fn)
         return _get_translate_mats(
@@ -513,12 +513,12 @@ class RandomTranslate(RandomTransform):
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray,
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         translate_height, translate_width = \
             self._get_translate_height_and_width(image, self._rand_fn)
         return super().__call__(
@@ -548,12 +548,12 @@ class RandomCrop(RandomTransform):
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray,
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         offset_height, offset_width, crop_height, crop_width = \
             _np_get_crop_inputs(
                 np.shape(image)[0], np.shape(image)[1],
@@ -577,8 +577,8 @@ class Resize:
 
     def __call__(
             self,
-            image: NPArray,
-            bboxes: NPArray,
-            labels: NPArray
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+            image: NDAnyArray,
+            bboxes: NDAnyArray,
+            labels: NDAnyArray
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         return resize(image, bboxes, labels, self.dest_size)

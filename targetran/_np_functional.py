@@ -7,35 +7,35 @@ from typing import Any, Tuple
 import cv2  # type: ignore
 import numpy as np
 
-from targetran._typing import NPArray
+from targetran._typing import NDAnyArray
 
 
-def _np_convert(x: Any) -> NPArray:
+def _np_convert(x: Any) -> NDAnyArray:
     if isinstance(x, np.ndarray):
         return x.astype(np.float32)
     return np.array(x, dtype=np.float32)
 
 
-def _np_range(start: int, end: int, step: int) -> NPArray:
+def _np_range(start: int, end: int, step: int) -> NDAnyArray:
     return np.arange(start, end, step)  # type: ignore
 
 
-def _np_cast_to_int(x: NPArray) -> NPArray:
+def _np_cast_to_int(x: NDAnyArray) -> NDAnyArray:
     return x.astype(dtype=np.int32)
 
 
-def _np_round_to_int(x: NPArray) -> NPArray:
+def _np_round_to_int(x: NDAnyArray) -> NDAnyArray:
     return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)  # type: ignore
 
 
-def _np_logical_and(x: NPArray, y: NPArray) -> NPArray:
+def _np_logical_and(x: NDAnyArray, y: NDAnyArray) -> NDAnyArray:
     return np.logical_and(x, y)  # type: ignore
 
 
 def _np_pad_image(
-        image: NPArray,
-        pad_offsets: NPArray
-) -> NPArray:
+        image: NDAnyArray,
+        pad_offsets: NDAnyArray
+) -> NDAnyArray:
     """
     pad_offsets: [top, bottom, left, right]
     """
@@ -48,13 +48,13 @@ def _np_pad_image(
 
 
 def _np_resize_image(
-        image: NPArray,
+        image: NDAnyArray,
         dest_size: Tuple[int, int]
-) -> NPArray:
+) -> NDAnyArray:
     """
     dest_size: (image_height, image_width)
     """
-    resized_image: NPArray = cv2.resize(  # pylint: disable=no-member
+    resized_image: NDAnyArray = cv2.resize(  # pylint: disable=no-member
         image,
         dsize=(dest_size[1], dest_size[0]),
         interpolation=cv2.INTER_AREA  # pylint: disable=no-member
@@ -62,14 +62,14 @@ def _np_resize_image(
     return resized_image
 
 
-def _np_boolean_mask(x: NPArray, mask: NPArray) -> NPArray:
+def _np_boolean_mask(x: NDAnyArray, mask: NDAnyArray) -> NDAnyArray:
     """
     mask: boolean array
     """
     return x[mask]  # type: ignore
 
 
-def _np_gather_image(image: NPArray, indices: NPArray) -> NPArray:
+def _np_gather_image(image: NDAnyArray, indices: NDAnyArray) -> NDAnyArray:
     """
     indices: [[row_0, row_1, ...], [col_0, col_1, ...]]
     """
