@@ -9,8 +9,8 @@ import numpy.typing
 
 NPArray = np.typing.NDArray[Any]
 
-# T is treated as "NPArray or tf.Tensor" in this library.
-# It is assumed that tf.Tensor is kind of compatible with NPArray,
-# but still the usage of T and NPArray should be distinguished.
-# Hope there will be a better way to do this in the future.
+# T is treated semantically as "NPArray or tf.Tensor" in this library.
+# However, there is currently no way to express this accurately in the
+# typing system. Hence, it is assumed here that tf.Tensor is compatible
+# with NPArray, which is kind of true. Hope there will be a better way.
 T = NPArray
