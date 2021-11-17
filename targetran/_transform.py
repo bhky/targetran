@@ -3,14 +3,12 @@ Image and target transform utilities.
 """
 
 from dataclasses import dataclass
-from typing import Any, Callable, List, Tuple, TypeVar
+from typing import Callable, List, Tuple
 
 import numpy as np  # type: ignore
 
+from targetran._typing import T
 from targetran.utils import Interpolation
-
-# This roughly means anything that is ndarray-like.
-T = TypeVar("T", np.ndarray, Any)
 
 
 def _sanitise(

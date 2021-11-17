@@ -3,9 +3,9 @@ Utilities.
 """
 
 from enum import auto, Enum
-from typing import Any, Callable, Sequence, Tuple, TypeVar
+from typing import Any, Callable, Sequence, Tuple
 
-T = TypeVar("T")
+from targetran._typing import T
 
 
 class Interpolation(Enum):

@@ -4,7 +4,7 @@ API for TensorFlow usage.
 
 import functools
 import itertools
-from typing import Any, Callable, List, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
@@ -41,9 +41,8 @@ from targetran._transform import (
     _get_shear_mats,
     _get_translate_mats,
 )
+from targetran._typing import T
 from targetran.utils import Interpolation
-
-T = TypeVar("T", np.ndarray, tf.Tensor)
 
 
 def to_tf(
