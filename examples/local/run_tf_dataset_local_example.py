@@ -6,11 +6,12 @@ TensorFlow Dataset local example.
 import glob
 import json
 import os
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import cv2
 import matplotlib.pylab as plt
 import numpy as np
+import numpy.typing
 import tensorflow as tf
 
 from targetran.tf import (
@@ -24,16 +25,18 @@ from targetran.tf import (
     TFResize,
 )
 
+NDAnyArray = np.typing.NDArray[Any]
 
-def load_images() -> Dict[str, np.ndarray]:
+
+def load_images() -> Dict[str, NDAnyArray]:
     """
     Users may do it differently depending on the data.
     """
     image_paths = glob.glob("./images/*.jpg")
 
-    image_dict: Dict[str, np.ndarray] = {}
+    image_dict: Dict[str, NDAnyArray] = {}
     for image_path in image_paths:
-        image: np.ndarray = cv2.imread(image_path)
+        image: NDAnyArray = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         basename = os.path.basename(image_path)
@@ -44,14 +47,14 @@ def load_images() -> Dict[str, np.ndarray]:
     return image_dict
 
 
-def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
+def load_annotations() -> Dict[str, Dict[str, NDAnyArray]]:
     """
     Users may do it differently depending on the data.
     """
     with open("./annotations.json", "rb") as f:
         data = json.load(f)
 
-    data_dict: Dict[str, Dict[str, np.ndarray]] = {}
+    data_dict: Dict[str, Dict[str, NDAnyArray]] = {}
     for image_item in data:
 
         image_id = image_item["image_id"]
@@ -76,8 +79,8 @@ def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
 
 
 def make_tf_dataset(
-        image_dict: Dict[str, np.ndarray],
-        annotation_dict: Dict[str, Dict[str, np.ndarray]]
+        image_dict: Dict[str, NDAnyArray],
+        annotation_dict: Dict[str, Dict[str, NDAnyArray]]
 ) -> tf.data.Dataset:
     """
     Users may do it differently depending on the data.

@@ -10,12 +10,12 @@ import numpy.typing
 
 import targetran.tf
 
-NPArray = np.typing.NDArray[Any]
+NDAnyArray = np.typing.NDArray[Any]
 
 
-def make_np_data() -> Tuple[Sequence[NPArray],
-                            Sequence[NPArray],
-                            Sequence[NPArray]]:
+def make_np_data() -> Tuple[Sequence[NDAnyArray],
+                            Sequence[NDAnyArray],
+                            Sequence[NDAnyArray]]:
     image_seq = [np.random.rand(480, 512, 3) for _ in range(3)]
 
     bboxes_seq = [

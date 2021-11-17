@@ -12,12 +12,12 @@ from torch.utils.data import Dataset, DataLoader
 import targetran.np
 from targetran.utils import Compose, collate_fn
 
-NPArray = np.typing.NDArray[Any]
+NDAnyArray = np.typing.NDArray[Any]
 
 
-def make_np_data() -> Tuple[Sequence[NPArray],
-                            Sequence[NPArray],
-                            Sequence[NPArray]]:
+def make_np_data() -> Tuple[Sequence[NDAnyArray],
+                            Sequence[NDAnyArray],
+                            Sequence[NDAnyArray]]:
     image_seq = [np.random.rand(480, 512, 3) for _ in range(3)]
 
     bboxes_seq = [
@@ -46,9 +46,9 @@ class PTDataset(Dataset):
 
     def __init__(
             self,
-            image_seq: Sequence[NPArray],
-            bboxes_seq: Sequence[NPArray],
-            labels_seq: Sequence[NPArray],
+            image_seq: Sequence[NDAnyArray],
+            bboxes_seq: Sequence[NDAnyArray],
+            labels_seq: Sequence[NDAnyArray],
             transforms: Optional[Compose]
     ) -> None:
         self.image_seq = image_seq
@@ -62,7 +62,7 @@ class PTDataset(Dataset):
     def __getitem__(
             self,
             idx: int
-    ) -> Tuple[NPArray, NPArray, NPArray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         if self.transforms:
             return self.transforms(
                 self.image_seq[idx],
