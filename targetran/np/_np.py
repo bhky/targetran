@@ -5,7 +5,7 @@ API for NumPy usage.
 import functools
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
-import numpy as np  # type: ignore
+import numpy as np
 
 from targetran._check import (
     _check_shear_input,
@@ -42,6 +42,7 @@ from targetran._transform import (
     _get_shear_mats,
     _get_translate_mats,
 )
+from targetran._typing import NPArray
 from targetran.utils import Interpolation
 
 
@@ -57,13 +58,13 @@ def _np_get_affine_dependency() -> _AffineDependency:
 
 
 def _np_affine_transform(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray,
-        image_dest_tran_mat: np.ndarray,
-        bboxes_tran_mat: np.ndarray,
+        image: NPArray,
+        bboxes: NPArray,
+        labels: NPArray,
+        image_dest_tran_mat: NPArray,
+        bboxes_tran_mat: NPArray,
         interpolation: Interpolation
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[NPArray, NPArray, NPArray]:
     return _affine_transform(
         image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
         interpolation, _np_get_affine_dependency()
@@ -71,10 +72,10 @@ def _np_affine_transform(
 
 
 def flip_left_right(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        image: NPArray,
+        bboxes: NPArray,
+        labels: NPArray
+) -> Tuple[NPArray, NPArray, NPArray]:
     return _flip_left_right(
         image, bboxes, labels,
         Interpolation.NEAREST, _np_get_affine_dependency()
@@ -82,10 +83,10 @@ def flip_left_right(
 
 
 def flip_up_down(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        image: NPArray,
+        bboxes: NPArray,
+        labels: NPArray
+) -> Tuple[NPArray, NPArray, NPArray]:
     return _flip_up_down(
         image, bboxes, labels,
         Interpolation.NEAREST, _np_get_affine_dependency()
@@ -93,12 +94,12 @@ def flip_up_down(
 
 
 def rotate(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray,
+        image: NPArray,
+        bboxes: NPArray,
+        labels: NPArray,
         angle_deg: float,
         interpolation: Interpolation = Interpolation.BILINEAR
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[NPArray, NPArray, NPArray]:
     return _rotate(
         image, bboxes, labels, _np_convert(angle_deg), np.cos, np.sin,
         interpolation, _np_get_affine_dependency()
@@ -106,13 +107,13 @@ def rotate(
 
 
 def shear(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray,
+        image: NPArray,
+        bboxes: NPArray,
+        labels: NPArray,
         angle_deg: float,
         interpolation: Interpolation = Interpolation.BILINEAR,
         _check_input: bool = True
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[NPArray, NPArray, NPArray]:
     if _check_input:
         _check_shear_input(angle_deg)
     return _shear(
@@ -122,14 +123,14 @@ def shear(
 
 
 def translate(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray,
+        image: NPArray,
+        bboxes: NPArray,
+        labels: NPArray,
         translate_height: int,
         translate_width: int,
         interpolation: Interpolation = Interpolation.BILINEAR,
         _check_input: bool = True
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[NPArray, NPArray, NPArray]:
     if _check_input:
         _check_translate_input(image.shape, translate_height, translate_width)
     return _translate(
@@ -144,8 +145,8 @@ def _np_get_crop_inputs(
         image_width: int,
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
-        rand_fn: Callable[..., np.ndarray]
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        rand_fn: Callable[..., NPArray]
+) -> Tuple[NPArray, NPArray, NPArray, NPArray]:
     return _get_crop_inputs(
         image_height, image_width, height_fraction_range, width_fraction_range,
         rand_fn, _np_convert, _np_round_to_int
@@ -153,15 +154,15 @@ def _np_get_crop_inputs(
 
 
 def crop(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray,
+        image: NPArray,
+        bboxes: NPArray,
+        labels: NPArray,
         offset_height: int,
         offset_width: int,
         crop_height: int,
         crop_width: int,
         _check_input: bool = True
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[NPArray, NPArray, NPArray]:
     if _check_input:
         _check_crop_input(image.shape, offset_height, offset_width)
     return _crop(
@@ -174,11 +175,11 @@ def crop(
 
 
 def resize(
-        image: np.ndarray,
-        bboxes: np.ndarray,
-        labels: np.ndarray,
+        image: NPArray,
+        bboxes: NPArray,
+        labels: NPArray,
         dest_size: Tuple[int, int]
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[NPArray, NPArray, NPArray]:
     return _resize(
         image, bboxes, labels, dest_size,
         _np_convert, np.shape, np.reshape, _np_resize_image, np.concatenate
@@ -189,7 +190,7 @@ class RandomTransform:
 
     def __init__(
             self,
-            np_fn: Callable[..., Tuple[np.ndarray, np.ndarray, np.ndarray]],
+            np_fn: Callable[..., Tuple[NPArray, NPArray, NPArray]],
             probability: float,
             seed: Optional[int],
             name: str,
@@ -201,24 +202,24 @@ class RandomTransform:
         self.name = name
         self.is_affine = is_affine
 
-    def _rand_fn(self, shape: Tuple[int, ...] = ()) -> np.ndarray:
+    def _rand_fn(self, shape: Sequence[int] = ()) -> NPArray:
         return self._rng.random(shape)
 
     def _get_mats(
             self,
-            image: np.ndarray,
-            rand_fn: Callable[..., np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+            image: NPArray,
+            rand_fn: Callable[..., NPArray]
+    ) -> Tuple[NPArray, NPArray]:
         pass
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         # Make sure inputs are in the needed format.
         image = _np_convert(image)
         bboxes = _np_convert(bboxes)
@@ -259,15 +260,15 @@ class CombineAffine(RandomTransform):
         self._num_selected_transforms = num_selected_transforms
         self._selected_probabilities = selected_probabilities
         self._interpolation = interpolation
-        self._identity_mat = np.expand_dims(np.array([
+        self._identity_mat = np.expand_dims(np.array([  # type: ignore
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
 
     def _combine_mats(
             self,
-            image: np.ndarray,
-            rand_fn: Callable[..., np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+            image: NPArray,
+            rand_fn: Callable[..., NPArray]
+    ) -> Tuple[NPArray, NPArray]:
         image_dest_tran_mats, bboxes_tran_mats, probs = tuple(zip(
             *[(*t._get_mats(image, rand_fn), t.probability)
               for i, t in enumerate(self._transforms)]
@@ -301,12 +302,12 @@ class CombineAffine(RandomTransform):
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(
             image, self._rand_fn
         )
@@ -329,19 +330,19 @@ class RandomFlipLeftRight(RandomTransform):
 
     def _get_mats(
             self,
-            image: np.ndarray,
-            rand_fn: Callable[..., np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+            image: NPArray,
+            rand_fn: Callable[..., NPArray]
+    ) -> Tuple[NPArray, NPArray]:
         return _get_flip_left_right_mats(_np_convert)
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         return super().__call__(image, bboxes, labels)
 
 
@@ -358,19 +359,19 @@ class RandomFlipUpDown(RandomTransform):
 
     def _get_mats(
             self,
-            image: np.ndarray,
-            rand_fn: Callable[..., np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+            image: NPArray,
+            rand_fn: Callable[..., NPArray]
+    ) -> Tuple[NPArray, NPArray]:
         return _get_flip_up_down_mats(_np_convert)
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         return super().__call__(image, bboxes, labels)
 
 
@@ -388,27 +389,27 @@ class RandomRotate(RandomTransform):
         self.angle_deg_range = angle_deg_range
         self.interpolation = interpolation
 
-    def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
+    def _get_angle_deg(self, rand_fn: Callable[..., NPArray]) -> NPArray:
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
                * rand_fn() + self.angle_deg_range[0]
 
     def _get_mats(
             self,
-            image: np.ndarray,
-            rand_fn: Callable[..., np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+            image: NPArray,
+            rand_fn: Callable[..., NPArray]
+    ) -> Tuple[NPArray, NPArray]:
         return _get_rotate_mats(
             self._get_angle_deg(rand_fn), _np_convert, np.cos, np.sin
         )
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         return super().__call__(
             image, bboxes, labels, self._get_angle_deg(self._rand_fn),
             self.interpolation
@@ -429,25 +430,25 @@ class RandomShear(RandomTransform):
         self.angle_deg_range = angle_deg_range
         self.interpolation = interpolation
 
-    def _get_angle_deg(self, rand_fn: Callable[..., np.ndarray]) -> np.ndarray:
+    def _get_angle_deg(self, rand_fn: Callable[..., NPArray]) -> NPArray:
         return self.angle_deg_range[1] - self.angle_deg_range[0] \
                * rand_fn() + self.angle_deg_range[0]
 
     def _get_mats(
             self,
-            image: np.ndarray,
-            rand_fn: Callable[..., np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+            image: NPArray,
+            rand_fn: Callable[..., NPArray]
+    ) -> Tuple[NPArray, NPArray]:
         return _get_shear_mats(self._get_angle_deg(rand_fn), _np_convert, np.tan)
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         return super().__call__(
             image, bboxes, labels, self._get_angle_deg(self._rand_fn),
             self.interpolation, False
@@ -479,9 +480,9 @@ class RandomTranslate(RandomTransform):
 
     def _get_translate_height_and_width(
             self,
-            image: np.ndarray,
-            rand_fn: Callable[..., np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+            image: NPArray,
+            rand_fn: Callable[..., NPArray]
+    ) -> Tuple[NPArray, NPArray]:
         height_fraction, width_fraction = _get_random_size_fractions(
             self.translate_height_fraction_range,
             self.translate_width_fraction_range,
@@ -497,9 +498,9 @@ class RandomTranslate(RandomTransform):
 
     def _get_mats(
             self,
-            image: np.ndarray,
-            rand_fn: Callable[..., np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+            image: NPArray,
+            rand_fn: Callable[..., NPArray]
+    ) -> Tuple[NPArray, NPArray]:
         translate_height, translate_width = \
             self._get_translate_height_and_width(image, rand_fn)
         return _get_translate_mats(
@@ -508,12 +509,12 @@ class RandomTranslate(RandomTransform):
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         translate_height, translate_width = \
             self._get_translate_height_and_width(image, self._rand_fn)
         return super().__call__(
@@ -543,12 +544,12 @@ class RandomCrop(RandomTransform):
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray,
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray,
             *args: Any,
             **kwargs: Any
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         offset_height, offset_width, crop_height, crop_width = \
             _np_get_crop_inputs(
                 np.shape(image)[0], np.shape(image)[1],
@@ -572,8 +573,8 @@ class Resize:
 
     def __call__(
             self,
-            image: np.ndarray,
-            bboxes: np.ndarray,
-            labels: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+            image: NPArray,
+            bboxes: NPArray,
+            labels: NPArray
+    ) -> Tuple[NPArray, NPArray, NPArray]:
         return resize(image, bboxes, labels, self.dest_size)
