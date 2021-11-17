@@ -390,8 +390,10 @@ class RandomRotate(RandomTransform):
         self.interpolation = interpolation
 
     def _get_angle_deg(self, rand_fn: Callable[..., NPArray]) -> NPArray:
-        return self.angle_deg_range[1] - self.angle_deg_range[0] \
-               * rand_fn() + self.angle_deg_range[0]
+        return (
+            self.angle_deg_range[1] - self.angle_deg_range[0]  # type: ignore
+            * rand_fn() + self.angle_deg_range[0]
+        )
 
     def _get_mats(
             self,
@@ -431,8 +433,10 @@ class RandomShear(RandomTransform):
         self.interpolation = interpolation
 
     def _get_angle_deg(self, rand_fn: Callable[..., NPArray]) -> NPArray:
-        return self.angle_deg_range[1] - self.angle_deg_range[0] \
-               * rand_fn() + self.angle_deg_range[0]
+        return (
+            self.angle_deg_range[1] - self.angle_deg_range[0]  # type: ignore
+            * rand_fn() + self.angle_deg_range[0]
+        )
 
     def _get_mats(
             self,

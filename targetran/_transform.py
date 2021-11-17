@@ -146,7 +146,7 @@ def _affine_transform(
         dists: T = image_orig_idxes - d.convert_fn(floor_floor_idxes)
         # Reshape needed for broadcasting in the gather step.
         floor_weights = d.reshape_fn(1.0 - dists, (-1, 2))
-        ceil_weights = 1.0 - floor_weights
+        ceil_weights: T = 1.0 - floor_weights
         floor_floor_weights = floor_weights[:, :1] * floor_weights[:, 1:]
         floor_ceil_weights = floor_weights[:, :1] * ceil_weights[:, 1:]
         ceil_floor_weights = ceil_weights[:, :1] * floor_weights[:, 1:]
@@ -329,7 +329,7 @@ def _get_rotate_mats(
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T]
 ) -> Tuple[T, T]:
-    ang_rad = np.pi * angle_deg / 180.0
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     # Image rotation matrix. Clockwise for the destination indices,
     # so the final image would appear to be rotated anti-clockwise.
     image_dest_rot_mat = convert_fn([
@@ -375,7 +375,7 @@ def _get_shear_mats(
         convert_fn: Callable[..., T],
         tan_fn: Callable[[T], T]
 ) -> Tuple[T, T]:
-    ang_rad = np.pi * angle_deg / 180.0
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     factor = tan_fn(ang_rad)
     # Image shear matrix. Clockwise for the destination indices,
     # so the final image would appear to be sheared anti-clockwise.
@@ -503,8 +503,8 @@ def _get_crop_inputs(
         height_fraction_range, width_fraction_range, rand_fn, convert_fn
     )
 
-    crop_height = image_height * height_fraction
-    crop_width = image_width * width_fraction
+    crop_height: T = image_height * height_fraction
+    crop_width: T = image_width * width_fraction
 
     offset_height = round_to_int_fn((image_height - crop_height) * rand_fn())
     offset_width = round_to_int_fn((image_width - crop_width) * rand_fn())
@@ -542,8 +542,8 @@ def _crop(
 
     top = offset_height
     left = offset_width
-    bottom = top + crop_height
-    right = left + crop_width
+    bottom: T = top + crop_height
+    right: T = left + crop_width
 
     # Crop image.
     image = image[int(top):int(bottom), int(left):int(right), :]

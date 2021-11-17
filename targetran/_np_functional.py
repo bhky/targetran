@@ -25,11 +25,11 @@ def _np_cast_to_int(x: NPArray) -> NPArray:
 
 
 def _np_round_to_int(x: NPArray) -> NPArray:
-    return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)
+    return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)  # type: ignore
 
 
 def _np_logical_and(x: NPArray, y: NPArray) -> NPArray:
-    return np.logical_and(x, y)
+    return np.logical_and(x, y)  # type: ignore
 
 
 def _np_pad_image(
