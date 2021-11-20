@@ -40,15 +40,15 @@ def _np_logical_and(x: NDBoolArray, y: NDBoolArray) -> NDBoolArray:
 
 def _np_pad_image(
         image: NDFloatArray,
-        pad_offsets: NDFloatArray
-) -> NDAnyArray:
+        pad_offsets: NDIntArray
+) -> NDFloatArray:
     """
     pad_offsets: [top, bottom, left, right]
     """
     pad_width = (  # From axis 0 to 2.
         (int(pad_offsets[0]), int(pad_offsets[1])),
         (int(pad_offsets[2]), int(pad_offsets[3])),
-        (0.0, 0.0)
+        (0, 0)
     )
     return np.pad(image, pad_width=pad_width, constant_values=0)  # type: ignore
 
@@ -75,7 +75,7 @@ def _np_boolean_mask(x: NDAnyArray, mask: NDBoolArray) -> NDAnyArray:
     return x[mask]  # type: ignore
 
 
-def _np_gather_image(image: NDAnyArray, indices: NDIntArray) -> NDAnyArray:
+def _np_gather_image(image: NDFloatArray, indices: NDIntArray) -> NDFloatArray:
     """
     indices: [[row_0, row_1, ...], [col_0, col_1, ...]]
     """
