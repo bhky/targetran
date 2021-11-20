@@ -4,9 +4,8 @@ API for TensorFlow usage.
 
 import functools
 import itertools
-from typing import Any, Callable, List, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Callable, List, Optional, Sequence, Tuple
 
-import numpy as np  # type: ignore
 import tensorflow as tf  # type: ignore
 
 from targetran._check import (
@@ -41,9 +40,8 @@ from targetran._transform import (
     _get_shear_mats,
     _get_translate_mats,
 )
+from targetran._typing import T
 from targetran.utils import Interpolation
-
-T = TypeVar("T", np.ndarray, tf.Tensor)
 
 
 def to_tf(
@@ -256,7 +254,7 @@ class TFRandomTransform:
         self.name = name
         self.is_affine = is_affine
 
-    def _rand_fn(self, shape: Tuple[int, ...] = ()) -> tf.Tensor:
+    def _rand_fn(self, shape: Sequence[int] = ()) -> tf.Tensor:
         return self._rng.uniform(shape=shape)
 
     def _get_mats(

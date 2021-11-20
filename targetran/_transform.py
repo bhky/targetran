@@ -3,14 +3,12 @@ Image and target transform utilities.
 """
 
 from dataclasses import dataclass
-from typing import Any, Callable, List, Tuple, TypeVar
+from typing import Callable, List, Sequence, Tuple
 
-import numpy as np  # type: ignore
+import numpy as np
 
+from targetran._typing import T
 from targetran.utils import Interpolation
-
-# This roughly means anything that is ndarray-like.
-T = TypeVar("T", np.ndarray, Any)
 
 
 def _sanitise(
@@ -18,8 +16,8 @@ def _sanitise(
         bboxes: T,
         labels: T,
         convert_fn: Callable[..., T],
-        shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        shape_fn: Callable[[T], Sequence[int]],
+        reshape_fn: Callable[[T, Sequence[int]], T],
 ) -> Tuple[T, T, T]:
     """
     Try to convert input to the expected format.
@@ -38,8 +36,8 @@ def _sanitise(
 @dataclass
 class _AffineDependency:
     convert_fn: Callable[..., T]
-    shape_fn: Callable[[T], Tuple[int, ...]]
-    reshape_fn: Callable[[T, Tuple[int, ...]], T]
+    shape_fn: Callable[[T], Sequence[int]]
+    reshape_fn: Callable[[T, Sequence[int]], T]
     expand_dim_fn: Callable[[T, int], T]
     squeeze_fn: Callable[[T, int], T]
     pad_image_fn: Callable[[T, T], T]
@@ -145,10 +143,10 @@ def _affine_transform(
             [ceil_ceil_idxes[:1, :], floor_floor_idxes[1:, :]], 0
         )
 
-        dists = image_orig_idxes - d.convert_fn(floor_floor_idxes)
+        dists: T = image_orig_idxes - d.convert_fn(floor_floor_idxes)
         # Reshape needed for broadcasting in the gather step.
         floor_weights = d.reshape_fn(1.0 - dists, (-1, 2))
-        ceil_weights = 1.0 - floor_weights
+        ceil_weights: T = 1.0 - floor_weights
         floor_floor_weights = floor_weights[:, :1] * floor_weights[:, 1:]
         floor_ceil_weights = floor_weights[:, :1] * ceil_weights[:, 1:]
         ceil_floor_weights = ceil_weights[:, :1] * floor_weights[:, 1:]
@@ -203,12 +201,14 @@ def _affine_transform(
     min_xs = d.min_fn(tran_xs, -1)
     min_ys = d.min_fn(tran_ys, -1)
 
+    one = d.cast_to_int_fn(d.convert_fn(1))
+
     tran_top_left_xs = d.round_to_int_fn(d.expand_dim_fn(min_xs, -1))
     tran_top_left_ys = d.round_to_int_fn(d.expand_dim_fn(min_ys, -1))
     tran_bottom_right_xs = d.round_to_int_fn(d.expand_dim_fn(max_xs, -1))
     tran_bottom_right_ys = d.round_to_int_fn(d.expand_dim_fn(max_ys, -1))
-    new_widths = tran_bottom_right_xs - tran_top_left_xs + 1
-    new_heights = tran_bottom_right_ys - tran_top_left_ys + 1
+    new_widths: T = tran_bottom_right_xs - tran_top_left_xs + one
+    new_heights: T = tran_bottom_right_ys - tran_top_left_ys + one
     tran_bboxes = d.concat_fn([  # Shape: [num_bboxes, 4].
         tran_top_left_xs, tran_top_left_ys, new_widths, new_heights
     ], -1)
@@ -329,7 +329,7 @@ def _get_rotate_mats(
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T]
 ) -> Tuple[T, T]:
-    ang_rad = np.pi * angle_deg / 180.0
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     # Image rotation matrix. Clockwise for the destination indices,
     # so the final image would appear to be rotated anti-clockwise.
     image_dest_rot_mat = convert_fn([
@@ -375,7 +375,7 @@ def _get_shear_mats(
         convert_fn: Callable[..., T],
         tan_fn: Callable[[T], T]
 ) -> Tuple[T, T]:
-    ang_rad = np.pi * angle_deg / 180.0
+    ang_rad = convert_fn(np.pi * angle_deg / 180.0)
     factor = tan_fn(ang_rad)
     # Image shear matrix. Clockwise for the destination indices,
     # so the final image would appear to be sheared anti-clockwise.
@@ -460,8 +460,8 @@ def _translate(
 
 
 def _get_random_size_fractions(
-        height_fraction_range: Tuple[float, float],
-        width_fraction_range: Tuple[float, float],
+        height_fraction_range_: Tuple[float, float],
+        width_fraction_range_: Tuple[float, float],
         rand_fn: Callable[..., T],
         convert_fn: Callable[..., T],
 ) -> Tuple[T, T]:
@@ -469,8 +469,8 @@ def _get_random_size_fractions(
     height_fraction_range, width_fraction_range: (-1.0, 1.0)
     rand_fn: generate random number in range [0.0, 1.0)
     """
-    height_fraction_range = convert_fn(height_fraction_range)
-    width_fraction_range = convert_fn(width_fraction_range)
+    height_fraction_range = convert_fn(height_fraction_range_)
+    width_fraction_range = convert_fn(width_fraction_range_)
 
     min_height_fraction = height_fraction_range[0]
     min_width_fraction = width_fraction_range[0]
@@ -484,8 +484,8 @@ def _get_random_size_fractions(
 
 
 def _get_crop_inputs(
-        image_height: int,
-        image_width: int,
+        image_height_: int,
+        image_width_: int,
         height_fraction_range: Tuple[float, float],
         width_fraction_range: Tuple[float, float],
         rand_fn: Callable[..., T],
@@ -496,15 +496,15 @@ def _get_crop_inputs(
     height_fraction_range, width_fraction_range: in range [0.0, 1.0)
     rand_fn: generate random number in range [0.0, 1.0)
     """
-    image_height = convert_fn(image_height)
-    image_width = convert_fn(image_width)
+    image_height = convert_fn(image_height_)
+    image_width = convert_fn(image_width_)
 
     height_fraction, width_fraction = _get_random_size_fractions(
         height_fraction_range, width_fraction_range, rand_fn, convert_fn
     )
 
-    crop_height = image_height * height_fraction
-    crop_width = image_width * width_fraction
+    crop_height: T = image_height * height_fraction
+    crop_width: T = image_width * width_fraction
 
     offset_height = round_to_int_fn((image_height - crop_height) * rand_fn())
     offset_width = round_to_int_fn((image_width - crop_width) * rand_fn())
@@ -521,8 +521,8 @@ def _crop(
         crop_height: T,
         crop_width: T,
         convert_fn: Callable[..., T],
-        shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        shape_fn: Callable[[T], Sequence[int]],
+        reshape_fn: Callable[[T, Sequence[int]], T],
         concat_fn: Callable[[List[T], int], T],
         logical_and_fn: Callable[[T, T], T],
         squeeze_fn: Callable[[T, int], T],
@@ -542,8 +542,8 @@ def _crop(
 
     top = offset_height
     left = offset_width
-    bottom = top + crop_height
-    right = left + crop_width
+    bottom: T = top + crop_height
+    right: T = left + crop_width
 
     # Crop image.
     image = image[int(top):int(bottom), int(left):int(right), :]
@@ -585,8 +585,8 @@ def _resize(
         labels: T,
         dest_size: Tuple[int, int],
         convert_fn: Callable[..., T],
-        shape_fn: Callable[[T], Tuple[int, ...]],
-        reshape_fn: Callable[[T, Tuple[int, ...]], T],
+        shape_fn: Callable[[T], Sequence[int]],
+        reshape_fn: Callable[[T, Sequence[int]], T],
         resize_image_fn: Callable[[T, Tuple[int, int]], T],
         concat_fn: Callable[[List[T], int], T],
 ) -> Tuple[T, T, T]:

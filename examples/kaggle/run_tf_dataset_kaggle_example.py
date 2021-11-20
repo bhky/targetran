@@ -8,7 +8,7 @@ This example is to be run on a Kaggle Notebook, with the above dataset added.
 
 import json
 import os
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 # Needed for the Kaggle Notebook.
 os.system("pip install -U targetran")
@@ -16,9 +16,12 @@ os.system("pip install -U targetran")
 import cv2
 import matplotlib.pylab as plt
 import numpy as np
+import numpy.typing
 import pandas as pd
 import targetran.tf as tt
 import tensorflow as tf
+
+NDAnyArray = np.typing.NDArray[Any]
 
 # This will be the data path when you use "Add Data" on the right panel
 # of a Kaggle Notebook.
@@ -65,32 +68,32 @@ def make_df(
     return df_wheat_grouped
 
 
-def load_images(df: pd.DataFrame) -> Dict[str, np.ndarray]:
+def load_images(df: pd.DataFrame) -> Dict[str, NDAnyArray]:
     """
     This way may be a bit clumsy, but looks clearer as an example.
     """
     image_ids = df["image_id"].tolist()
     image_paths = df["image_path"].tolist()
 
-    image_dict: Dict[str, np.ndarray] = {}
+    image_dict: Dict[str, NDAnyArray] = {}
     for image_id, image_path in zip(image_ids, image_paths):
         if image_id in image_dict:
             continue
-        image: np.ndarray = cv2.imread(image_path)
+        image: NDAnyArray = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image_dict[image_id] = image
 
     return image_dict
 
 
-def load_annotations(df: pd.DataFrame) -> Dict[str, Dict[str, np.ndarray]]:
+def load_annotations(df: pd.DataFrame) -> Dict[str, Dict[str, NDAnyArray]]:
     """
     This way may be a bit clumsy, but looks clearer as an example.
     """
     image_ids = df["image_id"].tolist()
     df = df.set_index("image_id")
 
-    data_dict: Dict[str, Dict[str, np.ndarray]] = {}
+    data_dict: Dict[str, Dict[str, NDAnyArray]] = {}
     for image_id in image_ids:
         bboxes = df.loc[image_id, "bboxes"]
         labels = [1] * len(bboxes)
@@ -103,8 +106,8 @@ def load_annotations(df: pd.DataFrame) -> Dict[str, Dict[str, np.ndarray]]:
 
 
 def make_tf_dataset(
-        image_dict: Dict[str, np.ndarray],
-        annotation_dict: Dict[str, Dict[str, np.ndarray]]
+        image_dict: Dict[str, NDAnyArray],
+        annotation_dict: Dict[str, Dict[str, NDAnyArray]]
 ) -> tf.data.Dataset:
     """
     Users may do it differently depending on the data.

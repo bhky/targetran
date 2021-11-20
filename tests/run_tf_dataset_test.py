@@ -3,16 +3,19 @@
 TensorFlow Dataset test.
 """
 
-from typing import Sequence, Tuple
+from typing import Any, Sequence, Tuple
 
 import numpy as np
+import numpy.typing
 
 import targetran.tf
 
+NDAnyArray = np.typing.NDArray[Any]
 
-def make_np_data() -> Tuple[Sequence[np.ndarray],
-                            Sequence[np.ndarray],
-                            Sequence[np.ndarray]]:
+
+def make_np_data() -> Tuple[Sequence[NDAnyArray],
+                            Sequence[NDAnyArray],
+                            Sequence[NDAnyArray]]:
     image_seq = [np.random.rand(480, 512, 3) for _ in range(3)]
 
     bboxes_seq = [

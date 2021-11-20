@@ -6,11 +6,12 @@ PyTorch Dataset local example.
 import glob
 import json
 import os
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import cv2
 import matplotlib.pylab as plt
 import numpy as np
+import numpy.typing
 from torch.utils.data import Dataset, DataLoader
 
 from targetran.np import (
@@ -24,16 +25,18 @@ from targetran.np import (
 )
 from targetran.utils import Compose, collate_fn
 
+NDAnyArray = np.typing.NDArray[Any]
 
-def load_images() -> Dict[str, np.ndarray]:
+
+def load_images() -> Dict[str, NDAnyArray]:
     """
     Users may do it differently depending on the data.
     """
     image_paths = glob.glob("./images/*.jpg")
 
-    image_dict: Dict[str, np.ndarray] = {}
+    image_dict: Dict[str, NDAnyArray] = {}
     for image_path in image_paths:
-        image: np.ndarray = cv2.imread(image_path)
+        image: NDAnyArray = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         basename = os.path.basename(image_path)
@@ -44,14 +47,14 @@ def load_images() -> Dict[str, np.ndarray]:
     return image_dict
 
 
-def load_annotations() -> Dict[str, Dict[str, np.ndarray]]:
+def load_annotations() -> Dict[str, Dict[str, NDAnyArray]]:
     """
     Users may do it differently depending on the data.
     """
     with open("./annotations.json", "rb") as f:
         data = json.load(f)
 
-    data_dict: Dict[str, Dict[str, np.ndarray]] = {}
+    data_dict: Dict[str, Dict[str, NDAnyArray]] = {}
     for image_item in data:
 
         image_id = image_item["image_id"]
@@ -83,9 +86,9 @@ class PTDataset(Dataset):
 
     def __init__(
             self,
-            image_seq: Sequence[np.ndarray],
-            bboxes_seq: Sequence[np.ndarray],
-            labels_seq: Sequence[np.ndarray],
+            image_seq: Sequence[NDAnyArray],
+            bboxes_seq: Sequence[NDAnyArray],
+            labels_seq: Sequence[NDAnyArray],
             transforms: Optional[Compose]
     ) -> None:
         self.image_seq = image_seq
@@ -99,7 +102,7 @@ class PTDataset(Dataset):
     def __getitem__(
             self,
             idx: int
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
         if self.transforms:
             return self.transforms(
                 self.image_seq[idx],
@@ -114,8 +117,8 @@ class PTDataset(Dataset):
 
 
 def make_pt_dataset(
-        image_dict: Dict[str, np.ndarray],
-        annotation_dict: Dict[str, Dict[str, np.ndarray]],
+        image_dict: Dict[str, NDAnyArray],
+        annotation_dict: Dict[str, Dict[str, NDAnyArray]],
         transforms: Optional[Compose]
 ) -> Dataset:
     """

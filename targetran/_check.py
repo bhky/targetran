@@ -2,7 +2,7 @@
 Sanity checks.
 """
 
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 
 def _check_shear_input(angle_deg: float) -> None:
@@ -14,10 +14,11 @@ def _check_shear_input(angle_deg: float) -> None:
 
 
 def _check_translate_input(
-        image_shape: Tuple[int, int, int],
+        image_shape: Sequence[int],
         translate_height: int,
         translate_width: int
 ) -> None:
+    assert len(image_shape) == 3
     height_cond = -image_shape[0] < translate_height < image_shape[0]
     width_cond = -image_shape[1] < translate_width < image_shape[1]
     if not height_cond:
@@ -35,10 +36,11 @@ def _check_translate_input(
 
 
 def _check_crop_input(
-        image_shape: Tuple[int, int, int],
+        image_shape: Sequence[int],
         offset_height: int,
         offset_width: int
 ) -> None:
+    assert len(image_shape) == 3
     height_cond = 0 <= offset_height < image_shape[0]
     width_cond = 0 <= offset_width < image_shape[1]
     if not height_cond:
