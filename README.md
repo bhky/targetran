@@ -41,6 +41,7 @@ Here comes Targetran to fill the gap.
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Notations](#notations)
   - [Data format](#data-format)
   - [Design principles](#design-principles)
   - [TensorFlow Dataset](#tensorflow-dataset)
