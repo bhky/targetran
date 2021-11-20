@@ -68,20 +68,20 @@ python3 -m pip install .
 
 ## Notations
 
-- `NDAnyArray`: General NumPy Array type, which is an alias to `np.typing.NDArray[typing.Any]`.
-- `tf.Tensor`: General TensorFlow Tensor type.
+- `NDFloatArray`: NumPy float array type, which is an alias to `np.typing.NDArray[np.float_]`.
+- `tf.Tensor`: General TensorFlow Tensor type, but the values are converted to `tf.float32` internally.
 
 ## Data format
 
 For object detection model training, which is the primary usage here, the following data are needed.
-- `image_seq` (Sequence of `NDAnyArray` or `tf.Tensor` of shape `(height, width, num_channels)`):
+- `image_seq` (Sequence of `NDFloatArray` or `tf.Tensor` of shape `(height, width, num_channels)`):
   - images in channel-last format;
   - image sizes can be different.
-- `bboxes_seq` (Sequence of `NDAnyArray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
+- `bboxes_seq` (Sequence of `NDFloatArray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`):
   - each `bboxes` array/tensor provides the bounding-boxes associated with an image;
   - each single bounding-box is given as `[top_left_x, top_left_y, bbox_width, bbox_height]`;
   - empty array/tensor means no bounding-boxes (and labels) for that image.
-- `labels_seq` (Sequence of `NDAnyArray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`):
+- `labels_seq` (Sequence of `NDFloatArray` or `tf.Tensor` of shape `(num_bboxes_per_image,)`):
   - each `labels` array/tensor provides the bounding-box labels associated with an image;
   - empty array/tensor means no labels (and bounding-boxes) for that image.
 
@@ -201,7 +201,7 @@ ds = ds.padded_batch(batch_size=2, padding_values=-1.0)
 ## PyTorch Dataset
 
 ```python
-from typing import Any, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import numpy.typing
 from torch.utils.data import Dataset
@@ -218,7 +218,7 @@ from targetran.np import (
 )
 from targetran.utils import Compose
 
-NDAnyArray = numpy.typing.NDArray[Any]
+NDFloatArray = numpy.typing.NDArray[numpy.float_]
 
 
 class PTDataset(Dataset):
@@ -229,9 +229,9 @@ class PTDataset(Dataset):
     
     def __init__(
             self,
-            image_seq: Sequence[NDAnyArray],
-            bboxes_seq: Sequence[NDAnyArray],
-            labels_seq: Sequence[NDAnyArray],
+            image_seq: Sequence[NDFloatArray],
+            bboxes_seq: Sequence[NDFloatArray],
+            labels_seq: Sequence[NDFloatArray],
             transforms: Optional[Compose]
     ) -> None:
         self.image_seq = image_seq
@@ -245,7 +245,7 @@ class PTDataset(Dataset):
     def __getitem__(
             self,
             idx: int
-    ) -> Tuple[NDAnyArray, NDAnyArray, NDAnyArray]:
+    ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
         if self.transforms:
             return self.transforms(
                 self.image_seq[idx],

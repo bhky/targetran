@@ -8,7 +8,7 @@ This example is to be run on a Kaggle Notebook, with the above dataset added.
 
 import json
 import os
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 # Needed for the Kaggle Notebook.
 os.system("pip install -U targetran")
@@ -21,7 +21,7 @@ import pandas as pd
 import targetran.tf as tt
 import tensorflow as tf
 
-NDAnyArray = np.typing.NDArray[Any]
+NDAnyArray = np.typing.NDArray[np.float_]
 
 # This will be the data path when you use "Add Data" on the right panel
 # of a Kaggle Notebook.

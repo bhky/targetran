@@ -6,7 +6,7 @@ PyTorch Dataset local example.
 import glob
 import json
 import os
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import cv2
 import matplotlib.pylab as plt
@@ -25,7 +25,7 @@ from targetran.np import (
 )
 from targetran.utils import Compose, collate_fn
 
-NDAnyArray = np.typing.NDArray[Any]
+NDAnyArray = np.typing.NDArray[np.float_]
 
 
 def load_images() -> Dict[str, NDAnyArray]:

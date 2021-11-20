@@ -3,14 +3,14 @@
 TensorFlow Dataset test.
 """
 
-from typing import Any, Sequence, Tuple
+from typing import Sequence, Tuple
 
 import numpy as np
 import numpy.typing
 
 import targetran.tf
 
-NDAnyArray = np.typing.NDArray[Any]
+NDAnyArray = np.typing.NDArray[np.float_]
 
 
 def make_np_data() -> Tuple[Sequence[NDAnyArray],

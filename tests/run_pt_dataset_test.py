@@ -3,7 +3,7 @@
 PyTorch Dataset test.
 """
 
-from typing import Any, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import numpy as np
 import numpy.typing
@@ -12,7 +12,7 @@ from torch.utils.data import Dataset, DataLoader
 import targetran.np
 from targetran.utils import Compose, collate_fn
 
-NDAnyArray = np.typing.NDArray[Any]
+NDAnyArray = np.typing.NDArray[np.float_]
 
 
 def make_np_data() -> Tuple[Sequence[NDAnyArray],

@@ -6,7 +6,7 @@ TensorFlow Dataset local example.
 import glob
 import json
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 import cv2
 import matplotlib.pylab as plt
@@ -25,7 +25,7 @@ from targetran.tf import (
     TFResize,
 )
 
-NDAnyArray = np.typing.NDArray[Any]
+NDAnyArray = np.typing.NDArray[np.float_]
 
 
 def load_images() -> Dict[str, NDAnyArray]:
