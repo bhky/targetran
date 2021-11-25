@@ -69,8 +69,9 @@ python3 -m pip install .
 
 ## Notations
 
-- `NDFloatArray`: NumPy float array type, which is an alias to `np.typing.NDArray[np.float_]`.
-- `tf.Tensor`: General TensorFlow Tensor type, but the values are converted to `tf.float32` internally.
+- `NDFloatArray`: NumPy float array type, which is an alias to `np.typing.NDArray[np.float_]`. 
+  The values are converted to `np.float32` internally.
+- `tf.Tensor`: General TensorFlow Tensor type. The values are converted to `tf.float32` internally.
 
 ## Data format
 
