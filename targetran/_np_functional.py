@@ -23,7 +23,7 @@ def _np_convert(x: ArrayLike) -> NDFloatArray:
 
 
 def _np_range(start: int, end: int, step: int) -> NDIntArray:
-    return np.arange(start, end, step)  # type: ignore
+    return np.arange(start, end, step, dtype=np.int32)  # type: ignore
 
 
 def _np_cast_to_int(x: NDAnyArray) -> NDIntArray:
