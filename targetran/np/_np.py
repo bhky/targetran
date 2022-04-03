@@ -49,8 +49,9 @@ from targetran.utils import Interpolation
 def _np_get_affine_dependency() -> _AffineDependency:
     return _AffineDependency(
         _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
-        _np_pad_image, _np_range, _np_cast_to_int, _np_round_to_int,
-        np.repeat, np.tile, np.ones_like, np.stack, np.concatenate, np.matmul,
+        _np_pad_image, _np_range, _np_cast_to_int, _np_round_to_int, np.repeat,
+        np.tile,  # type: ignore
+        np.ones_like, np.stack, np.concatenate, np.matmul,
         np.clip, np.floor, np.ceil, _np_gather_image,
         np.copy, np.max, np.min,
         _np_logical_and, _np_boolean_mask
@@ -386,7 +387,7 @@ class RandomRotate(RandomTransform):
     ) -> None:
         _check_input_range(angle_deg_range, None, "angle_deg_range")
         super().__init__(rotate, probability, seed, "RandomRotate", True)
-        self.angle_deg_range = np.array(angle_deg_range)
+        self.angle_deg_range: NDFloatArray = np.array(angle_deg_range)
         self.interpolation = interpolation
 
     def _get_angle_deg(
@@ -432,7 +433,7 @@ class RandomShear(RandomTransform):
     ) -> None:
         _check_input_range(angle_deg_range, (-90.0, 90.0), "angle_deg_range")
         super().__init__(shear, probability, seed, "RandomShear", True)
-        self.angle_deg_range = np.array(angle_deg_range)
+        self.angle_deg_range: NDFloatArray = np.array(angle_deg_range)
         self.interpolation = interpolation
 
     def _get_angle_deg(
