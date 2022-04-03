@@ -23,7 +23,7 @@ def _np_convert(x: ArrayLike) -> NDFloatArray:
 
 
 def _np_range(start: int, end: int, step: int) -> NDIntArray:
-    return np.arange(start, end, step, dtype=np.int32)  # type: ignore
+    return np.arange(start, end, step, dtype=np.int32)
 
 
 def _np_cast_to_int(x: NDAnyArray) -> NDIntArray:
@@ -50,7 +50,7 @@ def _np_pad_image(
         (int(pad_offsets[2]), int(pad_offsets[3])),
         (0, 0)
     )
-    return np.pad(image, pad_width=pad_width, constant_values=0)  # type: ignore
+    return np.pad(image, pad_width=pad_width, constant_values=0)
 
 
 def _np_resize_image(
