@@ -265,7 +265,7 @@ class CombineAffine(RandomTransform):
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
 
-    def _combine_mats(
+    def _get_mats(
             self,
             image: NDFloatArray,
             rand_fn: Callable[..., NDFloatArray]
@@ -309,7 +309,7 @@ class CombineAffine(RandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
-        image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(
+        image_dest_tran_mat, bboxes_tran_mat = self._get_mats(
             image, self._rand_fn
         )
         return super().__call__(

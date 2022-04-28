@@ -339,7 +339,7 @@ class TFCombineAffine(TFRandomTransform):
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
 
-    def _combine_mats(
+    def _get_mats(
             self,
             image: tf.Tensor,
             rand_fn: Callable[..., tf.Tensor]
@@ -388,7 +388,7 @@ class TFCombineAffine(TFRandomTransform):
             *args: Any,
             **kwargs: Any
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        image_dest_tran_mat, bboxes_tran_mat = self._combine_mats(
+        image_dest_tran_mat, bboxes_tran_mat = self._get_mats(
             image, self._rand_fn
         )
         return super().__call__(
