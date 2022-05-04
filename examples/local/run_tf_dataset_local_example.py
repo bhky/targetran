@@ -2,7 +2,6 @@
 """
 TensorFlow Dataset local example.
 """
-
 import glob
 import json
 import os

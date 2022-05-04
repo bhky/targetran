@@ -1,7 +1,6 @@
 """
 API for NumPy usage.
 """
-
 import functools
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 

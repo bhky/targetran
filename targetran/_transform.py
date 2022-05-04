@@ -1,7 +1,6 @@
 """
 Image and target transform utilities.
 """
-
 from dataclasses import dataclass
 from typing import Callable, List, Sequence, Tuple
 

@@ -2,7 +2,6 @@
 """
 PyTorch Dataset test.
 """
-
 from typing import Optional, Sequence, Tuple
 
 import numpy as np

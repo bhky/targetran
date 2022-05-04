@@ -1,7 +1,6 @@
 """
 API for TensorFlow usage.
 """
-
 import functools
 import itertools
 from typing import Any, Callable, List, Optional, Sequence, Tuple

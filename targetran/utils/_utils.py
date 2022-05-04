@@ -1,7 +1,6 @@
 """
 Utilities.
 """
-
 from enum import auto, Enum
 from typing import Any, Callable, Sequence, Tuple
 

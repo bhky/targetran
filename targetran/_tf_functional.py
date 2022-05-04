@@ -1,7 +1,6 @@
 """
 TensorFlow functional helper utilities.
 """
-
 from typing import Tuple
 
 import tensorflow as tf  # type: ignore

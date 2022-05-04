@@ -1,7 +1,6 @@
 """
 Unit test.
 """
-
 import unittest
 
 import numpy as np

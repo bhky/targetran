@@ -1,7 +1,6 @@
 """
 Numpy functional helper utilities.
 """
-
 from typing import Tuple
 
 import cv2  # type: ignore

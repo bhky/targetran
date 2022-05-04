@@ -2,7 +2,6 @@
 """
 TensorFlow Dataset timing.
 """
-
 import os
 from timeit import default_timer as timer
 from typing import Iterator, Tuple

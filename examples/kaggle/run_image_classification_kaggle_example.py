@@ -4,7 +4,6 @@ Usage example of Targetran with TFDS for image classification model training.
 
 On a Kaggle Notebook, select the "Accelerator": TPUv3-8
 """
-
 import os
 from typing import Tuple
 

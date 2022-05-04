@@ -5,7 +5,6 @@ https://www.kaggle.com/c/global-wheat-detection/data
 
 This example is to be run on a Kaggle Notebook, with the above dataset added.
 """
-
 import json
 import os
 from typing import Dict, Optional

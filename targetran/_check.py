@@ -1,7 +1,6 @@
 """
 Sanity checks.
 """
-
 from typing import Optional, Sequence, Tuple
 
 
