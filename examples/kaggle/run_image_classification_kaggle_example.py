@@ -56,7 +56,7 @@ def make_model(
     image_input = layers.Input(shape=(image_size[0], image_size[1], 3))
     x = image_input
     x = tf.keras.applications.xception.preprocess_input(x)
-    x = base_model(x, training=False)  # See Keras docs on batch norm.
+    x = base_model(x)
 
     x = layers.GlobalAveragePooling2D()(x)
     output = layers.Dense(num_classes, activation="softmax")(x)
