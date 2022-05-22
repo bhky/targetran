@@ -83,14 +83,13 @@ def load_data() -> tf.data.Dataset:
     See:
     https://www.tensorflow.org/datasets/catalog/tf_flowers
     """
-    ds = tfds.load(
+    return tfds.load(
         "tf_flowers",
         split="train",
         shuffle_files=False,
         as_supervised=True,
         try_gcs=True
     )
-    return ds.cache()
 
 
 def split_ds(
@@ -102,8 +101,8 @@ def split_ds(
     Split the dataset into two for training and validation.
     """
     ds = ds.shuffle(2048, seed=seed)
-    ds_val = ds.take(num_val_samples)
-    ds_train = ds.skip(num_val_samples)
+    ds_val = ds.take(num_val_samples).cache()
+    ds_train = ds.skip(num_val_samples).cache()
     return ds_train, ds_val
 
 
