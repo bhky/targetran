@@ -30,11 +30,11 @@ def _np_cast_to_int(x: NDAnyArray) -> NDIntArray:
 
 
 def _np_round_to_int(x: NDAnyArray) -> NDIntArray:
-    return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)  # type: ignore
+    return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)
 
 
 def _np_logical_and(x: NDBoolArray, y: NDBoolArray) -> NDBoolArray:
-    return np.logical_and(x, y)  # type: ignore
+    return np.logical_and(x, y)
 
 
 def _np_pad_image(

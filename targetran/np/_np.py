@@ -260,7 +260,7 @@ class CombineAffine(RandomTransform):
         self._num_selected_transforms = num_selected_transforms
         self._selected_probabilities = selected_probabilities
         self._interpolation = interpolation
-        self._identity_mat = np.expand_dims(np.array([  # type: ignore
+        self._identity_mat = np.expand_dims(np.array([
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
 
@@ -284,10 +284,10 @@ class CombineAffine(RandomTransform):
             bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
         else:
             conditions = np.reshape(rand_fn() < probs, (len(probs), 1, 1))
-            image_dest_tran_mats = np.where(
+            image_dest_tran_mats = np.where(  # type: ignore
                 conditions, image_dest_tran_mats, self._identity_mat
             )
-            bboxes_tran_mats = np.where(
+            bboxes_tran_mats = np.where(  # type: ignore
                 conditions, bboxes_tran_mats, self._identity_mat
             )
 

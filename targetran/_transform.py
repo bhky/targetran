@@ -548,8 +548,8 @@ def _crop(
     image = image[int(top):int(bottom), int(left):int(right), :]
 
     # Translate bboxes values.
-    xs = bboxes[:, :1] - offset_width
-    ys = bboxes[:, 1:2] - offset_height
+    xs: T = bboxes[:, :1] - offset_width
+    ys: T = bboxes[:, 1:2] - offset_height
     widths = bboxes[:, 2:3]
     heights = bboxes[:, 3:]
 
