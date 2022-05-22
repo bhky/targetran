@@ -8,7 +8,8 @@ import os
 from typing import Tuple
 
 # Needed for the Kaggle Notebook.
-os.system("pip install --upgrade --upgrade-strategy only-if-needed targetran")
+# Since it is in Python 3.7, Targetran can only be used up to v0.10.0.
+os.system("pip install --upgrade --upgrade-strategy only-if-needed targetran==0.10.0")
 
 import matplotlib.pylab as plt
 import numpy as np

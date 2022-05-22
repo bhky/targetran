@@ -9,8 +9,16 @@ import json
 import os
 from typing import Dict, Optional
 
+import tensorflow as tf
+tf_version = tf.__version__
+
 # Needed for the Kaggle Notebook.
-os.system("pip install -U targetran")
+# Since it is in Python 3.7, Targetran can only be used up to v0.10.0.
+os.system("pip install --upgrade --upgrade-strategy only-if-needed targetran==0.10.0")
+# TensorFlow version has to be aligned with that on the remote workers.
+os.system(f"pip install --upgrade tensorflow=={tf_version}")
+# Newest NumPy is needed for the typing to work.
+os.system(f"pip install --upgrade numpy")
 
 import cv2
 import matplotlib.pylab as plt
@@ -18,7 +26,6 @@ import numpy as np
 import numpy.typing
 import pandas as pd
 import targetran.tf as tt
-import tensorflow as tf
 
 NDAnyArray = np.typing.NDArray[np.float_]
 
