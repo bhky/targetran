@@ -179,7 +179,7 @@ def save_plot(
             ax = axes[n % num_rows][n % num_cols]
 
         ax.imshow(image)
-        ax.set_title(label)
+        ax.set_title(str(label))
         ax.set_axis_off()
 
     fig.set_tight_layout(True)
