@@ -51,14 +51,15 @@ def to_tf(
     """
     Convert seqs to TF (eager) tensor seqs.
     """
-    tuples = [
-        (_tf_convert(image),
-         tf.reshape(_tf_convert(bboxes), (-1, 4)),
-         _tf_convert(labels))
-        for image, bboxes, labels in itertools.zip_longest(
+    tuples: List[Tuple[tf.Tensor, tf.Tensor, tf.Tensor]] = []
+    for image, bboxes, labels in itertools.zip_longest(  # type: ignore
             image_seq, bboxes_seq, labels_seq, fillvalue=[]
+    ):
+        tuples.append(
+            (_tf_convert(image),
+             tf.reshape(_tf_convert(bboxes), (-1, 4)),
+             _tf_convert(labels))
         )
-    ]
     tf_image_seq, tf_bboxes_seq, tf_labels_seq = tuple(zip(*tuples))
     return tf_image_seq, tf_bboxes_seq, tf_labels_seq
 
