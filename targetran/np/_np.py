@@ -49,7 +49,7 @@ def _np_get_affine_dependency() -> _AffineDependency:
     return _AffineDependency(
         _np_convert, np.shape, np.reshape, np.expand_dims, np.squeeze,
         _np_pad_image, _np_range, _np_cast_to_int, _np_round_to_int, np.repeat,
-        np.tile,  # type: ignore
+        np.tile,
         np.ones_like, np.stack, np.concatenate, np.matmul,
         np.clip, np.floor, np.ceil, _np_gather_image,
         np.copy, np.max, np.min,
@@ -260,7 +260,7 @@ class CombineAffine(RandomTransform):
         self._num_selected_transforms = num_selected_transforms
         self._selected_probabilities = selected_probabilities
         self._interpolation = interpolation
-        self._identity_mat = np.expand_dims(np.array([
+        self._identity_mat = np.expand_dims(np.array([  # type: ignore
             [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
         ]), axis=0)
 
@@ -284,10 +284,10 @@ class CombineAffine(RandomTransform):
             bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
         else:
             conditions = np.reshape(rand_fn() < probs, (len(probs), 1, 1))
-            image_dest_tran_mats = np.where(  # type: ignore
+            image_dest_tran_mats = np.where(
                 conditions, image_dest_tran_mats, self._identity_mat
             )
-            bboxes_tran_mats = np.where(  # type: ignore
+            bboxes_tran_mats = np.where(
                 conditions, bboxes_tran_mats, self._identity_mat
             )
 

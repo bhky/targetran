@@ -22,7 +22,7 @@ def _np_convert(x: ArrayLike) -> NDFloatArray:
 
 
 def _np_range(start: int, end: int, step: int) -> NDIntArray:
-    return np.arange(start, end, step, dtype=np.int32)
+    return np.arange(start, end, step, dtype=np.int32)  # type: ignore
 
 
 def _np_cast_to_int(x: NDAnyArray) -> NDIntArray:
@@ -30,11 +30,11 @@ def _np_cast_to_int(x: NDAnyArray) -> NDIntArray:
 
 
 def _np_round_to_int(x: NDAnyArray) -> NDIntArray:
-    return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)
+    return np.rint(x.astype(dtype=np.float32)).astype(dtype=np.int32)  # type: ignore
 
 
 def _np_logical_and(x: NDBoolArray, y: NDBoolArray) -> NDBoolArray:
-    return np.logical_and(x, y)
+    return np.logical_and(x, y)  # type: ignore
 
 
 def _np_pad_image(
@@ -49,7 +49,7 @@ def _np_pad_image(
         (int(pad_offsets[2]), int(pad_offsets[3])),
         (0, 0)
     )
-    return np.pad(image, pad_width=pad_width, constant_values=0)
+    return np.pad(image, pad_width=pad_width, constant_values=0)  # type: ignore
 
 
 def _np_resize_image(
