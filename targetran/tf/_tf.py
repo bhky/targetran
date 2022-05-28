@@ -5,6 +5,7 @@ import functools
 import itertools
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
+import numpy as np
 import tensorflow as tf  # type: ignore
 
 from targetran._check import (
@@ -249,8 +250,9 @@ class TFRandomTransform:
     ) -> None:
         self._tf_fn = tf_fn
         self.probability = probability
-        self._rng = tf.random.Generator.from_seed(seed) if seed is not None \
-            else tf.random.Generator.from_non_deterministic_state()
+        self._rng = tf.random.Generator.from_seed(
+            seed if seed is not None else np.random.randint(1e6)
+        )
         self.name = name
         self.is_affine = is_affine
 
