@@ -2,7 +2,7 @@
 Utilities.
 """
 from enum import auto, Enum
-from typing import Any, Callable, Sequence, Tuple
+from typing import Any, Callable, Sequence, Tuple, Union
 
 from targetran._typing import T
 
@@ -29,7 +29,7 @@ def collate_fn(batch: Sequence[Tuple[Any, ...]]) -> Tuple[Sequence[Any], ...]:
 
 def image_only(
         tran_fn: Callable[[T, Any, Any], Tuple[T, T, T]]
-) -> Callable[[T, T], Tuple[T, T]]:
+) -> Callable[..., Union[T, Tuple[T, ...]]]:
     # Only the image will be transformed.
     def fn(image: T, *args: Any) -> Any:
         transformed_image = tran_fn(image, [], [])[0]
