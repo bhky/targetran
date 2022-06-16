@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Usage example of Targetran with TFDS for image classification model training.
 
@@ -8,8 +7,7 @@ import os
 from typing import Tuple
 
 # Needed for the Kaggle Notebook.
-# Since it is in Python 3.7, Targetran can only be used up to v0.10.2.
-os.system("pip install --upgrade --upgrade-strategy only-if-needed targetran==0.10.2")
+os.system("pip install targetran")
 
 import matplotlib.pylab as plt
 import numpy as np
@@ -112,7 +110,7 @@ def transform_and_batch(
     Apply data augmentation (to training set only) and batching.
     """
 
-    def set_tensor_shapes(
+    def set_image_shape(
             image: tf.Tensor,
             label: tf.Tensor
     ) -> Tuple[tf.Tensor, tf.Tensor]:
@@ -141,13 +139,13 @@ def transform_and_batch(
         .shuffle(2048, seed=seed) \
         .map(image_only(affine_transform), num_parallel_calls=auto) \
         .map(image_only(tt.TFResize(image_size)), num_parallel_calls=auto) \
-        .map(set_tensor_shapes, num_parallel_calls=auto) \
+        .map(set_image_shape, num_parallel_calls=auto) \
         .batch(batch_size) \
         .prefetch(auto)
 
     ds_val = ds_val \
         .map(image_only(tt.TFResize(image_size)), num_parallel_calls=auto) \
-        .map(set_tensor_shapes, num_parallel_calls=auto) \
+        .map(set_image_shape, num_parallel_calls=auto) \
         .batch(batch_size) \
         .prefetch(auto)
 
