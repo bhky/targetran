@@ -334,7 +334,8 @@ from targetran.utils import image_only
 ds = ds \
     .map(image_only(TFRandomCrop())) \
     .map(image_only(affine_transform)) \
-    .map(image_only(TFResize((256, 256))))
+    .map(image_only(TFResize((256, 256)))) \
+    .batch(32)  # Conventional batching can be used for classification setup.
 ```
 ```python
 # PyTorch.
@@ -344,6 +345,7 @@ transforms = Compose([
     image_only(Resize((256, 256))),
 ])
 ds = PTDataset(..., transforms=transforms)
+data_loader = DataLoader(ds, batch_size=32)
 ```
 
 ## Examples
