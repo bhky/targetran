@@ -62,16 +62,16 @@ def _check_input_range(
         input_name: str
 ) -> None:
     if limit_open_interval is None:
-        if not input_range[0] < input_range[1]:
+        if not input_range[0] <= input_range[1]:
             raise ValueError(
                 f"The {input_name} should be provided as "
-                f"(min_value, max_value), where min_value < max_value."
+                f"(min_value, max_value), where min_value <= max_value."
             )
         return
     lower_limit, upper_limit = limit_open_interval
-    if not lower_limit < input_range[0] < input_range[1] < upper_limit:
+    if not lower_limit < input_range[0] <= input_range[1] < upper_limit:
         raise ValueError(
             f"The {input_name} should be provided as "
             f"(min_value, max_value), "
-            f"where {lower_limit} < min_value < max_value < {upper_limit}."
+            f"where {lower_limit} < min_value <= max_value < {upper_limit}."
         )

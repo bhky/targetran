@@ -118,7 +118,7 @@ Randomly flip the input image vertically (up to down).
 Randomly rotate the input image about the centre.
 - `__init__` parameters
   - `angle_deg_range` (`Tuple[float, float]`, default `(-15.0, 15.0)`):
-    The lower and upper limits (both exclusive) of the rotation angle in degrees.
+    The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the rotation angle in degrees.
     Positive values means anti-clockwise, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
@@ -133,7 +133,7 @@ Randomly rotate the input image about the centre.
 Randomly shear the input image horizontally about the centre.
 - `__init__` parameters
   - `angle_deg_range` (`Tuple[float, float]`, default `(-10.0, 10.0)`):
-    The lower and upper limits (both exclusive) of the shear angle in degrees.
+    The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the shear angle in degrees.
     Positive values means anti-clockwise, and vice versa.
     Both values should be greater than `-90.0` and less than `90.0`.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
@@ -149,11 +149,11 @@ Randomly shear the input image horizontally about the centre.
 Randomly translate the input image.
 - `__init__` parameters
   - `translate_height_fraction_range` (`Tuple[float, float]`, default `(-0.1, 0.1)`):
-    The lower and upper limits (both exclusive) of the vertical translation, 
+    The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the vertical translation, 
     given as fractions of the image height. 
     Both values should be greater than `-1.0` and less than `1.0`.
   - `translate_width_fraction_range` (`Tuple[float, float]`, default `(-0.1, 0.1)`):
-      The lower and upper limits (both exclusive) of the horizontal translation, 
+      The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the horizontal translation, 
       given as fractions of the image width. 
       Both values should be greater than `-1.0` and less than `1.0`.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
@@ -196,11 +196,11 @@ Combine the random affine transformations to improve performance.
 Get a random crop of the input image.
 - `__init__` parameters
   - `crop_height_fraction_range` (`Tuple[float, float]`, default `(0.8, 0.9)`):
-    The lower and upper limits (both exclusive) of the image crop height, 
+    The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the image crop height, 
     given as fractions of the image height. 
     Both values should be greater than `0.0` and less than `1.0`.
   - `crop_width_fraction_range` (`Tuple[float, float]`, default `(0.8, 0.9)`):
-      The lower and upper limits (both exclusive) of the image crop width, 
+      The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the image crop width, 
       given as fractions of the image width. 
       Both values should be greater than `0.0` and less than `1.0`.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
