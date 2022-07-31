@@ -153,9 +153,9 @@ Randomly translate the input image.
     given as fractions of the image height. 
     Both values should be greater than `-1.0` and less than `1.0`.
   - `translate_width_fraction_range` (`Tuple[float, float]`, default `(-0.1, 0.1)`):
-      The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the horizontal translation, 
-      given as fractions of the image width. 
-      Both values should be greater than `-1.0` and less than `1.0`.
+    The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the horizontal translation, 
+    given as fractions of the image width. 
+    Both values should be greater than `-1.0` and less than `1.0`.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
@@ -200,9 +200,9 @@ Get a random crop of the input image.
     given as fractions of the image height. 
     Both values should be greater than `0.0` and less than `1.0`.
   - `crop_width_fraction_range` (`Tuple[float, float]`, default `(0.8, 0.9)`):
-      The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the image crop width, 
-      given as fractions of the image width. 
-      Both values should be greater than `0.0` and less than `1.0`.
+    The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the image crop width, 
+    given as fractions of the image width. 
+    Both values should be greater than `0.0` and less than `1.0`.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
