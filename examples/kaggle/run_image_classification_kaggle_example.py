@@ -168,7 +168,7 @@ def save_plot(
         if num_rows == 1 or num_cols == 1:
             ax = axes[n]
         else:
-            ax = axes[n % num_rows][n % num_cols]
+            ax = axes[n // num_cols][n % num_cols]
 
         ax.imshow(image)
         ax.set_title(str(label))
