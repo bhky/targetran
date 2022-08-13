@@ -153,7 +153,7 @@ class TestTransform(unittest.TestCase):
 
     def test_flip_up_down(self) -> None:
 
-        # Noted the shifted pixel.
+        # Note the shifted pixel along even-number axes.
         expected_image_seq = [
             np.array([
                 [[7], [8], [9]],
