@@ -1,7 +1,6 @@
 """
 API for NumPy usage.
 """
-import functools
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -274,7 +273,7 @@ class CombineAffine(RandomTransform):
               for i, t in enumerate(self._transforms)]
         ))
 
-        if self._num_selected_transforms:
+        if self._num_selected_transforms is not None:
             indices = self._rng.choice(
                 len(self._transforms),
                 self._num_selected_transforms,
@@ -283,6 +282,11 @@ class CombineAffine(RandomTransform):
         else:
             conditions = rand_fn() < probs
             indices = np.arange(len(probs), dtype=np.int32)[conditions]
+
+        # This happens when conditions are all False, or
+        # num_selected_transforms is 0.
+        if len(indices) == 0:
+            return np.identity(3), np.identity(3)
 
         if self._keep_order:
             indices.sort()
@@ -293,13 +297,9 @@ class CombineAffine(RandomTransform):
         image_dest_tran_mats = np.take(image_dest_tran_mats, indices, 0)
         bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
 
-        image_dest_tran_mat = functools.reduce(
-            np.matmul, image_dest_tran_mats
-        )
+        image_dest_tran_mat = np.linalg.multi_dot(image_dest_tran_mats)
         # Note the reversed order for the bboxes tran matrices.
-        bboxes_tran_mat = functools.reduce(
-            np.matmul, bboxes_tran_mats[::-1]
-        )
+        bboxes_tran_mat = np.linalg.multi_dot(bboxes_tran_mats[::-1])
         return image_dest_tran_mat, bboxes_tran_mat
 
     def __call__(

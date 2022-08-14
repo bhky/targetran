@@ -1,7 +1,6 @@
 """
 API for TensorFlow usage.
 """
-import functools
 import itertools
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
@@ -349,7 +348,10 @@ class TFCombineAffine(TFRandomTransform):
               for i, t in enumerate(self._transforms)]
         ))
 
-        if self._num_selected_transforms:
+        if self._num_selected_transforms is not None:
+            if self._num_selected_transforms == 0:
+                return tf.eye(3), tf.eye(3)
+
             indices = _get_random_indices(
                 self._rng,
                 len(self._transforms),
@@ -357,6 +359,13 @@ class TFCombineAffine(TFRandomTransform):
                 self._selected_probabilities
             )
         else:
+            # It looks like in graph mode we cannot check if a tensor is empty
+            # and then do short circuit. Therefore, to prevent empty indices
+            # which tf.gather could not handle, an identity matrix is appended.
+            image_dest_tran_mats += (tf.eye(3),)
+            bboxes_tran_mats += (tf.eye(3),)
+            probs += (1.0,)
+
             conditions = rand_fn() < probs
             indices = tf.boolean_mask(
                 tf.range(len(probs), dtype=tf.int32), conditions
@@ -374,13 +383,12 @@ class TFCombineAffine(TFRandomTransform):
             bboxes_tran_mats, indices
         )
 
-        image_dest_tran_mat = functools.reduce(
-            tf.matmul, tf.unstack(image_dest_tran_mats)
-        )
+        def matmul(a: tf.Tensor, b: tf.Tensor) -> tf.Tensor:
+            return tf.matmul(a, b)
+
+        image_dest_tran_mat = tf.scan(matmul, image_dest_tran_mats)[-1]
         # Note the reversed order for the bboxes tran matrices.
-        bboxes_tran_mat = functools.reduce(
-            tf.matmul, tf.unstack(bboxes_tran_mats)[::-1]
-        )
+        bboxes_tran_mat = tf.scan(matmul, bboxes_tran_mats[::-1])[-1]
         return image_dest_tran_mat, bboxes_tran_mat
 
     def __call__(
