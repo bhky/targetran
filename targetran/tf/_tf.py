@@ -250,9 +250,8 @@ class TFRandomTransform:
     ) -> None:
         self._tf_fn = tf_fn
         self.probability = probability
-        self._rng = tf.random.Generator.from_seed(
-            seed if seed is not None else np.random.randint(1e6)  # type: ignore
-        )
+        self.seed = seed if seed is not None else np.random.randint(1e6)  # type: ignore
+        self._rng = tf.random.Generator.from_seed(self.seed)
         self.name = name
         self.is_affine = is_affine
 
@@ -303,7 +302,7 @@ def _get_random_indices(
     z = -tf.math.log(-tf.math.log(  # pylint: disable=invalid-unary-operand-type
         rng.uniform(tf.shape(logits), 0, 1)
     ))
-    _, indices = tf.nn.top_k(logits + z, num_selected_indices)
+    _, indices = tf.math.top_k(logits + z, num_selected_indices, sorted=False)
     return indices
 
 
@@ -314,6 +313,7 @@ class TFCombineAffine(TFRandomTransform):
             transforms: Sequence[TFRandomTransform],
             num_selected_transforms: Optional[int] = None,
             selected_probabilities: Optional[List[float]] = None,
+            keep_order: bool = False,
             interpolation: Interpolation = Interpolation.BILINEAR,
             probability: float = 1.0,
             seed: Optional[int] = None
@@ -336,10 +336,8 @@ class TFCombineAffine(TFRandomTransform):
         self._transforms = transforms
         self._num_selected_transforms = num_selected_transforms
         self._selected_probabilities = selected_probabilities
+        self._keep_order = keep_order
         self._interpolation = interpolation
-        self._identity_mat = tf.expand_dims(tf.constant([
-            [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
-        ]), axis=0)
 
     def _get_mats(
             self,
@@ -358,20 +356,23 @@ class TFCombineAffine(TFRandomTransform):
                 self._num_selected_transforms,
                 self._selected_probabilities
             )
-            image_dest_tran_mats = tf.gather(  # pylint: disable=no-value-for-parameter
-                image_dest_tran_mats, indices
-            )
-            bboxes_tran_mats = tf.gather(  # pylint: disable=no-value-for-parameter
-                bboxes_tran_mats, indices
-            )
         else:
-            conditions = tf.reshape(rand_fn() < probs, (len(probs), 1, 1))
-            image_dest_tran_mats = tf.where(
-                conditions, image_dest_tran_mats, self._identity_mat
+            conditions = rand_fn() < probs
+            indices = tf.boolean_mask(
+                tf.range(len(probs), dtype=tf.int32), conditions
             )
-            bboxes_tran_mats = tf.where(
-                conditions, bboxes_tran_mats, self._identity_mat
-            )
+
+        if self._keep_order:
+            indices = tf.sort(indices)
+        else:
+            indices = tf.random.shuffle(indices, seed=self.seed)
+
+        image_dest_tran_mats = tf.gather(  # pylint: disable=no-value-for-parameter
+            image_dest_tran_mats, indices
+        )
+        bboxes_tran_mats = tf.gather(  # pylint: disable=no-value-for-parameter
+            bboxes_tran_mats, indices
+        )
 
         image_dest_tran_mat = functools.reduce(
             tf.matmul, tf.unstack(image_dest_tran_mats)

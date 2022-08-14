@@ -198,7 +198,8 @@ class RandomTransform:
     ) -> None:
         self._np_fn = np_fn
         self.probability = probability
-        self._rng = np.random.default_rng(seed=seed)
+        self.seed = seed
+        self._rng = np.random.default_rng(seed=self.seed)
         self.name = name
         self.is_affine = is_affine
 
@@ -237,6 +238,7 @@ class CombineAffine(RandomTransform):
             transforms: Sequence[RandomTransform],
             num_selected_transforms: Optional[int] = None,
             selected_probabilities: Optional[List[float]] = None,
+            keep_order: bool = False,
             interpolation: Interpolation = Interpolation.BILINEAR,
             probability: float = 1.0,
             seed: Optional[int] = None
@@ -259,10 +261,8 @@ class CombineAffine(RandomTransform):
         self._transforms = transforms
         self._num_selected_transforms = num_selected_transforms
         self._selected_probabilities = selected_probabilities
+        self._keep_order = keep_order
         self._interpolation = interpolation
-        self._identity_mat = np.expand_dims(np.array([
-            [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]
-        ]), axis=0)
 
     def _get_mats(
             self,
@@ -279,17 +279,19 @@ class CombineAffine(RandomTransform):
                 len(self._transforms),
                 self._num_selected_transforms,
                 replace=False, p=self._selected_probabilities
-            ).tolist()
-            image_dest_tran_mats = np.take(image_dest_tran_mats, indices, 0)
-            bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
+            )
         else:
-            conditions = np.reshape(rand_fn() < probs, (len(probs), 1, 1))
-            image_dest_tran_mats = np.where(  # type: ignore
-                conditions, image_dest_tran_mats, self._identity_mat
-            )
-            bboxes_tran_mats = np.where(  # type: ignore
-                conditions, bboxes_tran_mats, self._identity_mat
-            )
+            conditions = rand_fn() < probs
+            indices = np.arange(len(probs), dtype=np.int32)[conditions]
+
+        if self._keep_order:
+            indices.sort()
+        else:
+            self._rng.shuffle(indices)
+
+        indices = indices.tolist()
+        image_dest_tran_mats = np.take(image_dest_tran_mats, indices, 0)
+        bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
 
         image_dest_tran_mat = functools.reduce(
             np.matmul, image_dest_tran_mats

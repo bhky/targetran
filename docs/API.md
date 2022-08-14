@@ -183,6 +183,9 @@ Combine the random affine transformations to improve performance.
     The selection probabilities associated with each step in `transforms`. 
     If `None`, a uniform distribution over all steps is assumed. 
     Only valid if `num_selected_transforms` is an `int`.
+  - `keep_order` (`bool`, default `False`): If `True`, the selected transformation steps 
+    will be performed according to the given order in `transforms`, otherwise the steps
+    will be shuffled.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
   - `probability` (`float`, default `1.0`): Probability to apply the combined transformation.

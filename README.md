@@ -178,6 +178,7 @@ affine_transform = TFCombineAffine(
      TFRandomFlipUpDown()],
     num_selected_transforms=2,  # Only two steps from the list will be selected.
     selected_probabilities=[0.5, 0.0, 0.3, 0.2, 0.0],  # Must sum up to 1.0, if given.
+    keep_order=True,  # If True, the selected steps must be performed in the given order.
     probability=1.0  # Probability to apply this single combined transformation.
 )
 # Please refer to the API manual for more parameter options.
@@ -284,6 +285,7 @@ affine_transform = CombineAffine(
      RandomFlipUpDown()],
     num_selected_transforms=2,  # Only two steps from the list will be selected.
     selected_probabilities=[0.5, 0.0, 0.3, 0.2, 0.0],  # Must sum up to 1.0, if given.
+    keep_order=True,  # If True, the selected steps must be performed in the given order.
     probability=1.0  # Probability to apply this single combined transformation.
 )
 # Please refer to the API manual for more parameter options.
