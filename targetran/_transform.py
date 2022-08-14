@@ -52,6 +52,7 @@ class _AffineDependency:
     clip_fn: Callable[[T, T, T], T]
     floor_fn: Callable[[T], T]
     ceil_fn: Callable[[T], T]
+    transpose_fn: Callable[[T], T]
     gather_image_fn: Callable[[T, T], T]
     copy_fn: Callable[[T], T]
     max_fn: Callable[[T, int], T]
@@ -152,8 +153,9 @@ def _affine_transform(
         )
 
         dists: T = image_orig_idxes - d.convert_fn(floor_floor_idxes)
-        # Reshape needed for broadcasting in the gather step.
-        floor_weights = d.reshape_fn(1.0 - dists, (-1, 2))
+        # Transpose to shape (-1, 2), needed for broadcasting in the later
+        # gather-values step. See the return shape of gather_image_fn.
+        floor_weights = d.transpose_fn(1.0 - dists)
         ceil_weights: T = 1.0 - floor_weights
         floor_floor_weights = floor_weights[:, :1] * floor_weights[:, 1:]
         floor_ceil_weights = floor_weights[:, :1] * ceil_weights[:, 1:]

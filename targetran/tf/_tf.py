@@ -101,8 +101,8 @@ def _tf_get_affine_dependency() -> _AffineDependency:
         _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
         _tf_pad_image, tf.range, _tf_cast_to_int, _tf_round_to_int,
         tf.repeat, tf.tile, tf.ones_like, tf.stack, tf.concat, tf.matmul,
-        tf.clip_by_value, tf.math.floor, tf.math.ceil, _tf_gather_image,
-        tf.identity, tf.reduce_max, tf.reduce_min,
+        tf.clip_by_value, tf.math.floor, tf.math.ceil, tf.transpose,
+        _tf_gather_image, tf.identity, tf.reduce_max, tf.reduce_min,
         tf.logical_and, tf.boolean_mask
     )
 

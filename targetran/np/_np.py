@@ -51,7 +51,7 @@ def _np_get_affine_dependency() -> _AffineDependency:
         _np_pad_image, _np_range, _np_cast_to_int, _np_round_to_int, np.repeat,
         np.tile,  # type: ignore
         np.ones_like, np.stack, np.concatenate, np.matmul,
-        np.clip, np.floor, np.ceil, _np_gather_image,
+        np.clip, np.floor, np.ceil, np.transpose, _np_gather_image,
         np.copy, np.max, np.min,
         _np_logical_and, _np_boolean_mask
     )
