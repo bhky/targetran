@@ -70,6 +70,10 @@ def _affine_transform(
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
+    Original transformation is done w.r.t. the origin (top-left pixel).
+    Hence, additional translation is also performed to make the transformation
+    w.r.t. the image centre.
+
     image: [h, w, c]
     bboxes: [[top_left_x, top_left_y, width, height], ...]
     labels: [0, 1, 0, ...]
@@ -80,7 +84,6 @@ def _affine_transform(
 
     image_shape = d.shape_fn(image)
     height, width = int(image_shape[0]), int(image_shape[1])
-    h_mod, w_mod = height % 2, width % 2
     num_channels = int(image_shape[2])
 
     # Pad image to provide a zero-value pixel frame for clipping use below.
@@ -90,13 +93,13 @@ def _affine_transform(
     # References:
     # https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
 
-    # Destination indices. Note that (-foo // 2) != -(foo // 2).
+    # Destination indices.
     row_idxes = d.repeat_fn(  # Along y-axis, from top to bottom.
-        d.range_fn(-(height // 2) + 1 - h_mod, height // 2 + 1, 1),
+        d.range_fn(0, height, 1),
         d.round_to_int_fn(d.convert_fn([width]))
     )
     col_idxes = d.tile_fn(  # Along x-axis, from left to right.
-        d.range_fn(-(width // 2) + 1 - w_mod, width // 2 + 1, 1),
+        d.range_fn(0, width, 1),
         d.round_to_int_fn(d.convert_fn([height]))
     )
     # Note the (col, row) -> (x, y) swapping. Last axis is dummy.
@@ -104,27 +107,33 @@ def _affine_transform(
         [col_idxes, row_idxes, d.ones_like_fn(col_idxes)], 0
     )
 
-    # Transform destination indices, with clipping. Note that these are floats.
+    # Transform destination indices, align centre of the idx matrix to
+    # that of the image, and clipping. Note that these are floats.
     new_image_dest_idxes = d.matmul_fn(
         image_dest_tran_mat, d.convert_fn(image_dest_idxes)
     )
+    image_cen = d.convert_fn([
+        [d.convert_fn(width - 1) / 2.0],
+        [d.convert_fn(height - 1) / 2.0],
+        [0.0]
+    ])
+    new_image_dest_idxes -= \
+        d.matmul_fn(image_dest_tran_mat, image_cen) - image_cen
+
     clipped_new_image_dest_idxes = d.clip_fn(
         new_image_dest_idxes[:2],
         # Note the extra idx for the padded frame.
-        d.convert_fn([
-            [-(width // 2) - w_mod], [-(height // 2) - h_mod]
-        ]),
-        d.convert_fn([
-            [width // 2 + 1], [height // 2 + 1]
-        ])
+        d.convert_fn([[-1], [-1]]),
+        d.convert_fn([[width], [height]])
     )
 
     # Assigning original pixel values to new positions.
+    # Note the 1-pixel shift for the padded frame.
     image_orig_idxes = d.concat_fn([
         # Rows.
-        clipped_new_image_dest_idxes[1:] + d.convert_fn(height // 2 + h_mod),
+        clipped_new_image_dest_idxes[1:] + d.convert_fn(1),
         # Columns.
-        clipped_new_image_dest_idxes[:1] + d.convert_fn(width // 2 + w_mod)
+        clipped_new_image_dest_idxes[:1] + d.convert_fn(1)
     ], 0)
 
     if interpolation == Interpolation.NEAREST:
@@ -173,24 +182,17 @@ def _affine_transform(
     bottom_right_ys = d.copy_fn(top_right_ys + bboxes[:, 3:] - 1)
 
     xs = d.concat_fn(
-        [top_left_xs - d.convert_fn(width // 2 - 1 + w_mod),
-         top_right_xs - d.convert_fn(width // 2 - 1 + w_mod),
-         bottom_left_xs - d.convert_fn(width // 2 - 1 + w_mod),
-         bottom_right_xs - d.convert_fn(width // 2 - 1 + w_mod)],
-        1
+        [top_left_xs, top_right_xs, bottom_left_xs, bottom_right_xs], 1
     )
     ys = d.concat_fn(
-        [top_left_ys - d.convert_fn(height // 2 - 1 + h_mod),
-         top_right_ys - d.convert_fn(height // 2 - 1 + h_mod),
-         bottom_left_ys - d.convert_fn(height // 2 - 1 + h_mod),
-         bottom_right_ys - d.convert_fn(height // 2 - 1 + h_mod)],
-        1
+        [top_left_ys, top_right_ys, bottom_left_ys, bottom_right_ys], 1
     )
     bboxes_idxes = d.stack_fn(  # Shape: [num_bboxes, 3, 4].
         [xs, ys, d.ones_like_fn(xs)], 1
     )
 
     tran_bboxes_idxes = d.matmul_fn(bboxes_tran_mat, bboxes_idxes)
+    tran_bboxes_idxes -= d.matmul_fn(bboxes_tran_mat, image_cen) - image_cen
 
     # New bboxes, defined as the rectangle enclosing the transformed bboxes.
     tran_xs = tran_bboxes_idxes[:, 0, :]  # Shape: [num_bboxes, 4].
@@ -212,8 +214,8 @@ def _affine_transform(
         tran_top_left_xs, tran_top_left_ys, new_widths, new_heights
     ], -1)
 
-    new_xs = tran_bboxes[:, :1] + width // 2 + w_mod - 1
-    new_ys = tran_bboxes[:, 1:2] + height // 2 + h_mod - 1
+    new_xs = tran_bboxes[:, :1]
+    new_ys = tran_bboxes[:, 1:2]
 
     # Filter new bboxes values.
     xcens = new_xs + new_widths // 2

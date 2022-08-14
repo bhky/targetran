@@ -153,34 +153,33 @@ class TestTransform(unittest.TestCase):
 
     def test_flip_up_down(self) -> None:
 
-        # Note the shifted pixel along even-number axes.
         expected_image_seq = [
             np.array([
+                [[10], [11], [12]],
                 [[7], [8], [9]],
                 [[4], [5], [6]],
-                [[1], [2], [3]],
-                [[0], [0], [0]]
+                [[1], [2], [3]]
             ], dtype=np.float32),
             np.array([
+                [[20], [21], [22]],
                 [[17], [18], [19]],
                 [[14], [15], [16]],
-                [[11], [12], [13]],
-                [[0], [0], [0]]
+                [[11], [12], [13]]
             ], dtype=np.float32),
             np.array([
+                [[30], [31], [32]],
                 [[27], [28], [29]],
                 [[24], [25], [26]],
-                [[21], [22], [23]],
-                [[0], [0], [0]]
+                [[21], [22], [23]]
             ], dtype=np.float32),
         ]
         expected_bboxes_seq = [
             np.array([
-                [1, 1, 2, 2],
-                [0, 0, 3, 2],
+                [1, 2, 2, 2],
+                [0, 1, 3, 2],
             ], dtype=np.float32),
             np.array([
-                [0, 0, 2, 3],
+                [0, 1, 2, 3],
             ], dtype=np.float32),
             np.array([], dtype=np.float32).reshape(-1, 4),
         ]
@@ -234,14 +233,15 @@ class TestTransform(unittest.TestCase):
 
         original_image_seq = [
             np.array([
-                [[1], [2], [3], [4]],
-                [[5], [6], [7], [8]],
-                [[9], [10], [11], [12]]
+                [[1], [2], [3]],
+                [[4], [5], [6]],
+                [[7], [8], [9]]
             ], dtype=np.float32),
             np.array([
-                [[13], [14], [15], [16]],
-                [[17], [18], [19], [20]],
-                [[21], [22], [23], [24]]
+                [[10], [11], [12], [13]],
+                [[14], [15], [16], [17]],
+                [[18], [19], [20], [21]],
+                [[22], [23], [24], [25]]
             ], dtype=np.float32),
         ]
         original_bboxes_seq = [
@@ -258,17 +258,17 @@ class TestTransform(unittest.TestCase):
 
         angles_deg = [90.0, 180.0]
 
-        # Noted the shifted pixel.
         expected_image_seq = [
             np.array([
-                [[3], [7], [11], [0]],
-                [[2], [6], [10], [0]],
-                [[1], [5], [9], [0]]
+                [[3], [6], [9]],
+                [[2], [5], [8]],
+                [[1], [4], [7]]
             ], dtype=np.float32),
             np.array([
-                [[23], [22], [21], [0]],
-                [[19], [18], [17], [0]],
-                [[15], [14], [13], [0]]
+                [[25], [24], [23], [22]],
+                [[21], [20], [19], [18]],
+                [[17], [16], [15], [14]],
+                [[13], [12], [11], [10]]
             ], dtype=np.float32),
         ]
         expected_bboxes_seq = [
@@ -347,7 +347,7 @@ class TestTransform(unittest.TestCase):
         angle_deg = 45.0
 
         expected_bboxes = np.array([
-            [15, 15, 3, 2],
+            [14, 15, 3, 2],
             [0, 0, 3, 2],
         ], dtype=np.float32)
         expected_labels = original_labels
