@@ -283,23 +283,30 @@ class CombineAffine(RandomTransform):
             conditions = rand_fn() < probs
             indices = np.arange(len(probs), dtype=np.int32)[conditions]
 
-        # This happens when conditions are all False, or
-        # num_selected_transforms is 0.
-        if len(indices) == 0:
-            return np.identity(3), np.identity(3)
+        if len(indices) > 1:
+            if self._keep_order:
+                indices.sort()
+            else:
+                self._rng.shuffle(indices)
 
-        if self._keep_order:
-            indices.sort()
+            indices = indices.tolist()
+            image_dest_tran_mats = np.take(image_dest_tran_mats, indices, 0)
+            bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
+
+            image_dest_tran_mat = np.linalg.multi_dot(image_dest_tran_mats)
+            # Note the reversed order for the bboxes tran matrices.
+            bboxes_tran_mat = np.linalg.multi_dot(bboxes_tran_mats[::-1])
+
+        elif len(indices) == 1:
+            image_dest_tran_mat = image_dest_tran_mats[0]
+            bboxes_tran_mat = bboxes_tran_mats[0]
         else:
-            self._rng.shuffle(indices)
+            # This happens when conditions are all False, or
+            # num_selected_transforms is 0.
+            assert len(indices) == 0
+            image_dest_tran_mat = np.identity(3)
+            bboxes_tran_mat = np.identity(3)
 
-        indices = indices.tolist()
-        image_dest_tran_mats = np.take(image_dest_tran_mats, indices, 0)
-        bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
-
-        image_dest_tran_mat = np.linalg.multi_dot(image_dest_tran_mats)
-        # Note the reversed order for the bboxes tran matrices.
-        bboxes_tran_mat = np.linalg.multi_dot(bboxes_tran_mats[::-1])
         return image_dest_tran_mat, bboxes_tran_mat
 
     def __call__(
