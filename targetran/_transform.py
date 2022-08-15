@@ -68,6 +68,7 @@ def _affine_transform(
         image_dest_tran_mat: T,
         bboxes_tran_mat: T,
         interpolation: Interpolation,
+        fill_value: float,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -87,9 +88,15 @@ def _affine_transform(
     height, width = int(image_shape[0]), int(image_shape[1])
     num_channels = int(image_shape[2])
 
-    # Pad image to provide a zero-value pixel frame for clipping use below.
+    # Pad image to provide a fill-value pixel frame for clipping use below.
+    fill_image = d.ones_like_fn(image) * fill_value
+
     pad_offsets = d.convert_fn([1, 1, 1, 1])
     image = d.pad_image_fn(image, pad_offsets)
+    fill_image = d.pad_image_fn(fill_image, pad_offsets)
+
+    fill_image = (fill_image - fill_value) * -1.0
+    image = image + fill_image
 
     # References:
     # https://www.kaggle.com/cdeotte/rotation-augmentation-gpu-tpu-0-96
@@ -285,7 +292,7 @@ def _flip_left_right(
     )
     return _affine_transform(
         image, bboxes, labels, image_dest_flip_lr_mat, bboxes_flip_lr_mat,
-        interpolation, d
+        interpolation, 0.0, d  # The fill_value is dummy.
     )
 
 
@@ -322,7 +329,7 @@ def _flip_up_down(
     )
     return _affine_transform(
         image, bboxes, labels, image_dest_flip_ud_mat, bboxes_flip_ud_mat,
-        interpolation, d
+        interpolation, 0.0, d  # The fill_value is dummy.
     )
 
 
@@ -356,6 +363,7 @@ def _rotate(
         cos_fn: Callable[[T], T],
         sin_fn: Callable[[T], T],
         interpolation: Interpolation,
+        fill_value: float,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -369,7 +377,7 @@ def _rotate(
     )
     return _affine_transform(
         image, bboxes, labels, image_dest_rot_mat, bboxes_rot_mat,
-        interpolation, d
+        interpolation, fill_value, d
     )
 
 
@@ -402,6 +410,7 @@ def _shear(
         angle_deg: T,
         tan_fn: Callable[[T], T],
         interpolation: Interpolation,
+        fill_value: float,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -415,7 +424,7 @@ def _shear(
     )
     return _affine_transform(
         image, bboxes, labels, image_dest_shear_mat, bboxes_shear_mat,
-        interpolation, d
+        interpolation, fill_value, d
     )
 
 
@@ -444,6 +453,7 @@ def _translate(
         translate_height: T,
         translate_width: T,
         interpolation: Interpolation,
+        fill_value: float,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -458,7 +468,7 @@ def _translate(
     )
     return _affine_transform(
         image, bboxes, labels, image_dest_translate_mat, bboxes_translate_mat,
-        interpolation, d
+        interpolation, fill_value, d
     )
 
 

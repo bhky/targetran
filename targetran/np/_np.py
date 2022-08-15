@@ -62,11 +62,12 @@ def _np_affine_transform(
         labels: NDFloatArray,
         image_dest_tran_mat: NDFloatArray,
         bboxes_tran_mat: NDFloatArray,
-        interpolation: Interpolation
+        interpolation: Interpolation,
+        fill_value: float
 ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
     return _affine_transform(
         image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
-        interpolation, _np_get_affine_dependency()
+        interpolation, fill_value, _np_get_affine_dependency()
     )
 
 
@@ -97,11 +98,12 @@ def rotate(
         bboxes: NDFloatArray,
         labels: NDFloatArray,
         angle_deg: float,
-        interpolation: Interpolation = Interpolation.BILINEAR
+        interpolation: Interpolation = Interpolation.BILINEAR,
+        fill_value: float = 0.0
 ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
     return _rotate(
         image, bboxes, labels, _np_convert(angle_deg), np.cos, np.sin,
-        interpolation, _np_get_affine_dependency()
+        interpolation, fill_value, _np_get_affine_dependency()
     )
 
 
@@ -111,13 +113,14 @@ def shear(
         labels: NDFloatArray,
         angle_deg: float,
         interpolation: Interpolation = Interpolation.BILINEAR,
+        fill_value: float = 0.0,
         _check_input: bool = True
 ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
     if _check_input:
         _check_shear_input(angle_deg)
     return _shear(
         image, bboxes, labels, _np_convert(angle_deg), np.tan,
-        interpolation, _np_get_affine_dependency()
+        interpolation, fill_value, _np_get_affine_dependency()
     )
 
 
@@ -128,6 +131,7 @@ def translate(
         translate_height: int,
         translate_width: int,
         interpolation: Interpolation = Interpolation.BILINEAR,
+        fill_value: float = 0.0,
         _check_input: bool = True
 ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
     if _check_input:
@@ -135,7 +139,7 @@ def translate(
     return _translate(
         image, bboxes, labels,
         _np_convert(translate_height), _np_convert(translate_width),
-        interpolation, _np_get_affine_dependency()
+        interpolation, fill_value, _np_get_affine_dependency()
     )
 
 
@@ -239,6 +243,7 @@ class CombineAffine(RandomTransform):
             selected_probabilities: Optional[List[float]] = None,
             keep_order: bool = False,
             interpolation: Interpolation = Interpolation.BILINEAR,
+            fill_value: float = 0.0,
             probability: float = 1.0,
             seed: Optional[int] = None
     ) -> None:
@@ -262,6 +267,7 @@ class CombineAffine(RandomTransform):
         self._selected_probabilities = selected_probabilities
         self._keep_order = keep_order
         self._interpolation = interpolation
+        self._fill_value = fill_value
 
     def _get_mats(
             self,
@@ -322,7 +328,7 @@ class CombineAffine(RandomTransform):
         )
         return super().__call__(
             image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
-            self._interpolation
+            self._interpolation, self._fill_value
         )
 
 
@@ -390,6 +396,7 @@ class RandomRotate(RandomTransform):
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             interpolation: Interpolation = Interpolation.BILINEAR,
+            fill_value: float = 0.0,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
@@ -397,6 +404,7 @@ class RandomRotate(RandomTransform):
         super().__init__(rotate, probability, seed, "RandomRotate", True)
         self.angle_deg_range: NDFloatArray = np.array(angle_deg_range)
         self.interpolation = interpolation
+        self.fill_value = fill_value
 
     def _get_angle_deg(
             self,
@@ -426,7 +434,7 @@ class RandomRotate(RandomTransform):
     ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
         return super().__call__(
             image, bboxes, labels, self._get_angle_deg(self._rand_fn),
-            self.interpolation
+            self.interpolation, self.fill_value
         )
 
 
@@ -436,6 +444,7 @@ class RandomShear(RandomTransform):
             self,
             angle_deg_range: Tuple[float, float] = (-10.0, 10.0),
             interpolation: Interpolation = Interpolation.BILINEAR,
+            fill_value: float = 0.0,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
@@ -443,6 +452,7 @@ class RandomShear(RandomTransform):
         super().__init__(shear, probability, seed, "RandomShear", True)
         self.angle_deg_range: NDFloatArray = np.array(angle_deg_range)
         self.interpolation = interpolation
+        self.fill_value = fill_value
 
     def _get_angle_deg(
             self,
@@ -470,7 +480,7 @@ class RandomShear(RandomTransform):
     ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
         return super().__call__(
             image, bboxes, labels, self._get_angle_deg(self._rand_fn),
-            self.interpolation, False
+            self.interpolation, self.fill_value, False
         )
 
 
@@ -481,6 +491,7 @@ class RandomTranslate(RandomTransform):
             translate_height_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             translate_width_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             interpolation: Interpolation = Interpolation.BILINEAR,
+            fill_value: float = 0.0,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
@@ -496,6 +507,7 @@ class RandomTranslate(RandomTransform):
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
         self.interpolation = interpolation
+        self.fill_value = fill_value
 
     def _get_translate_height_and_width(
             self,
@@ -538,7 +550,7 @@ class RandomTranslate(RandomTransform):
             self._get_translate_height_and_width(image, self._rand_fn)
         return super().__call__(
             image, bboxes, labels, translate_height, translate_width,
-            self.interpolation, False
+            self.interpolation, self.fill_value, False
         )
 
 

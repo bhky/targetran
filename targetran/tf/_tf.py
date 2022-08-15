@@ -112,11 +112,12 @@ def _tf_affine_transform(
         labels: tf.Tensor,
         image_dest_tran_mat: tf.Tensor,
         bboxes_tran_mat: tf.Tensor,
-        interpolation: Interpolation
+        interpolation: Interpolation,
+        fill_value: float
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _affine_transform(
         image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
-        interpolation, _tf_get_affine_dependency()
+        interpolation, fill_value, _tf_get_affine_dependency()
     )
 
 
@@ -147,11 +148,12 @@ def tf_rotate(
         bboxes: tf.Tensor,
         labels: tf.Tensor,
         angle_deg: float,
-        interpolation: Interpolation = Interpolation.BILINEAR
+        interpolation: Interpolation = Interpolation.BILINEAR,
+        fill_value: float = 0.0
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _rotate(
         image, bboxes, labels, _tf_convert(angle_deg), tf.cos, tf.sin,
-        interpolation, _tf_get_affine_dependency()
+        interpolation, fill_value, _tf_get_affine_dependency()
     )
 
 
@@ -161,13 +163,14 @@ def tf_shear(
         labels: tf.Tensor,
         angle_deg: float,
         interpolation: Interpolation = Interpolation.BILINEAR,
+        fill_value: float = 0.0,
         _check_input: bool = True
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     if _check_input:
         _check_shear_input(angle_deg)
     return _shear(
         image, bboxes, labels, _tf_convert(angle_deg), tf.tan,
-        interpolation, _tf_get_affine_dependency()
+        interpolation, fill_value, _tf_get_affine_dependency()
     )
 
 
@@ -178,6 +181,7 @@ def tf_translate(
         translate_height: int,
         translate_width: int,
         interpolation: Interpolation = Interpolation.BILINEAR,
+        fill_value: float = 0.0,
         _check_input: bool = True
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     if _check_input:
@@ -187,7 +191,7 @@ def tf_translate(
     return _translate(
         image, bboxes, labels,
         _tf_convert(translate_height), _tf_convert(translate_width),
-        interpolation, _tf_get_affine_dependency()
+        interpolation, fill_value, _tf_get_affine_dependency()
     )
 
 
@@ -314,6 +318,7 @@ class TFCombineAffine(TFRandomTransform):
             selected_probabilities: Optional[List[float]] = None,
             keep_order: bool = False,
             interpolation: Interpolation = Interpolation.BILINEAR,
+            fill_value: float = 0.0,
             probability: float = 1.0,
             seed: Optional[int] = None
     ) -> None:
@@ -337,6 +342,7 @@ class TFCombineAffine(TFRandomTransform):
         self._selected_probabilities = selected_probabilities
         self._keep_order = keep_order
         self._interpolation = interpolation
+        self._fill_value = fill_value
 
     def _get_mats(
             self,
@@ -404,7 +410,7 @@ class TFCombineAffine(TFRandomTransform):
         )
         return super().__call__(
             image, bboxes, labels, image_dest_tran_mat, bboxes_tran_mat,
-            self._interpolation
+            self._interpolation, self._fill_value
         )
 
 
@@ -472,6 +478,7 @@ class TFRandomRotate(TFRandomTransform):
             self,
             angle_deg_range: Tuple[float, float] = (-15.0, 15.0),
             interpolation: Interpolation = Interpolation.BILINEAR,
+            fill_value: float = 0.0,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
@@ -479,6 +486,7 @@ class TFRandomRotate(TFRandomTransform):
         super().__init__(tf_rotate, probability, seed, "TFRandomRotate", True)
         self.angle_deg_range = angle_deg_range
         self.interpolation = interpolation
+        self.fill_value = fill_value
 
     def _get_angle_deg(self, rand_fn: Callable[..., tf.Tensor]) -> tf.Tensor:
         return _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
@@ -503,7 +511,7 @@ class TFRandomRotate(TFRandomTransform):
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         return super().__call__(
             image, bboxes, labels, self._get_angle_deg(self._rand_fn),
-            self.interpolation
+            self.interpolation, self.fill_value
         )
 
 
@@ -513,6 +521,7 @@ class TFRandomShear(TFRandomTransform):
             self,
             angle_deg_range: Tuple[float, float] = (-10.0, 10.0),
             interpolation: Interpolation = Interpolation.BILINEAR,
+            fill_value: float = 0.0,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
@@ -520,6 +529,7 @@ class TFRandomShear(TFRandomTransform):
         super().__init__(tf_shear, probability, seed, "TFRandomShear", True)
         self.angle_deg_range = angle_deg_range
         self.interpolation = interpolation
+        self.fill_value = fill_value
 
     def _get_angle_deg(self, rand_fn: Callable[..., tf.Tensor]) -> tf.Tensor:
         return _tf_convert(self.angle_deg_range[1] - self.angle_deg_range[0]) \
@@ -544,7 +554,7 @@ class TFRandomShear(TFRandomTransform):
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         return super().__call__(
             image, bboxes, labels, self._get_angle_deg(self._rand_fn),
-            self.interpolation, False
+            self.interpolation, self.fill_value, False
         )
 
 
@@ -555,6 +565,7 @@ class TFRandomTranslate(TFRandomTransform):
             translate_height_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             translate_width_fraction_range: Tuple[float, float] = (-0.1, 0.1),
             interpolation: Interpolation = Interpolation.BILINEAR,
+            fill_value: float = 0.0,
             probability: float = 0.9,
             seed: Optional[int] = None
     ) -> None:
@@ -572,6 +583,7 @@ class TFRandomTranslate(TFRandomTransform):
         self.translate_height_fraction_range = translate_height_fraction_range
         self.translate_width_fraction_range = translate_width_fraction_range
         self.interpolation = interpolation
+        self.fill_value = fill_value
 
     def _get_translate_height_and_width(
             self,
@@ -610,7 +622,7 @@ class TFRandomTranslate(TFRandomTransform):
             self._get_translate_height_and_width(image, self._rand_fn)
         return super().__call__(
             image, bboxes, labels, translate_height, translate_width,
-            self.interpolation, False
+            self.interpolation, self.fill_value, False
         )
 
 

@@ -122,6 +122,7 @@ Randomly rotate the input image about the centre.
     Positive values means anti-clockwise, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
+  - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
@@ -138,6 +139,7 @@ Randomly shear the input image horizontally about the centre.
     Both values should be greater than `-90.0` and less than `90.0`.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
+  - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
@@ -158,6 +160,7 @@ Randomly translate the input image.
     Both values should be greater than `-1.0` and less than `1.0`.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
+  - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
@@ -188,6 +191,8 @@ Combine the random affine transformations to improve performance.
     will be shuffled.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
+  - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
+    Note that this value will override those in the individual steps.
   - `probability` (`float`, default `1.0`): Probability to apply the combined transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
 - `__call__` parameters
@@ -260,6 +265,7 @@ Rotate the input image about the centre.
     A positive value means anti-clockwise, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
+  - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
 
@@ -272,6 +278,7 @@ Shear the input image horizontally about the centre.
     A positive value means anti-clockwise, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
+  - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
   
@@ -287,6 +294,7 @@ Translate the input image.
     A positive value means moving rightwards, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
     Interpolation mode.
+  - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
   
