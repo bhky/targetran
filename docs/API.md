@@ -4,6 +4,7 @@
 - [Overview](#overview)
   - [Transformation classes](#transformation-classes)
   - [Transformation functions](#transformation-functions)
+  - [Random seeds](#random-seeds)
 - [Full list](#full-list)
 - [Manual](#manual)
 
@@ -47,6 +48,24 @@ The input format is `(image, bboxes, labels, ...)` where each function
 expects different additional input parameters. The return format is still
 `(image, bboxes, labels)`.
 
+### Random seeds
+
+It is worth to note that, while each `*Random*` class has a `seed` option 
+for setting an individual random seed, it is usually enough to just set the
+seed for Python, NumPy, and/or TensorFlow for deterministic operations.
+That means, it is not needed to set the individual seeds if something like 
+the following has been done:
+```python
+import random
+import numpy as np
+import tensorflow as tf
+seed = 42
+random.seed(seed)
+np.random.seed(seed)
+tf.random.set_seed(seed)
+```
+See [here](https://www.tensorflow.org/api_docs/python/tf/keras/utils/set_random_seed)
+for more details.
 
 ## Full list
 
