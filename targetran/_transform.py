@@ -612,10 +612,7 @@ def _resize(
     image, bboxes, labels = _sanitise(
         image, bboxes, labels, convert_fn, shape_fn, reshape_fn
     )
-
     image_shape = shape_fn(image)
-    if image_shape[0] == dest_size[0] and image_shape[1] == dest_size[1]:
-        return image, bboxes, labels
 
     image = resize_image_fn(image, dest_size)
 
