@@ -8,8 +8,10 @@ from targetran._typing import T
 
 
 class Interpolation(Enum):
-    NEAREST = auto()
     BILINEAR = auto()
+    BICUBIC = auto()
+    NEAREST = auto()
+    AREA = auto()
 
 
 class Compose:

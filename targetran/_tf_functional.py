@@ -6,6 +6,14 @@ from typing import Tuple
 import tensorflow as tf  # type: ignore
 
 from targetran._typing import ArrayLike
+from targetran.utils import Interpolation
+
+_TF_INTERPOLATION_DICT = {
+    Interpolation.BILINEAR: tf.image.ResizeMethod.BILINEAR,
+    Interpolation.BICUBIC: tf.image.ResizeMethod.BICUBIC,
+    Interpolation.NEAREST: tf.image.ResizeMethod.NEAREST_NEIGHBOR,
+    Interpolation.AREA: tf.image.ResizeMethod.AREA,
+}
 
 
 def _tf_convert(x: ArrayLike) -> tf.Tensor:
@@ -42,13 +50,14 @@ def _tf_pad_image(
 
 def _tf_resize_image(
         image: tf.Tensor,
-        dest_size: Tuple[int, int]
+        dest_size: Tuple[int, int],
+        interpolation: Interpolation
 ) -> tf.Tensor:
     """
     dest_size: (image_height, image_width)
     """
     return tf.image.resize(
-        image, size=dest_size, method=tf.image.ResizeMethod.AREA
+        image, size=dest_size, method=_TF_INTERPOLATION_DICT[interpolation]
     )
 
 

@@ -140,7 +140,7 @@ Randomly rotate the input image about the centre.
     The lower (inclusive) and upper (exclusive, if value differs from lower) limits of the rotation angle in degrees.
     Positive values means anti-clockwise, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
-    Interpolation mode.
+    Interpolation mode. Only `Interpolation.BILINEAR` and `Interpolation.NEAREST` are supported.
   - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
@@ -157,7 +157,7 @@ Randomly shear the input image horizontally about the centre.
     Positive values means anti-clockwise, and vice versa.
     Both values should be greater than `-90.0` and less than `90.0`.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
-    Interpolation mode.
+    Interpolation mode. Only `Interpolation.BILINEAR` and `Interpolation.NEAREST` are supported.
   - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
@@ -178,7 +178,7 @@ Randomly translate the input image.
     given as fractions of the image width. 
     Both values should be greater than `-1.0` and less than `1.0`.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
-    Interpolation mode.
+    Interpolation mode. Only `Interpolation.BILINEAR` and `Interpolation.NEAREST` are supported.
   - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
   - `probability` (`float`, default `0.9`): Probability to apply the transformation.
   - `seed` (`Optional[int]`, default `None`): Random seed.
@@ -209,7 +209,7 @@ Combine the random affine transformations to improve performance.
     will be performed according to the given order in `transforms`, otherwise the steps
     will be shuffled.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
-    Interpolation mode.
+    Interpolation mode. Only `Interpolation.BILINEAR` and `Interpolation.NEAREST` are supported.
   - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
     Note that this value will override those in the individual steps.
   - `probability` (`float`, default `1.0`): Probability to apply the combined transformation.
@@ -241,6 +241,8 @@ Get a random crop of the input image.
 Resize the input image.
 - `__init__` parameters
   - `dest_size` (`Tuple[int, int]`): Destination image size given as (height, width).
+  - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
+    Interpolation mode.
 - `__call__` parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
 - `__call__` returns
@@ -283,7 +285,7 @@ Rotate the input image about the centre.
   - `angle_deg` (`float`): Rotation angle in degrees. 
     A positive value means anti-clockwise, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
-    Interpolation mode.
+    Interpolation mode. Only `Interpolation.BILINEAR` and `Interpolation.NEAREST` are supported.
   - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
@@ -296,7 +298,7 @@ Shear the input image horizontally about the centre.
     Shear angle in degrees, must be greater than `-90.0` and less than `90.0`. 
     A positive value means anti-clockwise, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
-    Interpolation mode.
+    Interpolation mode. Only `Interpolation.BILINEAR` and `Interpolation.NEAREST` are supported.
   - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
@@ -312,7 +314,7 @@ Translate the input image.
     with its absolute value smaller than the image width.
     A positive value means moving rightwards, and vice versa.
   - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
-    Interpolation mode.
+    Interpolation mode. Only `Interpolation.BILINEAR` and `Interpolation.NEAREST` are supported.
   - `fill_value` (`float`, default `0.0`): Value to be filled outside the image boundaries.
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
@@ -337,13 +339,17 @@ Resize the input image. The same as `Resize`/`TFResize` but in functional form.
 - Parameters
   - `image`, `bboxes`, `labels`: Please refer to the [overview](#overview).
   - `dest_size` (`Tuple[int, int]`): Destination image size given as (height, width).
+  - `interpolation` (`Interpolation` enum from `targetran.utils`, default `Interpolation.BILINEAR`):
+    Interpolation mode.
 - Returns
   - Tuple of the transformed `(image`, `bboxes`, `labels)`.
 
 ### `Interpolation`
 Enum class for interpolation modes in their usual definitions.
 - `Interpolation.BILINEAR`
-- `Interpolation.NEAREST`
+- `Interpolation.BICUBIC`
+- `Interpolation.NEAREST` (for resizing only)
+- `Interpolation.AREA` (for resizing only)
 
 ### `Compose`
 Make a composition of the given callables.

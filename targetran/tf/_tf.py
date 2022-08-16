@@ -233,10 +233,11 @@ def tf_resize(
         image: tf.Tensor,
         bboxes: tf.Tensor,
         labels: tf.Tensor,
-        dest_size: Tuple[int, int]
+        dest_size: Tuple[int, int],
+        interpolation: Interpolation = Interpolation.BILINEAR
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _resize(
-        image, bboxes, labels, dest_size,
+        image, bboxes, labels, dest_size, interpolation,
         _tf_convert, tf.shape, tf.reshape, _tf_resize_image, tf.concat
     )
 
@@ -669,8 +670,13 @@ class TFRandomCrop(TFRandomTransform):
 
 class TFResize:
 
-    def __init__(self, dest_size: Tuple[int, int]) -> None:
+    def __init__(
+            self,
+            dest_size: Tuple[int, int],
+            interpolation: Interpolation = Interpolation.BILINEAR
+    ) -> None:
         self.dest_size = dest_size
+        self.interpolation = interpolation
         self.name = "TFResize"
         self.is_affine = False
 
@@ -680,4 +686,4 @@ class TFResize:
             bboxes: tf.Tensor,
             labels: tf.Tensor
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        return tf_resize(image, bboxes, labels, self.dest_size)
+        return tf_resize(image, bboxes, labels, self.dest_size, self.interpolation)

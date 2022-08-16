@@ -181,10 +181,11 @@ def resize(
         image: NDFloatArray,
         bboxes: NDFloatArray,
         labels: NDFloatArray,
-        dest_size: Tuple[int, int]
+        dest_size: Tuple[int, int],
+        interpolation: Interpolation = Interpolation.BILINEAR
 ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
     return _resize(
-        image, bboxes, labels, dest_size,
+        image, bboxes, labels, dest_size, interpolation,
         _np_convert, np.shape, np.reshape, _np_resize_image, np.concatenate
     )
 
@@ -597,8 +598,13 @@ class RandomCrop(RandomTransform):
 
 class Resize:
 
-    def __init__(self, dest_size: Tuple[int, int]) -> None:
+    def __init__(
+            self,
+            dest_size: Tuple[int, int],
+            interpolation: Interpolation = Interpolation.BILINEAR
+    ) -> None:
         self.dest_size = dest_size
+        self.interpolation = interpolation
         self.name = "Resize"
         self.is_affine = False
 
@@ -608,4 +614,4 @@ class Resize:
             bboxes: NDFloatArray,
             labels: NDFloatArray
     ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
-        return resize(image, bboxes, labels, self.dest_size)
+        return resize(image, bboxes, labels, self.dest_size, self.interpolation)

@@ -13,6 +13,14 @@ from targetran._typing import (
     NDIntArray,
     NDBoolArray,
 )
+from targetran.utils import Interpolation
+
+_INTERPOLATION_DICT = {
+    Interpolation.BILINEAR: cv2.INTER_LINEAR,  # pylint: disable=no-member
+    Interpolation.BICUBIC: cv2.INTER_CUBIC,  # pylint: disable=no-member
+    Interpolation.NEAREST: cv2.INTER_NEAREST,  # pylint: disable=no-member
+    Interpolation.AREA: cv2.INTER_AREA,  # pylint: disable=no-member
+}
 
 
 def _np_convert(x: ArrayLike) -> NDFloatArray:
@@ -54,7 +62,8 @@ def _np_pad_image(
 
 def _np_resize_image(
         image: NDFloatArray,
-        dest_size: Tuple[int, int]
+        dest_size: Tuple[int, int],
+        interpolation: Interpolation
 ) -> NDFloatArray:
     """
     dest_size: (image_height, image_width)
@@ -62,7 +71,7 @@ def _np_resize_image(
     resized_image: NDAnyArray = cv2.resize(  # pylint: disable=no-member
         image,
         dsize=(dest_size[1], dest_size[0]),
-        interpolation=cv2.INTER_AREA  # pylint: disable=no-member
+        interpolation=_INTERPOLATION_DICT[interpolation]
     )
     return resized_image
 

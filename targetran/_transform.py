@@ -176,7 +176,7 @@ def _affine_transform(
             d.gather_image_fn(image, ceil_ceil_idxes) * ceil_ceil_weights
 
     else:
-        raise ValueError("Undefined interpolation option.")
+        raise ValueError("Unsupported interpolation option.")
 
     new_image = d.reshape_fn(values, (height, width, num_channels))
 
@@ -597,10 +597,11 @@ def _resize(
         bboxes: T,
         labels: T,
         dest_size: Tuple[int, int],
+        interpolation: Interpolation,
         convert_fn: Callable[..., T],
         shape_fn: Callable[[T], Sequence[int]],
         reshape_fn: Callable[[T, Sequence[int]], T],
-        resize_image_fn: Callable[[T, Tuple[int, int]], T],
+        resize_image_fn: Callable[[T, Tuple[int, int], Interpolation], T],
         concat_fn: Callable[[List[T], int], T],
 ) -> Tuple[T, T, T]:
     """
@@ -614,7 +615,7 @@ def _resize(
     )
     image_shape = shape_fn(image)
 
-    image = resize_image_fn(image, dest_size)
+    image = resize_image_fn(image, dest_size, interpolation)
 
     w = convert_fn(dest_size[1] / image_shape[1])
     h = convert_fn(dest_size[0] / image_shape[0])
