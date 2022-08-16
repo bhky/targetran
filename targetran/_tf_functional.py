@@ -9,9 +9,9 @@ from targetran._typing import ArrayLike
 from targetran.utils import Interpolation
 
 _TF_INTERPOLATION_DICT = {
+    Interpolation.NEAREST: tf.image.ResizeMethod.NEAREST_NEIGHBOR,
     Interpolation.BILINEAR: tf.image.ResizeMethod.BILINEAR,
     Interpolation.BICUBIC: tf.image.ResizeMethod.BICUBIC,
-    Interpolation.NEAREST: tf.image.ResizeMethod.NEAREST_NEIGHBOR,
     Interpolation.AREA: tf.image.ResizeMethod.AREA,
 }
 

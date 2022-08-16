@@ -16,9 +16,9 @@ from targetran._typing import (
 from targetran.utils import Interpolation
 
 _INTERPOLATION_DICT = {
+    Interpolation.NEAREST: cv2.INTER_NEAREST,  # pylint: disable=no-member
     Interpolation.BILINEAR: cv2.INTER_LINEAR,  # pylint: disable=no-member
     Interpolation.BICUBIC: cv2.INTER_CUBIC,  # pylint: disable=no-member
-    Interpolation.NEAREST: cv2.INTER_NEAREST,  # pylint: disable=no-member
     Interpolation.AREA: cv2.INTER_AREA,  # pylint: disable=no-member
 }
 
