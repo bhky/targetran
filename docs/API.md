@@ -346,9 +346,9 @@ Resize the input image. The same as `Resize`/`TFResize` but in functional form.
 
 ### `Interpolation`
 Enum class for interpolation modes in their usual definitions.
+- `Interpolation.NEAREST`
 - `Interpolation.BILINEAR`
-- `Interpolation.BICUBIC`
-- `Interpolation.NEAREST` (for resizing only)
+- `Interpolation.BICUBIC` (for resizing only)
 - `Interpolation.AREA` (for resizing only)
 
 ### `Compose`
