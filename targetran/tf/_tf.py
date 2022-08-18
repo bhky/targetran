@@ -127,8 +127,7 @@ def tf_flip_left_right(
         labels: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_left_right(
-        image, bboxes, labels,
-        Interpolation.NEAREST, _tf_get_affine_dependency()
+        image, bboxes, labels, _tf_get_affine_dependency()
     )
 
 
@@ -138,8 +137,7 @@ def tf_flip_up_down(
         labels: tf.Tensor
 ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return _flip_up_down(
-        image, bboxes, labels,
-        Interpolation.NEAREST, _tf_get_affine_dependency()
+        image, bboxes, labels, _tf_get_affine_dependency()
     )
 
 

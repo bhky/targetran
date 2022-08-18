@@ -279,7 +279,6 @@ def _flip_left_right(
         image: T,
         bboxes: T,
         labels: T,
-        interpolation: Interpolation,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -292,7 +291,7 @@ def _flip_left_right(
     )
     return _affine_transform(
         image, bboxes, labels, image_dest_flip_lr_mat, bboxes_flip_lr_mat,
-        interpolation, 0.0, d  # The fill_value is dummy.
+        Interpolation.NEAREST, 0.0, d  # Dummy interpolation and fill_value.
     )
 
 
@@ -316,7 +315,6 @@ def _flip_up_down(
         image: T,
         bboxes: T,
         labels: T,
-        interpolation: Interpolation,
         d: _AffineDependency
 ) -> Tuple[T, T, T]:
     """
@@ -329,7 +327,7 @@ def _flip_up_down(
     )
     return _affine_transform(
         image, bboxes, labels, image_dest_flip_ud_mat, bboxes_flip_ud_mat,
-        interpolation, 0.0, d  # The fill_value is dummy.
+        Interpolation.NEAREST, 0.0, d  # Dummy interpolation and fill_value.
     )
 
 

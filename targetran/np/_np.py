@@ -77,8 +77,7 @@ def flip_left_right(
         labels: NDFloatArray
 ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
     return _flip_left_right(
-        image, bboxes, labels,
-        Interpolation.NEAREST, _np_get_affine_dependency()
+        image, bboxes, labels, _np_get_affine_dependency()
     )
 
 
@@ -88,8 +87,7 @@ def flip_up_down(
         labels: NDFloatArray
 ) -> Tuple[NDFloatArray, NDFloatArray, NDFloatArray]:
     return _flip_up_down(
-        image, bboxes, labels,
-        Interpolation.NEAREST, _np_get_affine_dependency()
+        image, bboxes, labels, _np_get_affine_dependency()
     )
 
 
