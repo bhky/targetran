@@ -1,3 +1,3 @@
-__version__ = "0.11.9"
+__version__ = "0.12.0"
 __author__ = "Bosco Yung"
 __license__ = "MIT"
