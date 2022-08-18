@@ -47,7 +47,7 @@ Here comes Targetran to fill the gap.
   - [TensorFlow Dataset](#tensorflow-dataset)
   - [PyTorch Dataset](#pytorch-dataset)
   - [Image classification](#image-classification)
-  - [Examples](#examples)
+- [Examples](#examples)
 - [API](#api)
 
 # Installation
@@ -350,7 +350,7 @@ ds = PTDataset(..., transforms=transforms)
 data_loader = DataLoader(ds, batch_size=32)
 ```
 
-## Examples
+# Examples
 
 - [Code examples in this repository](examples) 
 - [Construct a TensorFlow Dataset with Targetran 
