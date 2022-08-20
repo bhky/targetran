@@ -81,7 +81,9 @@ def save_grad_cam(
     jet_heatmap = jet_colors[scaled_heatmap]
 
     # Superimpose the heatmap on the input image after resizing.
-    jet_heatmap = _np_resize_image(jet_heatmap, image.shape, interpolation)
+    jet_heatmap = _np_resize_image(
+        jet_heatmap, (image.shape[0], image.shape[1]), interpolation
+    )
 
     superimposed_image = jet_heatmap * alpha + image
     pil_superimposed_image = tf.keras.preprocessing.image.array_to_img(
