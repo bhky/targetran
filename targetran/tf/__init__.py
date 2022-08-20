@@ -18,3 +18,7 @@ from ._tf import (
     TFRandomCrop as TFRandomCrop,
     TFResize as TFResize,
 )
+from ._gradcam import (
+    make_grad_cam_heatmap,
+    save_grad_cam,
+)
