@@ -260,7 +260,7 @@ class TFRandomTransform:
     def _rand_fn(self, shape: Sequence[int] = ()) -> tf.Tensor:
         return self._rng.uniform(shape=shape)
 
-    def _get_mats(
+    def _get_mats(  # type: ignore[empty-body]
             self,
             image: tf.Tensor,
             rand_fn: Callable[..., tf.Tensor]

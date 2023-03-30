@@ -208,7 +208,7 @@ class RandomTransform:
     def _rand_fn(self, shape: Sequence[int] = ()) -> NDFloatArray:
         return self._rng.random(shape)
 
-    def _get_mats(
+    def _get_mats(  # type: ignore[empty-body]
             self,
             image: NDFloatArray,
             rand_fn: Callable[..., NDFloatArray]
