@@ -128,7 +128,7 @@ def plot(
         if num_rows == 1 or num_cols == 1:
             ax = axes[i]
         else:
-            ax = axes[i % num_rows][i % num_cols]
+            ax = axes[i // num_cols][i % num_cols]
 
         ax.imshow(image)
         ax.set_axis_off()
