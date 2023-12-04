@@ -20,6 +20,13 @@ class Compose:
         self.fns = fns
 
     def __call__(self, *args: Any) -> Any:
+        # This is needed, otherwise *args will "unpack" an image array.
+        if len(args) == 1:
+            x = args[0]
+            for fn in self.fns:
+                x = fn(x)
+            return x
+
         for fn in self.fns:
             args = fn(*args)
         return args
