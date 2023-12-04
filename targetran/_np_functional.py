@@ -3,7 +3,7 @@ Numpy functional helper utilities.
 """
 from typing import Tuple
 
-import cv2  # type: ignore
+import cv2
 import numpy as np
 
 from targetran._typing import (
@@ -80,7 +80,7 @@ def _np_boolean_mask(x: NDAnyArray, mask: NDBoolArray) -> NDAnyArray:
     """
     mask: boolean array
     """
-    return x[mask]  # type: ignore
+    return x[mask]
 
 
 def _np_gather_image(image: NDFloatArray, indices: NDIntArray) -> NDFloatArray:

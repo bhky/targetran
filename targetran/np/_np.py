@@ -286,7 +286,7 @@ class CombineAffine(RandomTransform):
             )
         else:
             conditions = rand_fn() < probs
-            indices = np.arange(len(probs), dtype=np.int32)[conditions]
+            indices = np.arange(len(probs), dtype=np.int32)[conditions]  # type: ignore
 
         if len(indices) > 1:
             if self._keep_order:
