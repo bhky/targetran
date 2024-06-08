@@ -5,14 +5,7 @@ version: "0.12.1"
 repository-code: "https://github.com/bhky/targetran"
 license: "MIT"
 authors:
-  - family-names: "Bosco"
-    given-names: "Yung"
+  - family-names: "Yung"
+    given-names: "Bosco"
     orcid: "https://orcid.org/0000-0002-3776-1589"
 date-released: "2023-12-04"
-keywords:
-  - machine learning
-  - data augmentation
-  - object detection
-  - image classification
-  - TensorFlow
-  - PyTorch
