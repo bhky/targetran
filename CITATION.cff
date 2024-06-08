@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it using the following metadata."
 title: "Targetran"
 version: "0.12.1"
-repository-code: "https://github.com/bhky/targetran"
+url: "https://github.com/bhky/targetran"
 license: "MIT"
 authors:
   - family-names: "Yung"
