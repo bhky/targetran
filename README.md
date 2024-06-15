@@ -155,6 +155,11 @@ from targetran.tf import (
 # it returns a tuple of tensors for a single sample: (image, bboxes, labels).
 ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
+# Alternatively, users can provide a sequence of image paths instead of image tensors/arrays,
+# and set `image_seq_is_paths=True`. In that case, the actual image loading will be done during
+# the dataset operation (i.e., lazy-loading). This is especially useful when dealing with huge data.
+ds = seqs_to_tf_dataset(image_paths, bboxes_seq, labels_seq, image_seq_is_paths=True)
+
 # The affine transformations can be combined into one operation for better performance.
 # Note that cropping and resizing are not affine and cannot be combined.
 # Option (1):
@@ -237,6 +242,8 @@ class PTDataset(Dataset):
             labels_seq: Sequence[NDFloatArray],
             transforms: Optional[Compose]
     ) -> None:
+        # It is also possible to provide image paths instead of image arrays here,
+        # and load the image in __getitem__. The details are skipped in this example.
         self.image_seq = image_seq
         self.bboxes_seq = bboxes_seq
         self.labels_seq = labels_seq
