@@ -87,15 +87,15 @@ def load_data() -> tf.data.Dataset:
 
 def split_ds(
         ds: tf.data.Dataset,
-        num_val_samples: int,
+        num_val_examples: int,
         seed: int = 42
 ) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
     """
     Split the dataset into two for training and validation.
     """
     ds = ds.shuffle(2048, seed=seed)
-    ds_val = ds.take(num_val_samples)
-    ds_train = ds.skip(num_val_samples)
+    ds_val = ds.take(num_val_examples)
+    ds_train = ds.skip(num_val_examples)
     return ds_train, ds_val
 
 
@@ -160,9 +160,9 @@ def save_plot(
 ) -> None:
     fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
 
-    for n, sample in enumerate(ds.unbatch().take(num_rows * num_cols)):
+    for n, example in enumerate(ds.unbatch().take(num_rows * num_cols)):
 
-        image, label = [tensor.numpy() for tensor in sample]
+        image, label = [tensor.numpy() for tensor in example]
         image = image.astype(np.int32)
 
         if num_rows == 1 or num_cols == 1:
@@ -208,7 +208,7 @@ def main() -> None:
 
     image_height = 331
     image_width = 331
-    num_val_samples = 256
+    num_val_examples = 256
     batch_size = 16 * strategy.num_replicas_in_sync  # See TPU docs.
     max_num_epochs = 5  # With early-stopping, this can be a large number.
 
@@ -218,7 +218,7 @@ def main() -> None:
         model = make_model(image_size, num_classes=5)
 
     ds = load_data()
-    ds_train, ds_val = split_ds(ds, num_val_samples)
+    ds_train, ds_val = split_ds(ds, num_val_examples)
 
     ds_train, ds_val = transform_and_batch(
         ds_train, ds_val, image_size, batch_size

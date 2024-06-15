@@ -79,12 +79,12 @@ def main() -> None:
     for _ in ds:
         count += 1
         if count % logging_batch_size == 0:
-            print(f"- Runtime for recent {logging_batch_size} samples: "
+            print(f"- Runtime for recent {logging_batch_size} examples: "
                   f"{timer() - start} s; "
-                  f"total number of samples so far: {count}")
+                  f"total number of examples so far: {count}")
             start = timer()
     print("--------------")
-    print(f"Total runtime for {count} samples: {timer() - total_start}")
+    print(f"Total runtime for {count} examples: {timer() - total_start}")
 
 
 if __name__ == "__main__":

@@ -123,11 +123,11 @@ def make_tf_dataset(
 
 def save_plots(ds: tf.data.Dataset, num_images: int) -> None:
     """
-    Plot samples of image, bboxes, and the corresponding labels.
+    Plot examples of image, bboxes, and the corresponding labels.
     """
-    for i, sample in enumerate(ds.take(num_images)):
+    for i, example in enumerate(ds.take(num_images)):
 
-        image, bboxes, labels = [tensor.numpy() for tensor in sample]
+        image, bboxes, labels = [tensor.numpy() for tensor in example]
         image = image.astype(np.int32)
 
         for bbox, label in zip(bboxes, labels):

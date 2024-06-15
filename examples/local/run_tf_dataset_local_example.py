@@ -102,13 +102,13 @@ def plot(
         figure_size_inches: Tuple[float, float] = (7.0, 4.5)
 ) -> None:
     """
-    Plot samples of image, bboxes, and the corresponding labels.
+    Plot examples of image, bboxes, and the corresponding labels.
     """
     fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
 
-    for i, sample in enumerate(ds.take(num_rows * num_cols)):
+    for i, example in enumerate(ds.take(num_rows * num_cols)):
 
-        image, bboxes, labels = [tensor.numpy() for tensor in sample]
+        image, bboxes, labels = [tensor.numpy() for tensor in example]
         image = image.astype(np.int32)
 
         for bbox, label in zip(bboxes, labels):
@@ -166,7 +166,7 @@ def main() -> None:
         seed=2
     )
 
-    # The `repeat` call here is only for re-using samples in this illustration.
+    # The `repeat` call here is only for re-using examples in this illustration.
     ds = ds \
         .repeat() \
         .map(TFRandomCrop(probability=1.0, seed=1)) \

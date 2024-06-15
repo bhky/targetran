@@ -46,8 +46,8 @@ def main() -> None:
 
     print("-------- Raw data --------")
 
-    for sample in ds:
-        image, bboxes, labels = sample
+    for example in ds:
+        image, bboxes, labels = example
         print(f"image shape: {image.get_shape()}")
         print(f"bboxes shape: {bboxes.get_shape()}")
         print(f"labels shape: {labels.get_shape()}")
@@ -63,8 +63,8 @@ def main() -> None:
         .map(targetran.tf.TFRandomFlipLeftRight(probability=1.0)) \
         .map(targetran.tf.TFRandomCrop(probability=1.0))
 
-    for sample in ds:
-        image, bboxes, labels = sample
+    for example in ds:
+        image, bboxes, labels = example
         print(f"transformed image shape: {image.get_shape()}")
         print(f"transformed bboxes shape: {bboxes.get_shape()}")
         print(f"transformed bboxes: {bboxes.numpy().tolist()}")
@@ -89,8 +89,8 @@ def main() -> None:
         .map(affine_transforms) \
         .map(targetran.tf.TFResize((256, 256)))
 
-    for sample in ds:
-        image, bboxes, labels = sample
+    for example in ds:
+        image, bboxes, labels = example
         print(f"transformed image shape: {image.get_shape()}")
         print(f"transformed bboxes shape: {bboxes.get_shape()}")
         print(f"transformed bboxes: {bboxes.numpy().tolist()}")
