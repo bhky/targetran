@@ -43,10 +43,17 @@ from targetran._typing import T
 from targetran.utils import Interpolation
 
 
+def load_tf_image(image_path: str) -> tf.Tensor:
+    return tf.image.decode_image(
+        tf.io.read_file(image_path), channels=3, expand_animations=False
+    )
+
+
 def to_tf(
         image_seq: Sequence[T],
         bboxes_seq: Sequence[T],
-        labels_seq: Sequence[T]
+        labels_seq: Sequence[T],
+        image_seq_is_paths: bool = False,
 ) -> Tuple[Sequence[tf.Tensor], Sequence[tf.Tensor], Sequence[tf.Tensor]]:
     """
     Convert seqs to TF (eager) tensor seqs.
@@ -56,27 +63,40 @@ def to_tf(
             image_seq, bboxes_seq, labels_seq, fillvalue=[]
     ):
         tuples.append(
-            (_tf_convert(image),
+            (image if image_seq_is_paths else _tf_convert(image),
              tf.reshape(_tf_convert(bboxes), (-1, 4)),
              _tf_convert(labels))
         )
     tf_image_seq, tf_bboxes_seq, tf_labels_seq = tuple(zip(*tuples))
+
+    if image_seq_is_paths:
+        tf_image_seq = tf.convert_to_tensor(tf_image_seq, tf.string)
+
     return tf_image_seq, tf_bboxes_seq, tf_labels_seq
 
 
 def seqs_to_tf_dataset(
         image_seq: Sequence[T],
         bboxes_seq: Sequence[T],
-        labels_seq: Sequence[T]
+        labels_seq: Sequence[T],
+        image_seq_is_paths: bool = False,
 ) -> tf.data.Dataset:
     tf_image_seq, tf_bboxes_seq, tf_labels_seq = to_tf(
-        image_seq, bboxes_seq, labels_seq
+        image_seq, bboxes_seq, labels_seq, image_seq_is_paths
     )
+
+    if image_seq_is_paths:
+        ds_image = tf.data.Dataset.from_tensor_slices(tf_image_seq)
+        ds_image = ds_image.map(
+            load_tf_image, deterministic=True, num_parallel_calls=tf.data.AUTOTUNE
+        )
+    else:
+        ds_image = tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_seq))
 
     # Tensors of different shapes can be included in a TF Dataset
     # as ragged-tensors.
     ds = tf.data.Dataset.zip((
-        tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_seq)),
+        ds_image,
         tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_bboxes_seq)),
         tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_labels_seq))
     ))
