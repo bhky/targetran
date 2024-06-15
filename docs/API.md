@@ -28,7 +28,7 @@ Pure TensorFlow ops are used for implementing the `TF*` tools,
 which is why they could work smoothly with a TensorFlow Dataset on TPU.
 
 The transformation classes are callables that accept input parameters from 
-a single sample consists of:
+a single example consists of:
 
 - `image` (`NDFloatArray` or `tf.Tensor` of shape `(height, width, num_channels)`);
 - `bboxes` (`NDFloatArray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty), 
