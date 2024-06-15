@@ -253,7 +253,7 @@ Convert array sequences to TensorFlow (eager) tensor sequences.
 - Parameters
   - `image_seq`, `bboxes_seq`, `labels_seq`, 
     `image_seq_is_paths` (`boolean`, default `False`): 
-    Please refer to the [data format](../README.md#data-format) and the example.
+    Please refer to the [data format](../README.md#data-format) and the usage illustration.
 - Returns
   - Tuple of tensors: `(image_seq, bboxes_seq, labels_seq)`.
 
@@ -262,7 +262,7 @@ Convert array sequences to a TensorFlow Dataset.
 - Parameters
   - `image_seq`, `bboxes_seq`, `labels_seq`,
     `image_seq_is_paths` (`boolean`, default `False`):
-    Please refer to the [data format](../README.md#data-format) and the example.
+    Please refer to the [data format](../README.md#data-format) and the usage illustration.
 - Returns
   - `tf.data.Dataset` instance.
 
