@@ -122,7 +122,7 @@ def to_keras_cv(
         max_num_bboxes: Optional[int] = None,
         fill_value: int = -1,
 ) -> tf.data.Dataset:
-    import keras_cv
+    import keras_cv  # type: ignore
 
     ds = ds.map(lambda i, b, l: (i, {"boxes": b, "classes": l}))
     if batch_size:
