@@ -1,6 +1,7 @@
 from ._tf import (
     to_tf as to_tf,
     to_tf_dataset as to_tf_dataset,
+    to_keras_cv as to_keras_cv,
     tf_flip_left_right as tf_flip_left_right,
     tf_flip_up_down as tf_flip_up_down,
     tf_rotate as tf_rotate,
