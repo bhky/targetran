@@ -152,8 +152,13 @@ from targetran.tf import (
 
 # Convert the above data sequences into a TensorFlow Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
-# it returns a tuple of tensors for a single sample: (image, bboxes, labels).
+# it returns a tuple of tensors for a single example: (image, bboxes, labels).
 ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
+
+# Alternatively, users can provide a sequence of image paths instead of image tensors/arrays,
+# and set `image_seq_is_paths=True`. In that case, the actual image loading will be done during
+# the dataset operation (i.e., lazy-loading). This is especially useful when dealing with huge data.
+ds = seqs_to_tf_dataset(image_paths, bboxes_seq, labels_seq, image_seq_is_paths=True)
 
 # The affine transformations can be combined into one operation for better performance.
 # Note that cropping and resizing are not affine and cannot be combined.
@@ -195,7 +200,7 @@ ds = ds \
 ```
 ```python
 # Batching:
-# Since the array/tensor shape of each sample could be different, conventional
+# Since the array/tensor shape of each example could be different, conventional
 # way of batching may not work. Users will have to consider their own use cases.
 # One possibly useful way is the padded-batch.
 ds = ds.padded_batch(batch_size=2, padding_values=-1.0)
@@ -237,6 +242,8 @@ class PTDataset(Dataset):
             labels_seq: Sequence[NDFloatArray],
             transforms: Optional[Compose]
     ) -> None:
+        # It is also possible to provide image paths instead of image arrays here,
+        # and load the image in __getitem__. The details are skipped in this example.
         self.image_seq = image_seq
         self.bboxes_seq = bboxes_seq
         self.labels_seq = labels_seq
@@ -301,13 +308,13 @@ transforms = Compose([
 
 # Convert the above data sequences into a PyTorch Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
-# it returns a tuple of arrays for a single sample: (image, bboxes, labels).
+# it returns a tuple of arrays for a single example: (image, bboxes, labels).
 ds = PTDataset(image_seq, bboxes_seq, labels_seq, transforms=transforms)
 ```
 ```python
 # Batching:
 # In PyTorch, it is common to use a Dataset with a DataLoader, which provides
-# batching functionality. However, since the array/tensor shape of each sample 
+# batching functionality. However, since the array/tensor shape of each example 
 # could be different, the default batching may not work. Targetran provides
 # a `collate_fn` that helps producing batches of (image_seq, bboxes_seq, labels_seq).
 from torch.utils.data import DataLoader
@@ -320,7 +327,7 @@ data_loader = DataLoader(ds, batch_size=2, collate_fn=collate_fn)
 
 While the tools here are primarily designed for object detection tasks, they can 
 also be used for image classification in which only the images are to be transformed,
-e.g., given a dataset that returns `(image, label)` samples, or even only `image` samples. 
+e.g., given a dataset that returns `(image, label)` examples, or even only `image` examples. 
 The `image_only` function can be used to convert a transformation class for this purpose.
 
 If the dataset returns a tuple `(image, ...)` in each iteration, only the `image`

@@ -92,8 +92,8 @@ def main() -> None:
 
     ds = PTDataset(image_seq, bboxes_seq, labels_seq, transforms)
 
-    for sample in ds:
-        image, bboxes, labels = sample
+    for example in ds:
+        image, bboxes, labels = example
         print(f"transformed image shape: {image.shape}")
         print(f"transformed bboxes shape: {bboxes.shape}")
         print(f"transformed bboxes: {bboxes.tolist()}")

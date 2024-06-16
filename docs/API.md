@@ -28,7 +28,7 @@ Pure TensorFlow ops are used for implementing the `TF*` tools,
 which is why they could work smoothly with a TensorFlow Dataset on TPU.
 
 The transformation classes are callables that accept input parameters from 
-a single sample consists of:
+a single example consists of:
 
 - `image` (`NDFloatArray` or `tf.Tensor` of shape `(height, width, num_channels)`);
 - `bboxes` (`NDFloatArray` or `tf.Tensor` of shape `(num_bboxes_per_image, 4)`, can be empty), 
@@ -251,16 +251,20 @@ Resize the input image.
 ### `to_tf`
 Convert array sequences to TensorFlow (eager) tensor sequences.
 - Parameters
-  - `image_seq`, `bboxes_seq`, `labels_seq`: 
-    Please refer to the [data format](../README.md#data-format).
+  - `image_seq`, `bboxes_seq`, `labels_seq`, 
+    `image_seq_is_paths` (`boolean`, default `False`): 
+    Please refer to the [data format](../README.md#data-format) and the 
+    illustration for [TensorFlow Dataset](../README.md#tensorflow-dataset).
 - Returns
   - Tuple of tensors: `(image_seq, bboxes_seq, labels_seq)`.
 
 ### `seqs_to_tf_dataset`
 Convert array sequences to a TensorFlow Dataset.
 - Parameters
-  - `image_seq`, `bboxes_seq`, `labels_seq`: 
-    Please refer to the [data format](../README.md#data-format).
+  - `image_seq`, `bboxes_seq`, `labels_seq`,
+    `image_seq_is_paths` (`boolean`, default `False`):
+    Please refer to the [data format](../README.md#data-format) and the 
+    illustration for [TensorFlow Dataset](../README.md#tensorflow-dataset).
 - Returns
   - `tf.data.Dataset` instance.
 

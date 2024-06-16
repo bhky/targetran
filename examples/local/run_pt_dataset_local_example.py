@@ -141,15 +141,15 @@ def plot(
         figure_size_inches: Tuple[float, float] = (7.0, 4.5)
 ) -> None:
     """
-    Plot samples of image, bboxes, and the corresponding labels.
+    Plot examples of image, bboxes, and the corresponding labels.
     """
     fig, axes = plt.subplots(num_rows, num_cols, figsize=figure_size_inches)
 
     for i in range(num_rows * num_cols):
 
-        sample = ds[i % len(ds)]
+        example = ds[i % len(ds)]
 
-        image, bboxes, labels = sample
+        image, bboxes, labels = example
         image = image.astype(np.int32)
 
         for bbox, label in zip(bboxes, labels):
