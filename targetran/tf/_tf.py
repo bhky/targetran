@@ -115,6 +115,30 @@ def seqs_to_tf_dataset(
     return ds
 
 
+def to_keras_cv(
+        ds: tf.data.Dataset,
+        batch_size: Optional[int] = None,
+        to_dense: bool = True,
+        max_num_bboxes: Optional[int] = None,
+        fill_value: int = -1,
+) -> tf.data.Dataset:
+    import keras_cv
+
+    ds = ds.map(lambda i, b, l: (i, {"boxes": b, "classes": l}))
+    if batch_size:
+        ds = ds.ragged_batch(batch_size=batch_size)
+    if to_dense:
+        ds = ds.map(
+            lambda i, d: (
+                i,
+                keras_cv.bounding_box.to_dense(
+                    d, max_boxes=max_num_bboxes, default_value=fill_value
+                )
+            )
+        )
+    return ds
+
+
 def _tf_get_affine_dependency() -> _AffineDependency:
     return _AffineDependency(
         _tf_convert, tf.shape, tf.reshape, tf.expand_dims, tf.squeeze,
