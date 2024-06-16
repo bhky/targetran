@@ -75,7 +75,7 @@ def to_tf(
     return tf_image_seq, tf_bboxes_seq, tf_labels_seq
 
 
-def seqs_to_tf_dataset(
+def to_tf_dataset(
         image_seq: Sequence[T],
         bboxes_seq: Sequence[T],
         labels_seq: Sequence[T],

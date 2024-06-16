@@ -96,7 +96,7 @@ for more details.
 - [`TFRandomCrop`](#randomcrop-tfrandomcrop)
 - [`TFResize`](#resize-tfresize)
 - [`to_tf`](#to_tf)
-- [`seqs_to_tf_dataset`](#seqs_to_tf_dataset)
+- [`to_tf_dataset`](#to_tf_dataset)
 - [`tf_flip_left_right`](#flip_left_right-tf_flip_left_right)
 - [`tf_flip_up_down`](#flip_up_down-tf_flip_up_down)
 - [`tf_rotate`](#rotate-tf_rotate)
@@ -258,7 +258,7 @@ Convert array sequences to TensorFlow (eager) tensor sequences.
 - Returns
   - Tuple of tensors: `(image_seq, bboxes_seq, labels_seq)`.
 
-### `seqs_to_tf_dataset`
+### `to_tf_dataset`
 Convert array sequences to a TensorFlow Dataset.
 - Parameters
   - `image_seq`, `bboxes_seq`, `labels_seq`,

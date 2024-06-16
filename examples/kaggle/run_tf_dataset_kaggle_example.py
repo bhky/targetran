@@ -118,7 +118,7 @@ def make_tf_dataset(
     labels_seq = [
         annotation_dict[image_id]["labels"] for image_id in image_dict.keys()
     ]
-    return tt.seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
+    return tt.to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 
 def save_plots(ds: tf.data.Dataset, num_images: int) -> None:

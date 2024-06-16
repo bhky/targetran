@@ -14,7 +14,7 @@ import numpy.typing
 import tensorflow as tf
 
 from targetran.tf import (
-    seqs_to_tf_dataset,
+    to_tf_dataset,
     TFCombineAffine,
     TFRandomFlipLeftRight,
     TFRandomRotate,
@@ -92,7 +92,7 @@ def make_tf_dataset(
     labels_seq = [
         annotation_dict[image_id]["labels"] for image_id in image_dict.keys()
     ]
-    return seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
+    return to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 
 def plot(
