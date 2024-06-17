@@ -118,6 +118,7 @@ def to_tf_dataset(
 def to_keras_cv(
         ds: tf.data.Dataset,
         batch_size: Optional[int] = None,
+        drop_remainder: bool = True,
         to_dense: bool = True,
         max_num_bboxes: Optional[int] = None,
         fill_value: int = -1,
@@ -126,7 +127,7 @@ def to_keras_cv(
 
     ds = ds.map(lambda i, b, l: (i, {"boxes": b, "classes": l}))
     if batch_size:
-        ds = ds.ragged_batch(batch_size=batch_size)
+        ds = ds.ragged_batch(batch_size=batch_size, drop_remainder=drop_remainder)
     if to_dense:
         ds = ds.map(
             lambda i, d: (
