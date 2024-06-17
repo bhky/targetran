@@ -87,9 +87,7 @@ def to_tf_dataset(
 
     if image_seq_is_paths:
         ds_image = tf.data.Dataset.from_tensor_slices(tf_image_seq)
-        ds_image = ds_image.map(
-            load_tf_image, deterministic=True, num_parallel_calls=tf.data.AUTOTUNE
-        )
+        ds_image = ds_image.map(load_tf_image)
     else:
         ds_image = tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_seq))
 
