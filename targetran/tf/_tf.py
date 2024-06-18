@@ -126,15 +126,15 @@ def to_keras_cv(
     ds = ds.map(lambda i, b, l: (i, {"boxes": b, "classes": l}))
     if batch_size:
         ds = ds.ragged_batch(batch_size=batch_size, drop_remainder=drop_remainder)
-    if to_dense:
-        ds = ds.map(
-            lambda i, d: (
-                i,
-                keras_cv.bounding_box.to_dense(
-                    d, max_boxes=max_num_bboxes, default_value=fill_value
-                )
-            )
-        )
+
+    ds = ds.map(
+        lambda i, d: {
+            "images": i,
+            "bounding_boxes": keras_cv.bounding_box.to_dense(
+                d, max_boxes=max_num_bboxes, default_value=fill_value
+            ) if to_dense else d,
+        }
+    )
     return ds
 
 
