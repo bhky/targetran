@@ -190,10 +190,12 @@ affine_transform = TFCombineAffine(
 
 # Apply transformations.
 auto_tune = tf.data.AUTOTUNE
-ds = ds
-  .map(TFRandomCrop(probability=0.5), num_parallel_calls=auto_tune)
-  .map(affine_transform, num_parallel_calls=auto_tune)
-  .map(TFResize((256, 256)), num_parallel_calls=auto_tune)
+ds = (
+    ds
+    .map(TFRandomCrop(probability=0.5), num_parallel_calls=auto_tune)
+    .map(affine_transform, num_parallel_calls=auto_tune)
+    .map(TFResize((256, 256)), num_parallel_calls=auto_tune)
+)
 
 # In the Dataset `map` call, the parameter `num_parallel_calls` can be set to,
 # e.g., tf.data.AUTOTUNE, for better performance. See docs for TensorFlow Dataset.
@@ -340,11 +342,13 @@ from targetran.utils import image_only
 ```
 ```python
 # TensorFlow.
-ds = ds \
-    .map(image_only(TFRandomCrop())) \
-    .map(image_only(affine_transform)) \
-    .map(image_only(TFResize((256, 256)))) \
+ds = (
+    ds
+    .map(image_only(TFRandomCrop()))
+    .map(image_only(affine_transform))
+    .map(image_only(TFResize((256, 256))))
     .batch(32)  # Conventional batching can be used for classification setup.
+)
 ```
 ```python
 # PyTorch.
