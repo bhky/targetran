@@ -97,6 +97,8 @@ for more details.
 - [`TFResize`](#resize-tfresize)
 - [`to_tf`](#to_tf)
 - [`to_tf_dataset`](#to_tf_dataset)
+- [`to_keras_cv_dict`](#to_keras_cv_dict)
+- [`to_keras_cv_model_input`](#to_keras_cv_model_input)
 - [`tf_flip_left_right`](#flip_left_right-tf_flip_left_right)
 - [`tf_flip_up_down`](#flip_up_down-tf_flip_up_down)
 - [`tf_rotate`](#rotate-tf_rotate)
@@ -267,6 +269,32 @@ Convert array sequences to a TensorFlow Dataset.
     illustration for [TensorFlow Dataset](../README.md#tensorflow-dataset).
 - Returns
   - `tf.data.Dataset` instance.
+
+### `to_keras_cv_dict`
+Map output of the TensorFlow Dataset to KerasCV dictionary format required by
+its preprocessing layers.
+- Parameters
+  - `ds` (`tf.data.Dataset`): A Dataset that yields tuple of tensors: 
+    `(image_seq, bboxes_seq, labels_seq)`, e.g., the output from `to_tf_dataset`.
+  - `batch_size` (`Optional[int]`, default `None`): Batch size if batching is desired.
+  - `drop_remainder` (`bool`, default `True`): 
+    Whether the last batch should be dropped in the case it has fewer than 
+    `batch_size` elements.
+- Returns
+  - `tf.data.Dataset` instance that yields 
+    `{"images": images, "bounding_boxes": keras_cv_bounding_boxes}`. 
+    See the [KerasCV example](https://keras.io/guides/keras_cv/object_detection_keras_cv/) for details.
+
+### `to_keras_cv_model_input`
+Map output of the TensorFlow Dataset to KerasCV model input format.
+- Parameters
+  - `ds` (`tf.data.Dataset`): A Dataset that yields tuple of tensors: 
+    `(image_seq, bboxes_seq, labels_seq)`, e.g., the output from `to_tf_dataset`.
+  - `max_num_bboxes` (`Optional[int]`, default `None`): The maximum number of bounding-boxes per image.
+  - `fill_value` (`int`, default `-1`): The default value to pad bounding-boxes with.
+- Returns
+  - `tf.data.Dataset` instance that yields tuple of `(images, keras_cv_bounding_boxes)`. 
+    See the [KerasCV example](https://keras.io/guides/keras_cv/object_detection_keras_cv/) for details.
 
 ### `flip_left_right`, `tf_flip_left_right`
 Flip the input image horizontally (left to right).
