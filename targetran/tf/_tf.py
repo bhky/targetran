@@ -75,7 +75,7 @@ def to_tf(
     return tf_image_seq, tf_bboxes_seq, tf_labels_seq
 
 
-def seqs_to_tf_dataset(
+def to_tf_dataset(
         image_seq: Sequence[T],
         bboxes_seq: Sequence[T],
         labels_seq: Sequence[T],
@@ -87,9 +87,7 @@ def seqs_to_tf_dataset(
 
     if image_seq_is_paths:
         ds_image = tf.data.Dataset.from_tensor_slices(tf_image_seq)
-        ds_image = ds_image.map(
-            load_tf_image, deterministic=True, num_parallel_calls=tf.data.AUTOTUNE
-        )
+        ds_image = ds_image.map(load_tf_image)
     else:
         ds_image = tf.data.Dataset.from_tensor_slices(tf.ragged.stack(tf_image_seq))
 
@@ -113,6 +111,40 @@ def seqs_to_tf_dataset(
         )
     )
     return ds
+
+
+def to_keras_cv_dict(
+        ds: tf.data.Dataset,
+        batch_size: Optional[int] = None,
+        drop_remainder: bool = True,
+) -> tf.data.Dataset:
+    import keras_cv  # type: ignore
+
+    ds = ds.map(lambda i, b, l: (i, {"boxes": b, "classes": l}))
+    if batch_size:
+        ds = ds.ragged_batch(batch_size=batch_size, drop_remainder=drop_remainder)
+
+    ds = ds.map(lambda i, d: {"images": i, "bounding_boxes": d})
+    return ds
+
+
+def to_keras_cv_model_input(
+        ds: tf.data.Dataset,
+        max_num_bboxes: Optional[int] = None,
+        fill_value: int = -1,
+) -> tf.data.Dataset:
+    import keras_cv
+
+    return ds.map(
+        lambda d: (
+            d["images"],
+            keras_cv.bounding_box.to_dense(
+                d["bounding_boxes"],
+                max_boxes=max_num_bboxes,
+                default_value=fill_value
+            )
+        )
+    )
 
 
 def _tf_get_affine_dependency() -> _AffineDependency:

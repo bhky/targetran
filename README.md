@@ -52,7 +52,7 @@ Here comes Targetran to fill the gap.
 
 # Installation
 
-Tested for Python 3.8, 3.9, and 3.10.
+Tested for Python 3.9, 3.10, and 3.11.
 
 The best way to install Targetran with its dependencies is from PyPI:
 ```shell
@@ -139,61 +139,63 @@ labels_seq = [
 import tensorflow as tf
 
 from targetran.tf import (
-    seqs_to_tf_dataset,
-    TFCombineAffine,
-    TFRandomFlipLeftRight,
-    TFRandomFlipUpDown,    
-    TFRandomRotate,
-    TFRandomShear,
-    TFRandomTranslate,
-    TFRandomCrop,
-    TFResize,
+  to_tf_dataset,
+  TFCombineAffine,
+  TFRandomFlipLeftRight,
+  TFRandomFlipUpDown,
+  TFRandomRotate,
+  TFRandomShear,
+  TFRandomTranslate,
+  TFRandomCrop,
+  TFResize,
 )
 
 # Convert the above data sequences into a TensorFlow Dataset.
 # Users can have their own way to create the Dataset, as long as for each iteration 
 # it returns a tuple of tensors for a single example: (image, bboxes, labels).
-ds = seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
+ds = to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 # Alternatively, users can provide a sequence of image paths instead of image tensors/arrays,
 # and set `image_seq_is_paths=True`. In that case, the actual image loading will be done during
 # the dataset operation (i.e., lazy-loading). This is especially useful when dealing with huge data.
-ds = seqs_to_tf_dataset(image_paths, bboxes_seq, labels_seq, image_seq_is_paths=True)
+ds = to_tf_dataset(image_paths, bboxes_seq, labels_seq, image_seq_is_paths=True)
 
 # The affine transformations can be combined into one operation for better performance.
 # Note that cropping and resizing are not affine and cannot be combined.
 # Option (1):
 affine_transform = TFCombineAffine(
-    [TFRandomRotate(probability=0.8),  # Probability to include each affine transformation step 
-     TFRandomShear(probability=0.6),   # can be specified, otherwise the default value is used.
-     TFRandomTranslate(),              # Thus, the number of selected steps could vary.
-     TFRandomFlipLeftRight(),
-     TFRandomFlipUpDown()],
-    probability=1.0  # Probability to apply this single combined transformation.
+  [TFRandomRotate(probability=0.8),  # Probability to include each affine transformation step 
+   TFRandomShear(probability=0.6),  # can be specified, otherwise the default value is used.
+   TFRandomTranslate(),  # Thus, the number of selected steps could vary.
+   TFRandomFlipLeftRight(),
+   TFRandomFlipUpDown()],
+  probability=1.0  # Probability to apply this single combined transformation.
 )
 # Option (2):
 # Alternatively, one can decide the exact number of randomly selected transformations,
 # e.g., use only any two of them. This could be a better option because too many 
 # transformation steps may deform the images too much.
 affine_transform = TFCombineAffine(
-    [TFRandomRotate(),  # Individual `probability` has no effect in this approach.
-     TFRandomShear(),
-     TFRandomTranslate(),
-     TFRandomFlipLeftRight(),
-     TFRandomFlipUpDown()],
-    num_selected_transforms=2,  # Only two steps from the list will be selected.
-    selected_probabilities=[0.5, 0.0, 0.3, 0.2, 0.0],  # Must sum up to 1.0, if given.
-    keep_order=True,  # If True, the selected steps must be performed in the given order.
-    probability=1.0  # Probability to apply this single combined transformation.
+  [TFRandomRotate(),  # Individual `probability` has no effect in this approach.
+   TFRandomShear(),
+   TFRandomTranslate(),
+   TFRandomFlipLeftRight(),
+   TFRandomFlipUpDown()],
+  num_selected_transforms=2,  # Only two steps from the list will be selected.
+  selected_probabilities=[0.5, 0.0, 0.3, 0.2, 0.0],  # Must sum up to 1.0, if given.
+  keep_order=True,  # If True, the selected steps must be performed in the given order.
+  probability=1.0  # Probability to apply this single combined transformation.
 )
 # Please refer to the API manual for more parameter options.
 
 # Apply transformations.
 auto_tune = tf.data.AUTOTUNE
-ds = ds \
-    .map(TFRandomCrop(probability=0.5), num_parallel_calls=auto_tune) \
-    .map(affine_transform, num_parallel_calls=auto_tune) \
-    .map(TFResize((256, 256)), num_parallel_calls=auto_tune)
+ds = (
+  ds
+  .map(TFRandomCrop(probability=0.5), num_parallel_calls=auto_tune)
+  .map(affine_transform, num_parallel_calls=auto_tune)
+  .map(TFResize((256, 256)), num_parallel_calls=auto_tune)
+)
 
 # In the Dataset `map` call, the parameter `num_parallel_calls` can be set to,
 # e.g., tf.data.AUTOTUNE, for better performance. See docs for TensorFlow Dataset.
@@ -340,11 +342,13 @@ from targetran.utils import image_only
 ```
 ```python
 # TensorFlow.
-ds = ds \
-    .map(image_only(TFRandomCrop())) \
-    .map(image_only(affine_transform)) \
-    .map(image_only(TFResize((256, 256)))) \
-    .batch(32)  # Conventional batching can be used for classification setup.
+ds = (
+  ds
+  .map(image_only(TFRandomCrop()))
+  .map(image_only(affine_transform))
+  .map(image_only(TFResize((256, 256))))
+  .batch(32)  # Conventional batching can be used for classification setup.
+)
 ```
 ```python
 # PyTorch.

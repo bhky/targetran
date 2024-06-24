@@ -42,7 +42,7 @@ def make_np_data() -> Tuple[Sequence[NDAnyArray],
 def main() -> None:
     image_seq, bboxes_seq, labels_seq = make_np_data()
 
-    ds = targetran.tf.seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
+    ds = targetran.tf.to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
     print("-------- Raw data --------")
 
@@ -74,7 +74,7 @@ def main() -> None:
 
     print("-------- Random transform with combine-affine --------")
 
-    ds = targetran.tf.seqs_to_tf_dataset(image_seq, bboxes_seq, labels_seq)
+    ds = targetran.tf.to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
     affine_transforms = targetran.tf.TFCombineAffine([
         targetran.tf.TFRandomRotate(probability=1.0),

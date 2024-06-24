@@ -16,7 +16,7 @@ from targetran.np import (
 )
 from targetran.tf import (
     to_tf,
-    seqs_to_tf_dataset,
+    to_tf_dataset,
     tf_flip_left_right,
     tf_flip_up_down,
     tf_rotate,
@@ -560,8 +560,8 @@ class TestTransform(unittest.TestCase):
 
 class TestConversion(unittest.TestCase):
 
-    def test_seqs_to_tf_dataset(self) -> None:
-        ds = seqs_to_tf_dataset(
+    def test_to_tf_dataset(self) -> None:
+        ds = to_tf_dataset(
             ORIGINAL_IMAGE_SEQ, ORIGINAL_BBOXES_SEQ, ORIGINAL_LABELS_SEQ
         )
         for i, (image, bboxes, labels) in enumerate(ds):
@@ -575,7 +575,7 @@ class TestConversion(unittest.TestCase):
                 np.allclose(ORIGINAL_LABELS_SEQ[i], labels.numpy())
             )
 
-        ds_image_only = seqs_to_tf_dataset(
+        ds_image_only = to_tf_dataset(
             ORIGINAL_IMAGE_SEQ, [], []
         )
         for i, (image, _, _) in enumerate(ds_image_only):
