@@ -45,6 +45,7 @@ Here comes Targetran to fill the gap.
   - [Data format](#data-format)
   - [Design principles](#design-principles)
   - [TensorFlow Dataset](#tensorflow-dataset)
+    - [Using with KerasCV](#using-with-kerascv)
   - [PyTorch Dataset](#pytorch-dataset)
   - [Image classification](#image-classification)
 - [Examples](#examples)
@@ -206,6 +207,33 @@ ds = (
 # way of batching may not work. Users will have to consider their own use cases.
 # One possibly useful way is the padded-batch.
 ds = ds.padded_batch(batch_size=2, padding_values=-1.0)
+```
+
+### Using with KerasCV
+The [KerasCV](https://keras.io/keras_cv/) API has a little bit confusing format
+regarding the bounding boxes, depending on whether the users are preparing 
+the inputs for a preprocessing layer, or for a model.
+
+Targetran also provides easy conversion tools to make the process smoother.
+```python
+import keras_cv
+from targetran.tf import to_keras_cv_dict, to_keras_cv_model_input
+
+# The resulting dataset yields batches readily to be passed to a KerasCV
+# preprocessing layer. Batching in the appropriate format can be done directly 
+# with this call, therefore the above `padded_batch` example is not relevant here.
+ds = to_keras_cv_dict(ds, batch_size=2)
+
+jittered_resize = keras_cv.layers.JitteredResize(
+    target_size=(640, 640),
+    scale_factor=(0.8, 1.25),
+    bounding_box_format="xywh",
+)
+
+ds = ds.map(jittered_resize) # Other KerasCV preprocessing layers can be added subsequently.
+
+# When the data is about to be passed to a KerasCV `model.fit`, the following can be done.
+ds = to_keras_cv_model_input(ds)
 ```
 
 ## PyTorch Dataset
