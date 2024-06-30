@@ -219,14 +219,13 @@ Targetran provides easy conversion tools to make the process smoother.
 import keras_cv
 from targetran.tf import to_keras_cv_dict, to_keras_cv_model_input
 
-# Let's assume `ds` contains Targetran ops as in the above illustration,
-# but without batching. To map the outputs to a KerasCV preprocessing layer,
-# the following can be done.
+# Let's assume `ds` contains Targetran ops as in the above illustration, without batching.
+# To map the outputs to a KerasCV preprocessing layer, the following can be done.
 ds = to_keras_cv_dict(ds, batch_size=2)
 
-# The resulting dataset yields batches readily to be passed to a KerasCV
-# preprocessing layer. Batching in the appropriate format will be included,
-# therefore the `padded_batch` example is not relevant here.
+# The resulting dataset yields batches readily to be passed to a KerasCV preprocessing layer.
+# Batching in the appropriate format will be included, therefore the `padded_batch` example
+# is not relevant here.
 
 # Assume the user would like to add a jittered-resize op.
 jittered_resize = keras_cv.layers.JitteredResize(
