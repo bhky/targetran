@@ -253,7 +253,7 @@ Resize the input image.
 ### `to_tf`
 Convert array sequences to TensorFlow (eager) tensor sequences.
 - Parameters
-  - `image_seq`, `bboxes_seq`, `labels_seq`, 
+  - `image_seq`, `bboxes_seq` (default empty tuple), `labels_seq` (default empty tuple), 
     `image_seq_is_paths` (`boolean`, default `False`): 
     Please refer to the [data format](../README.md#data-format) and the 
     illustration for [TensorFlow Dataset](../README.md#tensorflow-dataset).
@@ -263,7 +263,7 @@ Convert array sequences to TensorFlow (eager) tensor sequences.
 ### `to_tf_dataset`
 Convert array sequences to a TensorFlow Dataset.
 - Parameters
-  - `image_seq`, `bboxes_seq`, `labels_seq`,
+  - `image_seq`, `bboxes_seq` (default empty tuple), `labels_seq` (default empty tuple),
     `image_seq_is_paths` (`boolean`, default `False`):
     Please refer to the [data format](../README.md#data-format) and the 
     illustration for [TensorFlow Dataset](../README.md#tensorflow-dataset).

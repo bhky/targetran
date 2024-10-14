@@ -51,8 +51,8 @@ def load_tf_image(image_path: str) -> tf.Tensor:
 
 def to_tf(
         image_seq: Sequence[T],
-        bboxes_seq: Sequence[T],
-        labels_seq: Sequence[T],
+        bboxes_seq: Sequence[T] = (),
+        labels_seq: Sequence[T] = (),
         image_seq_is_paths: bool = False,
 ) -> Tuple[Sequence[tf.Tensor], Sequence[tf.Tensor], Sequence[tf.Tensor]]:
     """
@@ -77,8 +77,8 @@ def to_tf(
 
 def to_tf_dataset(
         image_seq: Sequence[T],
-        bboxes_seq: Sequence[T],
-        labels_seq: Sequence[T],
+        bboxes_seq: Sequence[T] = (),
+        labels_seq: Sequence[T] = (),
         image_seq_is_paths: bool = False,
 ) -> tf.data.Dataset:
     tf_image_seq, tf_bboxes_seq, tf_labels_seq = to_tf(
