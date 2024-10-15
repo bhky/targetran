@@ -158,7 +158,7 @@ ds = to_tf_dataset(image_seq, bboxes_seq, labels_seq)
 
 # Alternatively, users can provide a sequence of image paths instead of image tensors/arrays,
 # and set `image_seq_is_paths=True`. In that case, the actual image loading will be done during
-# the dataset operation (i.e., lazy-loading). This is especially useful when dealing with huge data.
+# the dataset operation (i.e., lazy-loading). This is useful when dealing with huge data.
 ds = to_tf_dataset(image_paths, bboxes_seq, labels_seq, image_seq_is_paths=True)
 
 # The affine transformations can be combined into one operation for better performance.
@@ -374,6 +374,8 @@ from targetran.utils import image_only
 ```
 ```python
 # TensorFlow.
+ds = to_tf_dataset(image_seq)
+
 ds = (
   ds
   .map(image_only(TFRandomCrop()))
