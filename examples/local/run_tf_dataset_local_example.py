@@ -24,7 +24,7 @@ from targetran.tf import (
     TFResize,
 )
 
-NDAnyArray = np.typing.NDArray[np.float_]
+NDAnyArray = np.typing.NDArray[np.float32]
 
 
 def load_images() -> Dict[str, NDAnyArray]:

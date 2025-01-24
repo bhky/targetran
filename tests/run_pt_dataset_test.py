@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 import targetran.np
 from targetran.utils import Compose, collate_fn
 
-NDAnyArray = np.typing.NDArray[np.float_]
+NDAnyArray = np.typing.NDArray[np.float32]
 
 
 def make_np_data() -> Tuple[Sequence[NDAnyArray],
