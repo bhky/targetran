@@ -19,7 +19,7 @@ jobs:
       - name: Install tools
         run: |
           python3 -m pip install pylint
-          python3 -m pip install mypy
+          python3 -m pip install mypy==1.13.0
       - name: Test
         run: |
           ./tests/install_from_local_and_test.sh
