@@ -87,4 +87,4 @@ def _np_gather_image(image: NDFloatArray, indices: NDIntArray) -> NDFloatArray:
     """
     indices: [[row_0, row_1, ...], [col_0, col_1, ...]]
     """
-    return image[tuple(indices)]  # type: ignore
+    return image[tuple(indices)]
