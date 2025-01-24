@@ -228,7 +228,7 @@ class RandomTransform:
         bboxes = _np_convert(bboxes)
         labels = _np_convert(labels)
 
-        if self._rand_fn() < self.probability:  # type: ignore
+        if self._rand_fn() < self.probability:
             return self._np_fn(image, bboxes, labels, *args, **kwargs)
         return image, bboxes, labels
 
