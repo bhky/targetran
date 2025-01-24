@@ -19,7 +19,7 @@ import pandas as pd
 import targetran.tf as tt
 import tensorflow as tf
 
-NDAnyArray = np.typing.NDArray[np.float_]
+NDAnyArray = np.typing.NDArray[np.float32]
 
 # This will be the data path when you use "Add Data" on the right panel
 # of a Kaggle Notebook.

@@ -294,9 +294,8 @@ class CombineAffine(RandomTransform):
             else:
                 self._rng.shuffle(indices)
 
-            indices = indices.tolist()
-            image_dest_tran_mats = np.take(image_dest_tran_mats, indices, 0)
-            bboxes_tran_mats = np.take(bboxes_tran_mats, indices, 0)
+            image_dest_tran_mats = np.take(image_dest_tran_mats, indices.tolist(), 0)
+            bboxes_tran_mats = np.take(bboxes_tran_mats, indices.tolist(), 0)
 
             image_dest_tran_mat = np.linalg.multi_dot(image_dest_tran_mats)
             # Note the reversed order for the bboxes tran matrices.

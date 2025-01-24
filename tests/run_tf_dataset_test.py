@@ -9,7 +9,7 @@ import numpy.typing
 
 import targetran.tf
 
-NDAnyArray = np.typing.NDArray[np.float_]
+NDAnyArray = np.typing.NDArray[np.float32]
 
 
 def make_np_data() -> Tuple[Sequence[NDAnyArray],

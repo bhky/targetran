@@ -68,11 +68,13 @@ def _np_resize_image(
     """
     dest_size: (image_height, image_width)
     """
-    resized_image: NDAnyArray = cv2.resize(  # pylint: disable=no-member
+    # pylint: disable=no-member
+    resized_image: NDFloatArray = cv2.resize(
         image,
         dsize=(dest_size[1], dest_size[0]),
         interpolation=_INTERPOLATION_DICT[interpolation]
     )
+    # pylint: enable=no-member
     return resized_image
 
 
